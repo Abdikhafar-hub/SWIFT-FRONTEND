@@ -14,20 +14,12 @@ import {
   Truck,
   CheckCircle2,
   AlertCircle,
-  AlertTriangle,
   Clock,
-  ShieldCheck,
-  Download,
-  Receipt as ReceiptIcon,
   Smartphone,
-  ExternalLink,
+  Receipt as ReceiptIcon,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/layout-primitives";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   ApplicationStatusBadge,
-  RequirementStatusBadge,
   PriorityBadge,
   SlaIndicator,
 } from "@/components/domain/status-badges";
@@ -39,9 +31,7 @@ import { SlaTimelineView } from "@/components/domain/sla-timeline-view";
 import { DeliveryStatusView } from "@/components/domain/delivery-status-view";
 import { MpesaPaymentModal } from "@/components/domain/mpesa-payment-modal";
 import { ReceiptModal } from "@/components/domain/receipt-modal";
-import { Skeleton, ErrorState } from "@/components/ui/feedback-primitives";
 import { applicationsApi } from "@/lib/api/applications";
-import { paymentsApi } from "@/lib/api/payments";
 import { useAuth } from "@/lib/auth/auth-context";
 import { formatDate, formatKES } from "@/lib/utils/format";
 import type { ApplicationStatus, Receipt } from "@/types";
@@ -99,23 +89,30 @@ export default function ClientApplicationDetailPage() {
 
   if (isAppLoading) {
     return (
-      <PageShell title="Loading Application Dossier...">
-        <div className="space-y-6">
-          <Skeleton className="h-32 w-full" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Skeleton className="h-96 lg:col-span-2" />
-            <Skeleton className="h-96" />
-          </div>
+      <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+        <div className="h-10 bg-slate-100 animate-pulse rounded-xl" />
+        <div className="h-40 bg-slate-100 animate-pulse rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="h-96 bg-slate-100 animate-pulse rounded-xl lg:col-span-2" />
+          <div className="h-96 bg-slate-100 animate-pulse rounded-xl" />
         </div>
-      </PageShell>
+      </div>
     );
   }
 
   if (appError || !application) {
     return (
-      <PageShell title="Application Dossier">
-        <ErrorState onRetry={() => refetchApp()} />
-      </PageShell>
+      <div className="min-h-screen bg-[#F8FAFC] p-6 max-w-[1550px] mx-auto text-center font-sans space-y-4">
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-6 text-rose-800 text-xs font-semibold">
+          Failed to load application dossier details.
+        </div>
+        <button
+          onClick={() => refetchApp()}
+          className="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition-colors"
+        >
+          Retry Dossier Request
+        </button>
+      </div>
     );
   }
 
@@ -127,7 +124,6 @@ export default function ClientApplicationDetailPage() {
   const isSettled = dueAmount <= 0;
 
   const governmentApp = governmentData[0] || (application.governmentApps ? application.governmentApps[0] : null);
-  const delivery = deliveryData[0] || (application.delivery ? application.delivery[0] : null);
 
   const totalReqs = requirements.length || 1;
   const satisfiedReqs =
@@ -135,36 +131,49 @@ export default function ClientApplicationDetailPage() {
   const progressPercent = Math.min(100, Math.round((satisfiedReqs / totalReqs) * 100));
 
   return (
-    <PageShell
-      eyebrow="STATUTORY DOSSIER"
-      title={`${application.service?.name || "Statutory Application"}`}
-      description={`Application #${application.applicationNumber} • Filed on ${formatDate(application.createdAt)}`}
-      actions={
-        <div className="flex flex-wrap items-center gap-3">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER & TOP ACTIONS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div className="flex items-center gap-3">
           <Link href="/client/applications">
-            <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="size-3.5" />}>
-              Back to Filings
-            </Button>
+            <button className="size-9 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors">
+              <ArrowLeft className="size-4" />
+            </button>
           </Link>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              {application.service?.name || "Statutory Application"}
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Application #{application.applicationNumber} • Filed on {formatDate(application.createdAt)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <ApplicationStatusBadge status={application.status as ApplicationStatus} size="md" />
         </div>
-      }
-    >
-      {/* Dossier Executive Summary Banner */}
-      <div className="rounded-sm border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4 mb-6">
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. EXECUTIVE SUMMARY BANNER */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-sm font-black text-foreground">
+              <span className="font-mono text-sm font-black text-slate-900">
                 #{application.applicationNumber}
               </span>
               <PriorityBadge priority={application.priority} size="sm" />
               {application.slaStatus && <SlaIndicator status={application.slaStatus} size="sm" />}
             </div>
-            <h2 className="font-display text-lg font-bold text-foreground">
+            <h2 className="text-base font-bold text-slate-900">
               {application.service?.name}
             </h2>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-slate-500 font-medium">
               Authority: {application.service?.authority || application.service?.defaultGovernmentAgency || application.service?.category?.name || "Official Registry"} &bull; Target SLA:{" "}
               {application.service?.slaHours ? `${application.service.slaHours} Hours` : "2-4 Business Days"}
             </span>
@@ -172,23 +181,22 @@ export default function ClientApplicationDetailPage() {
 
           {/* Settle Outstanding Invoice Quick Button */}
           {!isSettled && (
-            <div className="flex items-center gap-3 rounded-xs border border-amber-500/40 bg-amber-500/10 p-3 shrink-0">
+            <div className="flex items-center gap-3 rounded-xl border border-amber-300/80 bg-amber-50/60 p-3 shrink-0">
               <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800">
                   Outstanding Invoice Fee
                 </span>
-                <span className="font-mono text-sm font-black text-foreground">
+                <span className="font-mono text-sm font-black text-slate-900">
                   {formatKES(dueAmount)}
                 </span>
               </div>
-              <Button
-                size="sm"
+              <button
                 onClick={() => setIsMpesaModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5 shadow-xs"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2 rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
               >
                 <Smartphone className="size-3.5" />
                 <span>Pay via M-Pesa</span>
-              </Button>
+              </button>
             </div>
           )}
         </div>
@@ -201,35 +209,35 @@ export default function ClientApplicationDetailPage() {
           const maskedPassport = rawPassport.length > 4 ? `${rawPassport.slice(0, 3)}***${rawPassport.slice(-2)}` : rawPassport;
 
           return (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-3.5 rounded-xs border border-gold/30 bg-gold/5 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-3 rounded-lg border border-amber-200/80 bg-amber-50/40 text-xs">
               {meta.destinationCountry && (
                 <div>
-                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Destination</span>
-                  <span className="font-bold text-foreground">{String(meta.destinationCountry)}</span>
+                  <span className="text-[9px] uppercase font-extrabold text-amber-800 block">Destination</span>
+                  <span className="font-bold text-slate-900">{String(meta.destinationCountry)}</span>
                 </div>
               )}
               {meta.visaCategory && (
                 <div>
-                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Visa Type</span>
-                  <span className="font-bold text-foreground">{String(meta.visaCategory)}</span>
+                  <span className="text-[9px] uppercase font-extrabold text-amber-800 block">Visa Type</span>
+                  <span className="font-bold text-slate-900">{String(meta.visaCategory)}</span>
                 </div>
               )}
               {meta.passportNumber && (
                 <div>
-                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Passport No.</span>
-                  <span className="font-mono font-bold text-foreground" title={rawPassport}>{maskedPassport}</span>
+                  <span className="text-[9px] uppercase font-extrabold text-amber-800 block">Passport No.</span>
+                  <span className="font-mono font-bold text-slate-900" title={rawPassport}>{maskedPassport}</span>
                 </div>
               )}
               {meta.passportExpiry && (
                 <div>
-                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Passport Expiry</span>
-                  <span className="font-mono font-semibold text-foreground">{String(meta.passportExpiry)}</span>
+                  <span className="text-[9px] uppercase font-extrabold text-amber-800 block">Passport Expiry</span>
+                  <span className="font-mono font-semibold text-slate-900">{String(meta.passportExpiry)}</span>
                 </div>
               )}
               {(meta.travelStartDate || meta.travelEndDate) && (
                 <div>
-                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Travel Dates</span>
-                  <span className="font-semibold text-foreground">
+                  <span className="text-[9px] uppercase font-extrabold text-amber-800 block">Travel Dates</span>
+                  <span className="font-semibold text-slate-900">
                     {meta.travelStartDate ? String(meta.travelStartDate) : "TBD"}
                     {meta.travelEndDate ? ` - ${String(meta.travelEndDate)}` : ""}
                   </span>
@@ -240,16 +248,16 @@ export default function ClientApplicationDetailPage() {
         })()}
 
         {/* Readiness Checklist Progress Bar */}
-        <div className="space-y-1.5 pt-2 border-t border-border/70">
+        <div className="space-y-1.5 pt-2 border-t border-slate-100">
           <div className="flex justify-between text-xs font-bold">
-            <span className="text-muted-foreground">REQUIREMENTS COMPLIANCE SCORE</span>
-            <span className="text-foreground font-mono">
+            <span className="text-slate-500">REQUIREMENTS COMPLIANCE SCORE</span>
+            <span className="text-slate-900 font-mono">
               {satisfiedReqs} / {totalReqs} Requirements Satisfied ({progressPercent}%)
             </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full bg-gold transition-all duration-300"
+              className="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-300 rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -259,9 +267,9 @@ export default function ClientApplicationDetailPage() {
         {readiness && (
           <div className="space-y-2 pt-1">
             {readiness.blockers.length > 0 && (
-              <div className="rounded-xs border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive space-y-1">
+              <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-3 text-xs text-rose-800 space-y-1">
                 <div className="flex items-center gap-2 font-bold">
-                  <AlertCircle className="size-4 shrink-0" />
+                  <AlertCircle className="size-4 shrink-0 text-rose-600" />
                   <span>Statutory Submission Blockers ({readiness.blockers.length})</span>
                 </div>
                 <ul className="list-disc list-inside space-y-0.5 text-[11px] pl-1">
@@ -273,8 +281,8 @@ export default function ClientApplicationDetailPage() {
             )}
 
             {readiness.ready && (
-              <div className="rounded-xs border border-emerald-500/30 bg-emerald-50/20 dark:bg-emerald-950/15 p-3 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-bold">
-                <CheckCircle2 className="size-4 shrink-0" />
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-emerald-800 flex items-center gap-2 font-bold">
+                <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
                 <span>All mandatory statutory requirements satisfied. Application qualified for government transmission.</span>
               </div>
             )}
@@ -282,14 +290,16 @@ export default function ClientApplicationDetailPage() {
         )}
       </div>
 
-      {/* Navigation Tabs Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-border/80 pb-px mb-6 text-xs">
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. DOSSIER TABS NAVIGATION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200/80 pb-px text-xs">
         <button
           onClick={() => setActiveTab("requirements")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "requirements"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <FileText className="size-3.5" />
@@ -298,10 +308,10 @@ export default function ClientApplicationDetailPage() {
 
         <button
           onClick={() => setActiveTab("government")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "government"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <Building2 className="size-3.5" />
@@ -310,58 +320,58 @@ export default function ClientApplicationDetailPage() {
 
         <button
           onClick={() => setActiveTab("financials")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "financials"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <CreditCard className="size-3.5" />
-          <span>Financials & Invoices</span>
+          <span>Financials &amp; Invoices</span>
         </button>
 
         <button
           onClick={() => setActiveTab("messages")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "messages"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <MessageSquare className="size-3.5" />
-          <span>Direct Officer Messaging</span>
+          <span>Officer Messages</span>
         </button>
 
         <button
           onClick={() => setActiveTab("sla")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "sla"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <Clock className="size-3.5" />
-          <span>SLA & Operational Performance</span>
+          <span>SLA &amp; Performance</span>
         </button>
 
         <button
           onClick={() => setActiveTab("timeline")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "timeline"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <History className="size-3.5" />
-          <span>Timeline & Audit Trail</span>
+          <span>Audit Timeline</span>
         </button>
 
         <button
           onClick={() => setActiveTab("delivery")}
-          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+          className={`flex items-center gap-2 border-b-2 px-3.5 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "delivery"
-              ? "border-gold text-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-amber-500 text-amber-700 bg-amber-50/40 rounded-t-lg"
+              : "border-transparent text-slate-500 hover:text-slate-900"
           }`}
         >
           <Truck className="size-3.5" />
@@ -369,14 +379,16 @@ export default function ClientApplicationDetailPage() {
         </button>
       </div>
 
-      {/* TAB CONTENT AREAS */}
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. TAB CONTENTS */}
+      {/* ------------------------------------------------------------------ */}
 
-      {/* 1. REQUIREMENTS TAB */}
+      {/* REQUIREMENTS TAB */}
       {activeTab === "requirements" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-4">
             {requirements.length === 0 ? (
-              <div className="rounded-sm border border-dashed border-border p-8 text-center bg-card text-muted-foreground text-xs">
+              <div className="bg-white rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-400 text-xs">
                 No custom statutory requirements specified for this filing.
               </div>
             ) : (
@@ -390,146 +402,139 @@ export default function ClientApplicationDetailPage() {
             )}
           </div>
 
-          {/* Right Summary Specs */}
-          <div className="space-y-6">
-            <Card padding="md">
-              <CardHeader>
-                <CardTitle className="text-sm">Application Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-xs">
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Application Number</span>
-                  <span className="font-mono font-bold text-foreground">
-                    #{application.applicationNumber}
+          {/* Right Summary Card */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
+              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">
+                Application Overview
+              </h3>
+              <div className="flex justify-between border-b border-slate-100 pb-2">
+                <span className="text-slate-500 font-medium">Application Number</span>
+                <span className="font-mono font-bold text-slate-900">
+                  #{application.applicationNumber}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-slate-100 pb-2">
+                <span className="text-slate-500 font-medium">Statutory Authority</span>
+                <span className="font-semibold text-slate-900">
+                  {application.service?.authority || "Official Registry"}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-slate-100 pb-2">
+                <span className="text-slate-500 font-medium">Priority Tier</span>
+                <PriorityBadge priority={application.priority} size="sm" />
+              </div>
+              <div className="flex justify-between border-b border-slate-100 pb-2">
+                <span className="text-slate-500 font-medium">Statutory Fee</span>
+                <span className="font-mono font-bold text-slate-900">
+                  {formatKES(application.totalAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Settlement Status</span>
+                {isSettled ? (
+                  <span className="font-bold text-emerald-600">
+                    Settled in Full
                   </span>
-                </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Statutory Authority</span>
-                  <span className="font-semibold text-foreground">
-                    {application.service?.authority || "Official Registry"}
+                ) : (
+                  <span className="font-bold text-amber-600">
+                    Due: {formatKES(dueAmount)}
                   </span>
-                </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Priority Tier</span>
-                  <PriorityBadge priority={application.priority} size="sm" />
-                </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Statutory Fee</span>
-                  <span className="font-mono font-bold text-foreground">
-                    {formatKES(application.totalAmount)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Settlement Status</span>
-                  {isSettled ? (
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      Settled in Full
-                    </span>
-                  ) : (
-                    <span className="font-bold text-amber-600 dark:text-amber-400">
-                      Due: {formatKES(dueAmount)}
-                    </span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                )}
+              </div>
+            </div>
 
-            <Card padding="md" variant="gold">
-              <h4 className="font-display text-sm font-bold text-foreground">
+            <div className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] rounded-xl p-4 text-white space-y-2 border border-slate-800">
+              <h4 className="font-bold text-sm text-white">
                 Direct Compliance Support
               </h4>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed font-normal">
                 Need guidance regarding statutory guidelines or document certification? Reach out to your assigned officer.
               </p>
-              <Button
-                variant="navy"
-                size="xs"
-                fullWidth
-                className="mt-4"
+              <button
                 onClick={() => setActiveTab("messages")}
+                className="w-full mt-2 bg-gradient-to-r from-[#C5A059] to-[#D4AF37] text-white font-bold text-xs py-2 rounded-lg shadow-xs hover:from-[#b49049] hover:to-[#c39e26] transition-colors"
               >
                 Open Communication Thread
-              </Button>
-            </Card>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 2. GOVERNMENT TRACKING TAB */}
+      {/* GOVERNMENT TRACKING TAB */}
       {activeTab === "government" && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {governmentApp ? (
             <GovernmentTrackerCard governmentApp={governmentApp} />
           ) : (
-            <div className="rounded-sm border border-dashed border-border p-10 text-center bg-card space-y-3">
-              <Building2 className="size-10 text-muted-foreground/40 mx-auto" />
-              <h4 className="font-display text-base font-bold text-foreground">
+            <div className="bg-white rounded-xl border border-dashed border-slate-200 p-10 text-center space-y-3">
+              <Building2 className="size-10 text-slate-300 mx-auto" />
+              <h4 className="text-base font-bold text-slate-900">
                 Awaiting Registry Transmission
               </h4>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Once all mandatory documents and filing fees are verified, our compliance team packages and transmits your filing to the official registry (eCitizen, BRS, or KRA). Real-time tracking numbers and registry status milestones will display here.
+              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                Once all mandatory documents and filing fees are verified, our compliance team packages and transmits your filing to the official registry. Real-time tracking numbers and registry status milestones will display here.
               </p>
             </div>
           )}
         </div>
       )}
 
-      {/* 3. FINANCIALS TAB */}
+      {/* FINANCIALS TAB */}
       {activeTab === "financials" && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-sm border border-border bg-card p-4 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="bg-white rounded-xl border border-slate-200/80 p-4 space-y-1 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                 Total Statutory Fee
               </span>
-              <div className="font-mono text-lg font-bold text-foreground">
+              <div className="font-mono text-xl font-extrabold text-slate-900">
                 {formatKES(application.totalAmount)}
               </div>
             </div>
 
-            <div className="rounded-sm border border-border bg-card p-4 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="bg-white rounded-xl border border-slate-200/80 p-4 space-y-1 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                 Amount Paid
               </span>
-              <div className="font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="font-mono text-xl font-extrabold text-emerald-600">
                 {formatKES(paidAmount)}
               </div>
             </div>
 
-            <div className="rounded-sm border border-border bg-card p-4 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <div className="bg-white rounded-xl border border-slate-200/80 p-4 space-y-1 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                 Outstanding Balance
               </span>
-              <div className="font-mono text-lg font-bold text-foreground">
+              <div className="font-mono text-xl font-extrabold text-slate-900">
                 {formatKES(dueAmount)}
               </div>
             </div>
           </div>
 
-          {/* Invoices List for this Application */}
-          <div className="rounded-sm border border-border bg-card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-border/70 p-4 bg-muted/20">
-              <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200/80 p-4 bg-slate-50/60">
+              <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                 Application Billing Ledgers
               </h4>
               {!isSettled && (
-                <Button
-                  size="sm"
+                <button
                   onClick={() => setIsMpesaModalOpen(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs gap-1.5"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
                 >
                   <Smartphone className="size-3.5" />
                   <span>Settle Invoice via M-Pesa</span>
-                </Button>
+                </button>
               )}
             </div>
 
             {payments.length === 0 ? (
-              <div className="p-8 text-center text-xs text-muted-foreground">
+              <div className="p-8 text-center text-xs text-slate-400">
                 No invoices generated yet for this application.
               </div>
             ) : (
-              <div className="divide-y divide-border/60">
+              <div className="divide-y divide-slate-100">
                 {payments.map((pmt) => (
                   <div
                     key={pmt.id}
@@ -537,41 +542,38 @@ export default function ClientApplicationDetailPage() {
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-foreground">
+                        <span className="font-mono font-bold text-slate-900">
                           #{pmt.invoiceNumber}
                         </span>
-                        <span className="rounded-xs bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                           Status: {pmt.status}
                         </span>
                       </div>
-                      <div className="text-muted-foreground">
+                      <div className="text-slate-500 font-medium">
                         Issued: {new Date(pmt.createdAt).toLocaleDateString()} &bull; Total:{" "}
-                        <strong className="text-foreground font-mono">{formatKES(pmt.totalAmount)}</strong>
+                        <strong className="text-slate-900 font-mono">{formatKES(pmt.totalAmount)}</strong>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
                       {pmt.receipts && pmt.receipts.length > 0 && (
-                        <Button
-                          variant="outline"
-                          size="sm"
+                        <button
                           onClick={() => setSelectedReceipt(pmt.receipts![0])}
-                          className="h-8 gap-1.5 text-xs"
+                          className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
                         >
-                          <ReceiptIcon className="size-3.5 text-gold" />
+                          <ReceiptIcon className="size-3.5 text-amber-600" />
                           <span>View Official Receipt</span>
-                        </Button>
+                        </button>
                       )}
 
                       {Number(pmt.amountDue) > 0 && (
-                        <Button
-                          size="sm"
+                        <button
                           onClick={() => setIsMpesaModalOpen(true)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold gap-1.5"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
                         >
                           <Smartphone className="size-3.5" />
                           <span>Pay Now</span>
-                        </Button>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -582,12 +584,12 @@ export default function ClientApplicationDetailPage() {
         </div>
       )}
 
-      {/* 4. MESSAGES TAB */}
+      {/* MESSAGES TAB */}
       {activeTab === "messages" && (
         <ApplicationMessages applicationId={application.id} />
       )}
 
-      {/* 5. SLA TAB */}
+      {/* SLA TAB */}
       {activeTab === "sla" && (
         <SlaTimelineView
           slaStatus={application.slaStatus}
@@ -601,19 +603,17 @@ export default function ClientApplicationDetailPage() {
         />
       )}
 
-      {/* 6. TIMELINE TAB */}
+      {/* TIMELINE TAB */}
       {activeTab === "timeline" && (
-        <Card padding="md">
-          <CardHeader>
-            <CardTitle>Application Lifecycle & Timeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ApplicationTimelineView activities={timelineData} />
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-xl p-4 sm:p-5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
+          <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2">
+            Application Lifecycle &amp; Audit Trail
+          </h3>
+          <ApplicationTimelineView activities={timelineData} />
+        </div>
       )}
 
-      {/* 7. DELIVERY TAB */}
+      {/* DELIVERY TAB */}
       {activeTab === "delivery" && (
         <DeliveryStatusView
           deliveries={deliveryData.length > 0 ? deliveryData : application.delivery || application.deliveries || []}
@@ -648,6 +648,6 @@ export default function ClientApplicationDetailPage() {
         onClose={() => setSelectedReceipt(null)}
         receipt={selectedReceipt}
       />
-    </PageShell>
+    </div>
   );
 }

@@ -22,14 +22,16 @@ import {
   Smartphone,
   ExternalLink,
   X,
+  AlertCircle,
+  Tag,
   Filter,
 } from "lucide-react";
 import { messagesApi, MessageThread, ApplicationMessageItem } from "@/lib/api/messages";
-import { adminApi } from "@/lib/api/admin";
+import { applicationsApi } from "@/lib/api/applications";
 import { formatDate } from "@/lib/utils/format";
 import type { Application } from "@/types";
 
-export default function AdminCommunicationsPage() {
+export default function ClientMessagesPage() {
   const queryClient = useQueryClient();
 
   // State
@@ -51,21 +53,21 @@ export default function AdminCommunicationsPage() {
   const [composeSendEmail, setComposeSendEmail] = useState(true);
   const [composeSendSms, setComposeSendSms] = useState(false);
 
-  // 1. Fetch Admin Threads
+  // 1. Fetch Threads
   const {
     data: threads = [],
     isLoading: isThreadsLoading,
     refetch: refetchThreads,
   } = useQuery({
-    queryKey: ["admin-message-threads", folder, search],
-    queryFn: () => messagesApi.getAdminThreads(folder, search),
+    queryKey: ["client-message-threads", folder, search],
+    queryFn: () => messagesApi.getClientThreads(folder, search),
     refetchInterval: 15000,
   });
 
-  // 2. Fetch Admin Applications for Compose Dropdown
+  // 2. Fetch Client Applications for Compose Dropdown
   const { data: appsData } = useQuery({
-    queryKey: ["admin-applications-compose"],
-    queryFn: () => adminApi.getApplications({ page: 1, limit: 100 }),
+    queryKey: ["client-applications-compose"],
+    queryFn: () => applicationsApi.getApplications({ page: 1, limit: 50 }),
   });
   const rawApps = appsData as any;
   const applications: Application[] = Array.isArray(rawApps) ? rawApps : rawApps?.items || [];
@@ -85,15 +87,15 @@ export default function AdminCommunicationsPage() {
     isLoading: isMessagesLoading,
     refetch: refetchMessages,
   } = useQuery({
-    queryKey: ["admin-thread-messages", activeThreadId],
-    queryFn: () => (activeThreadId ? messagesApi.getAdminThreadMessages(activeThreadId) : Promise.resolve([])),
+    queryKey: ["client-thread-messages", activeThreadId],
+    queryFn: () => (activeThreadId ? messagesApi.getClientThreadMessages(activeThreadId) : Promise.resolve([])),
     enabled: Boolean(activeThreadId),
   });
 
   // 4. Send Message Mutation (Reply)
   const sendReplyMutation = useMutation({
     mutationFn: () =>
-      messagesApi.sendAdminMessage({
+      messagesApi.sendClientMessage({
         applicationId: activeThreadId!,
         message: replyMessage.trim(),
         channel: replySendEmail ? "EMAIL" : replySendSms ? "SMS" : "IN_APP",
@@ -110,7 +112,7 @@ export default function AdminCommunicationsPage() {
   // 5. Compose New Thread Mutation
   const composeMutation = useMutation({
     mutationFn: () =>
-      messagesApi.sendAdminMessage({
+      messagesApi.sendClientMessage({
         applicationId: composeAppId || (applications[0]?.id ?? ""),
         subject: composeSubject.trim() || undefined,
         message: composeMessage.trim(),
@@ -132,7 +134,7 @@ export default function AdminCommunicationsPage() {
   // Star Toggle Mutation
   const starMutation = useMutation({
     mutationFn: ({ appId, msgId }: { appId: string; msgId: string }) =>
-      messagesApi.toggleStar(appId, msgId, true),
+      messagesApi.toggleStar(appId, msgId, false),
     onSuccess: () => {
       refetchThreads();
       if (activeThreadId) refetchMessages();
@@ -162,16 +164,16 @@ export default function AdminCommunicationsPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <Mail className="size-5 text-[#C5A059]" />
-              <span>Admin Communications Command</span>
+              <span>Officer Messages Hub</span>
             </h1>
             {totalUnread > 0 && (
               <span className="px-2 py-0.5 bg-[#C5A059] text-white text-[11px] font-bold rounded-full">
-                {totalUnread} unread
+                {totalUnread} new
               </span>
             )}
           </div>
           <p className="text-xs text-slate-500 font-medium">
-            Gmail-styled official compliance dispatches to clients via In-App, Email & SMS.
+            Gmail-styled multi-channel communication engine with compliance officers via In-App, Email & SMS.
           </p>
         </div>
 
@@ -181,7 +183,7 @@ export default function AdminCommunicationsPage() {
             <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search case #, client name, subject..."
+              placeholder="Search mail, case #, subject..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200/90 rounded-lg text-xs font-medium placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#C5A059]"
@@ -202,7 +204,7 @@ export default function AdminCommunicationsPage() {
             className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:opacity-95 text-slate-950 font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm transition-all"
           >
             <Plus className="size-4 stroke-[2.5]" />
-            <span>Dispatch Notice</span>
+            <span>Compose</span>
           </button>
         </div>
       </div>
@@ -221,7 +223,7 @@ export default function AdminCommunicationsPage() {
               className="w-full py-2.5 px-4 bg-[#0F172A] hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center gap-2 transition-all"
             >
               <Plus className="size-4 text-[#C5A059]" />
-              <span>Dispatch Notice</span>
+              <span>Compose Message</span>
             </button>
 
             {/* Folders List */}
@@ -243,7 +245,7 @@ export default function AdminCommunicationsPage() {
               >
                 <div className="flex items-center gap-2">
                   <Inbox className="size-4 text-slate-500" />
-                  <span>Client Inbox</span>
+                  <span>Inbox</span>
                 </div>
                 {totalUnread > 0 && (
                   <span className="px-1.5 py-0.5 bg-[#C5A059] text-white text-[10px] font-extrabold rounded-full">
@@ -282,7 +284,7 @@ export default function AdminCommunicationsPage() {
               >
                 <div className="flex items-center gap-2">
                   <FileText className="size-4 text-slate-500" />
-                  <span>All Client Cases</span>
+                  <span>Case Threads</span>
                 </div>
                 <span className="text-[10px] text-slate-400 font-bold">{threads.length}</span>
               </button>
@@ -300,7 +302,7 @@ export default function AdminCommunicationsPage() {
               >
                 <div className="flex items-center gap-2">
                   <Send className="size-4 text-slate-500" />
-                  <span>Sent Dispatches</span>
+                  <span>Sent</span>
                 </div>
               </button>
             </div>
@@ -338,14 +340,14 @@ export default function AdminCommunicationsPage() {
             </div>
           </div>
 
-          {/* Admin Telemetry Box */}
+          {/* Officer Quick Help Card */}
           <div className="mt-4 p-3 bg-[#0F172A] rounded-xl text-white space-y-2">
             <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px]">
               <Shield className="size-3.5" />
-              <span>Multi-Channel Engine</span>
+              <span>Assigned Officer SLAs</span>
             </div>
             <p className="text-[10px] text-slate-300 leading-snug">
-              Every message sent here dispatches simultaneously via Resend Email & Africa's Talking SMS.
+              Messages logged here dispatch directly to your compliance manager and KRA/BRS processing team.
             </p>
           </div>
         </div>
@@ -374,9 +376,6 @@ export default function AdminCommunicationsPage() {
                       <span className="px-2 py-0.5 bg-slate-200/70 text-slate-700 text-[10px] font-bold rounded-md">
                         {activeThread.status}
                       </span>
-                      <span className="text-xs text-slate-500 font-medium">
-                        Client: <strong className="text-slate-900">{activeThread.clientName}</strong> ({activeThread.clientEmail})
-                      </span>
                     </div>
                     <p className="text-xs font-semibold text-slate-800">{activeThread.subject}</p>
                   </div>
@@ -384,10 +383,10 @@ export default function AdminCommunicationsPage() {
 
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/admin/applications/${activeThread.applicationId}`}
+                    href={`/client/applications/${activeThread.applicationId}`}
                     className="inline-flex items-center gap-1 text-xs font-bold text-[#C5A059] hover:underline"
                   >
-                    <span>Inspect Dossier 360</span>
+                    <span>View Dossier 360</span>
                     <ExternalLink className="size-3" />
                   </Link>
                 </div>
@@ -396,19 +395,19 @@ export default function AdminCommunicationsPage() {
               {/* Thread Email Chain Messages */}
               <div className="flex-1 p-4 overflow-y-auto space-y-4 max-h-[420px] bg-slate-50/30">
                 {isMessagesLoading ? (
-                  <div className="p-8 text-center text-xs text-slate-500">Loading case communications...</div>
+                  <div className="p-8 text-center text-xs text-slate-500">Loading case messages...</div>
                 ) : threadMessages.length === 0 ? (
-                  <div className="p-12 text-center text-xs text-slate-500">No messages recorded in thread.</div>
+                  <div className="p-12 text-center text-xs text-slate-500">No messages in thread yet.</div>
                 ) : (
                   threadMessages.map((msg: ApplicationMessageItem) => {
-                    const isAdminSender = msg.senderRole === "ADMIN";
+                    const isClientSender = msg.senderRole === "CLIENT";
                     return (
                       <div
                         key={msg.id}
                         className={`rounded-xl border p-4 space-y-2 transition-all ${
-                          isAdminSender
-                            ? "bg-[#0F172A] border-slate-800 text-white ml-4 shadow-md"
-                            : "bg-white border-slate-200/90 text-slate-900 mr-4 shadow-sm"
+                          isClientSender
+                            ? "bg-white border-slate-200/90 shadow-sm ml-4"
+                            : "bg-[#0F172A] border-slate-800 text-white mr-4 shadow-md"
                         }`}
                       >
                         {/* Header line */}
@@ -416,38 +415,38 @@ export default function AdminCommunicationsPage() {
                           <div className="flex items-center gap-2.5">
                             <div
                               className={`size-7 rounded-full flex items-center justify-center shrink-0 font-bold text-xs ${
-                                isAdminSender
-                                  ? "bg-[#C5A059] text-slate-950"
-                                  : "bg-amber-100 text-amber-800"
+                                isClientSender
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-[#C5A059] text-slate-950"
                               }`}
                             >
-                              {isAdminSender ? <Shield className="size-4" /> : <User className="size-4" />}
+                              {isClientSender ? <User className="size-4" /> : <Shield className="size-4" />}
                             </div>
 
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className={`text-xs font-bold ${isAdminSender ? "text-white" : "text-slate-900"}`}>
-                                  {isAdminSender ? "Compliance Officer (You)" : activeThread.clientName}
+                                <span className={`text-xs font-bold ${isClientSender ? "text-slate-900" : "text-white"}`}>
+                                  {isClientSender ? "You (Client)" : "Swift Doc Officer"}
                                 </span>
                                 <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                                  isAdminSender ? "bg-slate-800 text-amber-400" : "bg-slate-100 text-slate-600"
+                                  isClientSender ? "bg-slate-100 text-slate-600" : "bg-slate-800 text-amber-400"
                                 }`}>
                                   {msg.channel || "IN_APP"}
                                 </span>
                               </div>
-                              <p className={`text-[10px] ${isAdminSender ? "text-slate-300" : "text-slate-500"}`}>
+                              <p className={`text-[10px] ${isClientSender ? "text-slate-500" : "text-slate-300"}`}>
                                 {msg.sender?.email || "compliance@swiftdoc.co.ke"}
                               </p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-slate-400">
+                            <span className={`text-[10px] font-mono ${isClientSender ? "text-slate-400" : "text-slate-400"}`}>
                               {formatDate(msg.createdAt)}
                             </span>
                             <button
                               onClick={() => starMutation.mutate({ appId: activeThread.applicationId, msgId: msg.id })}
-                              className="p-1 hover:bg-slate-800 rounded transition-colors"
+                              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
                             >
                               <Star className={`size-3.5 ${msg.isStarred ? "text-amber-500 fill-amber-500" : "text-slate-400"}`} />
                             </button>
@@ -456,13 +455,13 @@ export default function AdminCommunicationsPage() {
 
                         {/* Subject if exists */}
                         {msg.subject && (
-                          <p className={`text-xs font-bold ${isAdminSender ? "text-amber-400" : "text-slate-900"}`}>
+                          <p className={`text-xs font-bold ${isClientSender ? "text-slate-900" : "text-amber-400"}`}>
                             {msg.subject}
                           </p>
                         )}
 
                         {/* Body content */}
-                        <p className={`text-xs leading-relaxed whitespace-pre-wrap ${isAdminSender ? "text-slate-200" : "text-slate-700"}`}>
+                        <p className={`text-xs leading-relaxed whitespace-pre-wrap ${isClientSender ? "text-slate-700" : "text-slate-200"}`}>
                           {msg.message}
                         </p>
 
@@ -475,9 +474,9 @@ export default function AdminCommunicationsPage() {
                                 href={att.fileUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-800 rounded-lg text-[11px] font-medium text-slate-200 hover:underline"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] font-medium hover:underline"
                               >
-                                <Paperclip className="size-3 text-slate-400" />
+                                <Paperclip className="size-3 text-slate-500" />
                                 <span className="truncate max-w-xs">{att.fileName}</span>
                               </a>
                             ))}
@@ -492,7 +491,7 @@ export default function AdminCommunicationsPage() {
               {/* Inline Gmail Quick Reply Drawer */}
               <form onSubmit={handleSendReply} className="p-3 border-t border-slate-200/80 bg-white space-y-2">
                 <div className="flex items-center justify-between gap-3 text-[11px]">
-                  <span className="font-bold text-slate-700">Dispatch Outgoing Channels:</span>
+                  <span className="font-bold text-slate-700">Dispatch Channels:</span>
                   <div className="flex items-center gap-4 text-slate-600 font-medium">
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input
@@ -501,7 +500,7 @@ export default function AdminCommunicationsPage() {
                         onChange={(e) => setReplySendEmail(e.target.checked)}
                         className="rounded text-[#C5A059] focus:ring-[#C5A059]"
                       />
-                      <span>Send Email (Resend)</span>
+                      <span>Email Officer</span>
                     </label>
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input
@@ -510,7 +509,7 @@ export default function AdminCommunicationsPage() {
                         onChange={(e) => setReplySendSms(e.target.checked)}
                         className="rounded text-[#C5A059] focus:ring-[#C5A059]"
                       />
-                      <span>Send SMS (AfricasTalking)</span>
+                      <span>SMS Alert</span>
                     </label>
                   </div>
                 </div>
@@ -518,7 +517,7 @@ export default function AdminCommunicationsPage() {
                 <div className="flex items-end gap-2">
                   <textarea
                     rows={2}
-                    placeholder={`Send official officer dispatch on #${activeThread.applicationNumber}...`}
+                    placeholder={`Reply to compliance team on #${activeThread.applicationNumber}...`}
                     value={replyMessage}
                     onChange={(e) => setReplyMessage(e.target.value)}
                     className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#C5A059] resize-none"
@@ -529,7 +528,7 @@ export default function AdminCommunicationsPage() {
                     className="px-4 py-2 bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:opacity-95 text-slate-950 font-bold rounded-xl text-xs shadow-sm flex items-center gap-1.5 disabled:opacity-40 transition-all shrink-0"
                   >
                     <Send className="size-3.5" />
-                    <span>Dispatch</span>
+                    <span>Send</span>
                   </button>
                 </div>
               </form>
@@ -540,9 +539,9 @@ export default function AdminCommunicationsPage() {
               {/* Inbox List Header */}
               <div className="px-4 py-3 border-b border-slate-200/80 bg-slate-50/50 flex items-center justify-between text-xs font-semibold text-slate-600">
                 <span>
-                  Showing {filteredThreads.length} client conversation threads ({folder.toUpperCase()})
+                  Showing {filteredThreads.length} conversation threads ({folder.toUpperCase()})
                 </span>
-                <span className="text-[11px] text-slate-400">Click a thread to inspect email chain & dispatch</span>
+                <span className="text-[11px] text-slate-400">Click a thread to inspect email chain</span>
               </div>
 
               {/* Threads Rows List */}
@@ -550,14 +549,14 @@ export default function AdminCommunicationsPage() {
                 {isThreadsLoading ? (
                   <div className="p-8 text-center text-xs text-slate-500 space-y-2">
                     <RefreshCw className="size-4 animate-spin mx-auto text-[#C5A059]" />
-                    <p>Loading client communications...</p>
+                    <p>Loading officer communications...</p>
                   </div>
                 ) : filteredThreads.length === 0 ? (
                   <div className="p-16 text-center space-y-3">
                     <Inbox className="size-10 text-slate-300 mx-auto" />
                     <h3 className="text-sm font-bold text-slate-800">No messages in this folder</h3>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                      Use the "Dispatch Notice" button to start a multi-channel thread with any registered client dossier.
+                      Use the "Compose" button to open a direct messaging thread with your assigned statutory compliance manager.
                     </p>
                   </div>
                 ) : (
@@ -575,6 +574,9 @@ export default function AdminCommunicationsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (thread.lastMessageSnippet) {
+                                // Star toggle
+                              }
                             }}
                             className="p-1 hover:bg-slate-200/60 rounded transition-colors shrink-0"
                           >
@@ -590,7 +592,7 @@ export default function AdminCommunicationsPage() {
                           <div className="min-w-0 flex-1 space-y-0.5">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-slate-900 truncate">
-                                {thread.clientName} ({thread.clientEmail})
+                                {thread.lastSenderRole === "ADMIN" ? "Swift Doc Compliance Officer" : "You (Client)"}
                               </span>
                               <span className="px-1.5 py-0.2 bg-slate-100 text-slate-700 text-[10px] font-bold rounded font-mono shrink-0">
                                 #{thread.applicationNumber}
@@ -600,7 +602,7 @@ export default function AdminCommunicationsPage() {
                               </span>
                               {thread.unreadCount > 0 && (
                                 <span className="px-1.5 py-0.2 bg-[#C5A059] text-white text-[10px] font-bold rounded-full shrink-0">
-                                  {thread.unreadCount} unread
+                                  {thread.unreadCount} new
                                 </span>
                               )}
                             </div>
@@ -634,7 +636,7 @@ export default function AdminCommunicationsPage() {
             <div className="px-4 py-3 bg-[#0F172A] text-white flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Plus className="size-4 text-[#C5A059]" />
-                <span className="text-xs font-bold">Dispatch Official Officer Notice</span>
+                <span className="text-xs font-bold">Compose Compliance Message</span>
               </div>
               <button
                 onClick={() => setIsComposeOpen(false)}
@@ -649,7 +651,7 @@ export default function AdminCommunicationsPage() {
               {/* Select Case Application */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Target Statutory Dossier / Client Application *
+                  Select Statutory Dossier / Application *
                 </label>
                 <select
                   value={composeAppId || applications[0]?.id || ""}
@@ -661,7 +663,7 @@ export default function AdminCommunicationsPage() {
                   ) : (
                     applications.map((app) => (
                       <option key={app.id} value={app.id}>
-                        #{app.applicationNumber} — {app.client?.fullName || app.client?.businessName || "Client"} ({app.service?.name || "Service"})
+                        #{app.applicationNumber} — {app.service?.name || "Statutory Service"} ({app.status})
                       </option>
                     ))
                   )}
@@ -675,7 +677,7 @@ export default function AdminCommunicationsPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Statutory Directive: Document resubmission required for KRA..."
+                  placeholder="e.g. Clarification on CR12 / KRA PIN submission..."
                   value={composeSubject}
                   onChange={(e) => setComposeSubject(e.target.value)}
                   className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C5A059]"
@@ -684,7 +686,7 @@ export default function AdminCommunicationsPage() {
 
               {/* Delivery Channels */}
               <div className="p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">Dispatch Outgoing Channels:</span>
+                <span className="font-bold text-slate-700">Dispatch Channels:</span>
                 <div className="flex items-center gap-3 text-slate-600 font-medium">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
@@ -693,7 +695,7 @@ export default function AdminCommunicationsPage() {
                       onChange={(e) => setComposeSendEmail(e.target.checked)}
                       className="rounded text-[#C5A059] focus:ring-[#C5A059]"
                     />
-                    <span>Email (Resend)</span>
+                    <span>Email</span>
                   </label>
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
@@ -702,7 +704,7 @@ export default function AdminCommunicationsPage() {
                       onChange={(e) => setComposeSendSms(e.target.checked)}
                       className="rounded text-[#C5A059] focus:ring-[#C5A059]"
                     />
-                    <span>SMS (AfricasTalking)</span>
+                    <span>SMS Alert</span>
                   </label>
                 </div>
               </div>
@@ -714,7 +716,7 @@ export default function AdminCommunicationsPage() {
                 </label>
                 <textarea
                   rows={4}
-                  placeholder="Type official compliance officer dispatch to client..."
+                  placeholder="Type your message to the assigned compliance officer..."
                   value={composeMessage}
                   onChange={(e) => setComposeMessage(e.target.value)}
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#C5A059] resize-none"
@@ -736,7 +738,7 @@ export default function AdminCommunicationsPage() {
                   className="px-4 py-1.5 bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:opacity-95 text-slate-950 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 disabled:opacity-40 transition-all"
                 >
                   <Send className="size-3.5" />
-                  <span>Dispatch Notice</span>
+                  <span>Send Message</span>
                 </button>
               </div>
             </form>

@@ -10,27 +10,11 @@ import {
   Upload,
   Plus,
   X,
-  ExternalLink,
-  ShieldCheck,
-  Calendar,
+  Filter,
   AlertCircle,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/layout-primitives";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-  Pagination,
-} from "@/components/ui/table-primitives";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { DocumentStatusBadge } from "@/components/domain/status-badges";
-import { EmptyState, Skeleton, ErrorState } from "@/components/ui/feedback-primitives";
 import { documentsApi } from "@/lib/api/documents";
 import { formatDate, formatFileSize } from "@/lib/utils/format";
 import type { Document } from "@/types";
@@ -49,7 +33,7 @@ export default function ClientDocumentsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["client-documents", page, search, statusFilter],
     queryFn: () =>
       documentsApi.getDocuments({
@@ -108,193 +92,233 @@ export default function ClientDocumentsPage() {
   const meta = data?.meta;
 
   return (
-    <PageShell
-      eyebrow="DOCUMENT VAULT"
-      title="Verified Compliance Documents"
-      description="Bank-grade 256-bit encrypted storage for certified national IDs, business certificates, KRA PIN records, and registry output documents."
-      actions={
-        <Button
-          variant="gold"
-          size="sm"
-          leftIcon={<Plus className="size-4" />}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Verified Document Vault
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            256-bit encrypted vault for certified IDs, business registrations, KRA PIN records, and registry output certificates.
+          </p>
+        </div>
+
+        <button
           onClick={() => setIsUploadModalOpen(true)}
+          className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
         >
-          Upload to Vault
-        </Button>
-      }
-    >
-      {/* Search and Filters Bar */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
-            placeholder="Search documents by title or type..."
+          <Plus className="size-3.5 stroke-[3]" />
+          <span>Upload to Vault</span>
+        </button>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. SEARCH & FILTER BAR */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search documents by title or category..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
-            className="text-xs"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Select
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter className="size-3.5 text-slate-400 shrink-0" />
+          <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-48 text-xs font-medium"
+            className="w-full sm:w-52 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
           >
             <option value="">All Document Statuses</option>
-            <option value="APPROVED">Approved & Verified</option>
+            <option value="APPROVED">Approved &amp; Verified</option>
             <option value="PENDING_REVIEW">Pending Review</option>
             <option value="UPLOADED">Uploaded</option>
             <option value="REJECTED">Rejected / Action Needed</option>
             <option value="EXPIRED">Expired</option>
-          </Select>
+          </select>
         </div>
       </div>
 
-      {/* Main Documents Table */}
-      {isLoading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : error ? (
-        <ErrorState onRetry={() => refetch()} />
-      ) : documents.length === 0 ? (
-        <EmptyState
-          icon={<FolderLock className="size-8" />}
-          title="Document vault is empty"
-          description={
-            search || statusFilter
-              ? "No compliance documents matched your search filters."
-              : "Uploaded KYC records and government-issued certificates will be securely indexed here."
-          }
-          action={
-            <Button
-              variant="gold"
-              size="sm"
-              leftIcon={<Upload className="size-3.5" />}
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. TABLE CONTAINER */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+        {isLoading ? (
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load vault documents.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        ) : documents.length === 0 ? (
+          <div className="p-12 text-center space-y-3">
+            <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+              <FolderLock className="size-6" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800">Document vault is empty</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                {search || statusFilter
+                  ? "No documents match your search filters."
+                  : "Uploaded compliance files and official government receipts will be securely stored here."}
+              </p>
+            </div>
+            <button
               onClick={() => setIsUploadModalOpen(true)}
+              className="mt-2 bg-gradient-to-r from-[#C5A059] to-[#D4AF37] text-white font-bold text-xs px-4 py-2 rounded-xl"
             >
               Upload First Document
-            </Button>
-          }
-        />
-      ) : (
-        <div className="space-y-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Document Record</TableHead>
-                <TableHead>Document Category</TableHead>
-                <TableHead>Verification Status</TableHead>
-                <TableHead>Document / Reg #</TableHead>
-                <TableHead>Date Uploaded</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {documents.map((doc) => (
-                <TableRow key={doc.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex size-8 items-center justify-center rounded-xs bg-gold/15 text-gold shrink-0">
-                        <FileText className="size-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  <th className="py-3 px-4">Document Record</th>
+                  <th className="py-3 px-4">Document Category</th>
+                  <th className="py-3 px-4">Verification Status</th>
+                  <th className="py-3 px-4">Doc / Reg #</th>
+                  <th className="py-3 px-4">Date Uploaded</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {documents.map((doc) => (
+                  <tr key={doc.id} className="hover:bg-slate-50/80 transition-colors group">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="size-8 rounded-lg bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shrink-0">
+                          <FileText className="size-4" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 text-xs group-hover:text-amber-700 transition-colors">
+                            {doc.title}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {doc.currentVersion ? formatFileSize(doc.currentVersion.fileSize) : "Cloudinary Encrypted"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-foreground text-xs">{doc.title}</span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {doc.currentVersion ? formatFileSize(doc.currentVersion.fileSize) : "Cloudinary Encrypted"}
-                        </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground uppercase">
-                    {doc.documentType}
-                  </TableCell>
-                  <TableCell>
-                    <DocumentStatusBadge status={doc.status} size="sm" />
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-foreground">
-                    {doc.documentNumber || "—"}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {formatDate(doc.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() => handleDownload(doc)}
-                      className="gap-1.5 text-xs font-semibold"
-                    >
-                      <Download className="size-3.5" />
-                      <span>Download</span>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-600 font-bold uppercase text-[10px]">
+                      {doc.documentType}
+                    </td>
+                    <td className="py-3 px-4">
+                      <DocumentStatusBadge status={doc.status} size="sm" />
+                    </td>
+                    <td className="py-3 px-4 font-mono font-semibold text-slate-700">
+                      {doc.documentNumber || "—"}
+                    </td>
+                    <td className="py-3 px-4 text-slate-500 font-medium">
+                      {formatDate(doc.createdAt)}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => handleDownload(doc)}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        <Download className="size-3.5 text-slate-500" />
+                        <span>Download</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-          {meta && (
-            <Pagination
-              currentPage={meta.page || 1}
-              totalPages={meta.totalPages || 1}
-              totalItems={meta.total || 0}
-              pageSize={meta.limit || 10}
-              onPageChange={(p) => setPage(p)}
-            />
-          )}
-        </div>
-      )}
+        {meta && (meta.totalPages ?? 0) > 1 && (
+          <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+            <span>
+              Showing Page {meta.page ?? 1} of {meta.totalPages ?? 1} ({meta.total ?? 0} total documents)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={(meta.page ?? 1) <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+              >
+                Previous
+              </button>
+              <button
+                disabled={(meta.page ?? 1) >= (meta.totalPages ?? 1)}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
-      {/* Upload Document Modal */}
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. UPLOAD MODAL */}
+      {/* ------------------------------------------------------------------ */}
       {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-sm border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-border/70 px-6 py-4 bg-muted/30">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                <FolderLock className="size-4 text-gold" />
-                <span>Upload Document to Vault</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-xl border border-slate-200 bg-white shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 font-sans">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-slate-50">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
+                <FolderLock className="size-4 text-amber-600" />
+                <span>Upload Document to Secure Vault</span>
               </div>
               <button
                 onClick={() => setIsUploadModalOpen(false)}
-                className="p-1 rounded-xs text-muted-foreground hover:text-foreground hover:bg-muted"
-                aria-label="Close modal"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
               >
                 <X className="size-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-foreground">
+            <div className="p-5 space-y-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-bold text-slate-700">
                   Document Title
                 </label>
-                <Input
+                <input
+                  type="text"
                   value={docTitle}
                   onChange={(e) => setDocTitle(e.target.value)}
                   placeholder="e.g. National ID Card / KRA Certificate"
-                  className="text-xs"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium text-slate-800"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-foreground">
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700">
                     Document Category
                   </label>
-                  <Select
+                  <select
                     value={docType}
                     onChange={(e) => setDocType(e.target.value)}
-                    className="text-xs font-medium"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-semibold text-slate-700"
                   >
                     <option value="NATIONAL_ID">National ID / Passport</option>
                     <option value="KRA_PIN_CERTIFICATE">KRA PIN Certificate</option>
@@ -302,18 +326,19 @@ export default function ClientDocumentsPage() {
                     <option value="BUSINESS_REGISTRATION">CR12 / Business Certificate</option>
                     <option value="POWER_OF_ATTORNEY">Power of Attorney</option>
                     <option value="STATUTORY_DOCUMENT">Other Statutory Document</option>
-                  </Select>
+                  </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-foreground">
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700">
                     Document # (Optional)
                   </label>
-                  <Input
+                  <input
+                    type="text"
                     value={docNumber}
                     onChange={(e) => setDocNumber(e.target.value)}
                     placeholder="e.g. ID # or PIN #"
-                    className="text-xs font-mono"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-mono text-slate-800"
                   />
                 </div>
               </div>
@@ -327,37 +352,33 @@ export default function ClientDocumentsPage() {
               </div>
 
               {uploadError && (
-                <div className="flex items-start gap-2 rounded-xs border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-                  <AlertCircle className="size-4 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 font-semibold">
+                  <AlertCircle className="size-4 shrink-0 mt-0.5 text-rose-600" />
                   <span>{uploadError}</span>
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
                   onClick={() => setIsUploadModalOpen(false)}
                   disabled={uploadMutation.isPending}
-                  className="text-xs"
+                  className="px-3.5 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors"
                 >
                   Cancel
-                </Button>
-                <Button
-                  size="sm"
+                </button>
+                <button
                   onClick={() => uploadMutation.mutate()}
-                  isLoading={uploadMutation.isPending}
                   disabled={!selectedFile || !docTitle.trim() || uploadMutation.isPending}
-                  className="bg-gold hover:bg-gold-light text-ink font-bold text-xs gap-1.5"
+                  className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] text-white font-bold text-xs px-4 py-2 rounded-lg shadow-xs hover:from-[#b49049] hover:to-[#c39e26] transition-colors flex items-center gap-1.5 disabled:opacity-50"
                 >
                   <Upload className="size-3.5" />
-                  <span>Save to Secure Vault</span>
-                </Button>
+                  <span>{uploadMutation.isPending ? "Uploading..." : "Save to Secure Vault"}</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </PageShell>
+    </div>
   );
 }

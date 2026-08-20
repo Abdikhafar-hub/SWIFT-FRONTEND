@@ -149,50 +149,71 @@ export interface Application {
 }
 
 export interface ClientDashboardOverview {
-  totalApplications: number;
-  unreadNotificationsCount: number;
-  outstandingBalance?: number | string;
-  overdueBalance?: number | string;
-  pendingDocumentSubmissions?: number;
-  pendingActions?: number;
-  applicationsRequiringAction?: number;
-  applicationsInReview?: number;
-  governmentProcessingCount?: number;
-  completedApplications?: number;
-  activeApplications: Array<{
+  client?: {
+    id: string;
+    fullName: string;
+    businessName?: string;
+    email?: string;
+  };
+  summary?: {
+    totalApplications: number;
+    activeFilingsCount: number;
+    actionItemsCount: number;
+    unreadNotificationsCount: number;
+    activeFilingsProgressPercent: number;
+  };
+  chartTimeline?: Array<{
+    month: string;
+    activeFilings: number;
+    completed: number;
+    actionItems: number;
+    rejected: number;
+  }>;
+  recentActivity?: Array<{
+    id: string;
+    title: string;
+    subtitle: string;
+    timestamp: string;
+    type: "APPROVED" | "SUBMITTED" | "PAYMENT" | "NOTICE" | "REJECTED";
+  }>;
+  upcomingDeadlines?: Array<{
+    id: string;
+    day: string;
+    month: string;
+    title: string;
+    companyName: string;
+    daysLeft: string;
+    badgeColor: "AMBER" | "BLUE" | "GREEN" | "ROSE";
+  }>;
+  complianceHealth?: {
+    scorePercent: number;
+    compliantCount: number;
+    pendingCount: number;
+    overdueCount: number;
+    attentionCount: number;
+  };
+  totalApplications?: number;
+  unreadNotificationsCount?: number;
+  activeApplications?: Array<{
     id: string;
     applicationNumber: string;
     serviceName: string;
     status: ApplicationStatus;
-    slaStatus: SlaStatus;
-    dueAt: string | null;
-    progressPercent: number;
-    paidAmount: string;
-    dueAmount: string;
-    createdAt: string;
+    slaStatus?: SlaStatus;
+    dueAt?: string | null;
+    progressPercent?: number;
+    paidAmount?: string;
+    dueAmount?: string;
+    createdAt?: string;
   }>;
-  recentInvoices: Array<{
+  recentInvoices?: Array<{
     id: string;
     invoiceNumber: string;
     totalAmount: string;
     amountPaid: string;
-    amountDue: string;
+    amountDue?: string;
     status: string;
     createdAt: string;
-  }>;
-  recentActivities?: Array<{
-    id: string;
-    applicationNumber?: string;
-    action: string;
-    message: string;
-    createdAt: string;
-  }>;
-  upcomingDeadlines?: Array<{
-    id: string;
-    applicationNumber: string;
-    serviceName: string;
-    dueAt: string;
-    type: string;
   }>;
 }
 
