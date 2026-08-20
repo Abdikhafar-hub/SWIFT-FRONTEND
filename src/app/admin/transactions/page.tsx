@@ -86,230 +86,273 @@ export default function AdminTransactionsPage() {
   });
 
   return (
-    <PageShell
-      eyebrow="FINANCIAL OPERATIONS"
-      title="Payment Transactions Ledger"
-      description="Real-time payment gateway transactions, M-Pesa C2B callbacks, direct bank settlements, and reversals."
-      actions={
-        <Button
-          variant="gold"
-          size="sm"
-          leftIcon={<Plus className="size-3.5" />}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Payment Transactions Ledger
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Real-time payment gateway transactions, M-Pesa C2B callbacks, direct bank settlements, and reversals.
+          </p>
+        </div>
+
+        <button
           onClick={() => setIsManualModalOpen(true)}
+          className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-auto transform hover:-translate-y-0.5"
         >
-          Record Manual Payment
-        </Button>
-      }
-    >
-      {/* 1. TRANSACTION METRICS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Collected"
-          value={formatCurrency(summary?.totalCollected || 0)}
-          subtitle="Settled transactions"
-          icon={<DollarSign className="size-5 text-navy dark:text-gold" />}
-        />
-
-        <StatCard
-          title="M-Pesa Volumes"
-          value={formatCurrency(summary?.byMethod?.MPESA || 0)}
-          subtitle="Instant mobile settlements"
-          icon={<Smartphone className="size-5 text-emerald-600" />}
-        />
-
-        <StatCard
-          title="Bank / Card Transfers"
-          value={formatCurrency((summary?.byMethod?.BANK_TRANSFER || 0) + (summary?.byMethod?.CREDIT_CARD || 0))}
-          subtitle="Direct EFT & Wire"
-          icon={<Landmark className="size-5 text-navy dark:text-gold" />}
-        />
-
-        <StatCard
-          title="Active Transactions"
-          value={pagination?.total || transactions.length}
-          subtitle="Audited in ledger"
-          icon={<CreditCard className="size-5 text-muted-foreground" />}
-        />
+          <Plus className="size-3.5 stroke-[3]" />
+          <span>Record Manual Payment</span>
+        </button>
       </div>
 
-      {/* 2. FILTERS & SEARCH */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. TRANSACTION METRICS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Collected</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">{formatCurrency(summary?.totalCollected || 0)}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Settled transactions</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <DollarSign className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">M-Pesa Volumes</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">{formatCurrency(summary?.byMethod?.MPESA || 0)}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Instant mobile settlements</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <Smartphone className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Bank / Card Transfers</span>
+            <span className="text-xl font-extrabold text-amber-600 font-mono mt-0.5 block">
+              {formatCurrency((summary?.byMethod?.BANK_TRANSFER || 0) + (summary?.byMethod?.CREDIT_CARD || 0))}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Direct EFT &amp; Wire</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <Landmark className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Active Transactions</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">{pagination?.total || transactions.length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Audited in ledger</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <CreditCard className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. FILTERS & SEARCH */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by reference code, M-Pesa receipt, or client..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <select
             value={methodFilter}
             onChange={(e) => {
               setMethodFilter(e.target.value);
               setPage(1);
             }}
-            className="w-44 text-xs"
-            options={[
-              { value: "", label: "All Payment Methods" },
-              { value: "MPESA", label: "M-Pesa (Express & C2B)" },
-              { value: "BANK_TRANSFER", label: "Bank Transfer (EFT/RTGS)" },
-              { value: "CREDIT_CARD", label: "Credit / Debit Card" },
-              { value: "CASH", label: "Direct Cash" },
-              { value: "WALLET", label: "Wallet / Credit" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="">All Payment Methods</option>
+            <option value="MPESA">M-Pesa (Express &amp; C2B)</option>
+            <option value="BANK_TRANSFER">Bank Transfer (EFT/RTGS)</option>
+            <option value="CREDIT_CARD">Credit / Debit Card</option>
+            <option value="CASH">Direct Cash</option>
+            <option value="WALLET">Wallet / Credit</option>
+          </select>
 
-          <Select
+          <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-44 text-xs"
-            options={[
-              { value: "", label: "All Transaction States" },
-              { value: "COMPLETED", label: "Completed / Settled" },
-              { value: "PENDING", label: "Pending Processing" },
-              { value: "FAILED", label: "Failed" },
-              { value: "REVERSED", label: "Reversed" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="">All Transaction States</option>
+            <option value="COMPLETED">Completed / Settled</option>
+            <option value="PENDING">Pending Processing</option>
+            <option value="FAILED">Failed</option>
+            <option value="REVERSED">Reversed</option>
+          </select>
         </div>
       </div>
 
-      {/* 3. TRANSACTIONS TABLE */}
-      <div className="mt-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. TRANSACTIONS TABLE */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : error ? (
-          <ErrorState onRetry={() => refetch()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load transaction ledger.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : filteredTransactions.length === 0 ? (
-          <EmptyState
-            icon={<CreditCard className="size-7" />}
-            title="No transactions found"
-            description="No payment ledger entries match the specified filters."
-            action={
-              <Button
-                variant="gold"
-                size="xs"
-                leftIcon={<Plus className="size-3.5" />}
-                onClick={() => setIsManualModalOpen(true)}
-              >
-                Record First Payment
-              </Button>
-            }
-          />
+          <div className="p-12 text-center space-y-2">
+            <h3 className="text-sm font-bold text-slate-800">No transactions found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              No payment ledger entries match the specified search or filters.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Reference / Code</TableHead>
-                  <TableHead>Payment Method</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Settlement Timestamp</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTransactions.map((tx) => (
-                  <TableRow key={tx.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <Link
-                        href={`/admin/transactions/${tx.id}`}
-                        className="font-mono text-xs font-bold text-navy dark:text-gold hover:underline block"
-                      >
-                        {tx.reference || tx.externalReference || `#${tx.id.slice(0, 8)}`}
-                      </Link>
-                      {tx.mpesaReceiptNumber && (
-                        <span className="font-mono text-[11px] text-muted-foreground block">
-                          M-Pesa: {tx.mpesaReceiptNumber}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge tone="neutral" size="sm">
-                        {tx.paymentMethod} {tx.channel ? `• ${tx.channel}` : ""}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs font-bold text-foreground">
-                      {formatCurrency(tx.amount)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        tone={
-                          tx.status === "COMPLETED"
-                            ? "success"
-                            : tx.status === "FAILED"
-                            ? "destructive"
-                            : tx.status === "REVERSED"
-                            ? "warning"
-                            : "gold"
-                        }
-                        size="sm"
-                      >
-                        {tx.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {tx.paymentId ? (
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Reference / Code</th>
+                    <th className="py-3 px-4">Payment Method</th>
+                    <th className="py-3 px-4">Amount</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Invoice #</th>
+                    <th className="py-3 px-4">Settlement Timestamp</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {filteredTransactions.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
                         <Link
-                          href={`/admin/invoices/${tx.paymentId}`}
-                          className="font-mono text-xs font-bold text-navy dark:text-gold hover:underline"
+                          href={`/admin/transactions/${tx.id}`}
+                          className="font-mono text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline block"
                         >
-                          #{tx.paymentId.slice(0, 8)}
+                          {tx.reference || tx.externalReference || `#${tx.id.slice(0, 8)}`}
                         </Link>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground font-mono">
-                      {formatDate(tx.completedAt || tx.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {tx.status === "COMPLETED" && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            className="text-destructive hover:bg-destructive/10"
-                            leftIcon={<RotateCcw className="size-3" />}
-                            onClick={() => setSelectedTxForReverse(tx)}
-                          >
-                            Reverse
-                          </Button>
+                        {tx.mpesaReceiptNumber && (
+                          <span className="font-mono text-[10px] text-slate-400 block mt-0.5">
+                            M-Pesa: {tx.mpesaReceiptNumber}
+                          </span>
                         )}
-                        <Link href={`/admin/transactions/${tx.id}`}>
-                          <Button variant="ghost" size="xs" leftIcon={<Eye className="size-3.5" />}>
-                            Dossier
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                          {tx.paymentMethod} {tx.channel ? `• ${tx.channel}` : ""}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-xs font-extrabold text-slate-900">
+                        {formatCurrency(tx.amount)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                          tx.status === "COMPLETED"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                            : tx.status === "FAILED"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : tx.status === "REVERSED"
+                            ? "bg-amber-50 text-amber-800 border-amber-200/80"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {tx.paymentId ? (
+                          <Link
+                            href={`/admin/invoices/${tx.paymentId}`}
+                            className="font-mono text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
+                          >
+                            #{tx.paymentId.slice(0, 8)}
+                          </Link>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-medium">
+                        {formatDate(tx.completedAt || tx.createdAt)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {tx.status === "COMPLETED" && (
+                            <button
+                              onClick={() => setSelectedTxForReverse(tx)}
+                              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded-lg border border-rose-200/60 transition-colors inline-flex items-center gap-1"
+                            >
+                              <RotateCcw className="size-3" />
+                              <span>Reverse</span>
+                            </button>
+                          )}
+                          <Link href={`/admin/transactions/${tx.id}`}>
+                            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all inline-flex items-center gap-1">
+                              <Eye className="size-3 text-slate-500" />
+                              <span>Dossier</span>
+                            </button>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            {pagination && (
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.total}
-                pageSize={pagination.limit}
-                onChange={(p) => setPage(p)}
-              />
+            {pagination && pagination.totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -342,6 +385,6 @@ export default function AdminTransactionsPage() {
           }}
         />
       )}
-    </PageShell>
+    </div>
   );
 }

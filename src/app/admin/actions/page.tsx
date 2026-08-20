@@ -129,258 +129,309 @@ export default function AdminActionsPage() {
   });
 
   return (
-    <PageShell
-      eyebrow="CASE OPERATIONS"
-      title="Client Action Center"
-      description="Work queue of mandatory client actions, pending information disclosures, document replacements, and blocking requirements."
-      actions={
-        <Button
-          variant="gold"
-          size="sm"
-          leftIcon={<Plus className="size-3.5" />}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Client Action Center
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Work queue of mandatory client actions, pending information disclosures, document replacements, and blocking requirements.
+          </p>
+        </div>
+
+        <button
           onClick={() => {
             if (applications.length > 0) {
               setSelectedAppForCreate(applications[0].id);
             }
             setIsCreateModalOpen(true);
           }}
+          className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
         >
-          Dispatch Action Item
-        </Button>
-      }
-    >
-      {/* 1. EXECUTIVE ACTION METRICS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Open Action Directives"
-          value={openCount}
-          subtitle="Awaiting client response"
-          icon={<ListTodo className="size-5 text-navy dark:text-gold" />}
-        />
-
-        <StatCard
-          title="Urgent Blockers"
-          value={urgentCount}
-          subtitle="Blocks filing submission"
-          variant={urgentCount > 0 ? "gold" : "default"}
-          icon={<AlertTriangle className="size-5 text-destructive" />}
-        />
-
-        <StatCard
-          title="Document Actions"
-          value={docCount}
-          subtitle="Uploads & replacements"
-          icon={<FileText className="size-5 text-amber-600" />}
-        />
-
-        <StatCard
-          title="Resolved Directives"
-          value={completedCount}
-          subtitle="Client fulfilled & verified"
-          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
-        />
+          <Plus className="size-3.5" />
+          <span>Dispatch Action Item</span>
+        </button>
       </div>
 
-      {/* 2. FILTERS & SEARCH */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. EXECUTIVE ACTION METRICS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Open Action Directives</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">{openCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Awaiting client response</span>
+          </div>
+          <div className="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <ListTodo className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Urgent Blockers</span>
+            <span className="text-xl font-extrabold text-rose-600 font-mono mt-0.5 block">{urgentCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Blocks filing submission</span>
+          </div>
+          <div className="p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
+            <AlertTriangle className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Document Actions</span>
+            <span className="text-xl font-extrabold text-amber-600 font-mono mt-0.5 block">{docCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Uploads &amp; replacements</span>
+          </div>
+          <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <FileText className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Resolved Directives</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">{completedCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Client fulfilled &amp; verified</span>
+          </div>
+          <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <CheckCircle2 className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. FILTERS & SEARCH */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by directive, client, or dossier #..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
-            options={[
-              { value: "OPEN", label: "Open Directives" },
-              { value: "COMPLETED", label: "Completed" },
-              { value: "CANCELLED", label: "Cancelled" },
-              { value: "ALL", label: "All Statuses" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="OPEN">Open Directives</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+            <option value="ALL">All Statuses</option>
+          </select>
 
-          <Select
+          <select
             value={priorityFilter}
             onChange={(e) => {
               setPriorityFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
-            options={[
-              { value: "", label: "All Priorities" },
-              { value: "URGENT", label: "Urgent Only" },
-              { value: "HIGH", label: "High Priority" },
-              { value: "NORMAL", label: "Normal" },
-              { value: "LOW", label: "Low" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="">All Priorities</option>
+            <option value="URGENT">Urgent Only</option>
+            <option value="HIGH">High Priority</option>
+            <option value="NORMAL">Normal</option>
+            <option value="LOW">Low</option>
+          </select>
 
-          <Select
+          <select
             value={typeFilter}
             onChange={(e) => {
               setTypeFilter(e.target.value);
               setPage(1);
             }}
-            className="w-44 text-xs"
-            options={[
-              { value: "", label: "All Directive Types" },
-              { value: "UPLOAD_DOCUMENT", label: "Upload Document" },
-              { value: "REPLACE_DOCUMENT", label: "Replace Document" },
-              { value: "PROVIDE_INFORMATION", label: "Provide Information" },
-              { value: "CONFIRM_INFORMATION", label: "Confirm Information" },
-              { value: "MAKE_PAYMENT", label: "Make Payment" },
-              { value: "APPROVE_DECLARATION", label: "Declaration" },
-              { value: "OTHER", label: "Other" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="">All Directive Types</option>
+            <option value="UPLOAD_DOCUMENT">Upload Document</option>
+            <option value="REPLACE_DOCUMENT">Replace Document</option>
+            <option value="PROVIDE_INFORMATION">Provide Information</option>
+            <option value="CONFIRM_INFORMATION">Confirm Information</option>
+            <option value="MAKE_PAYMENT">Make Payment</option>
+            <option value="APPROVE_DECLARATION">Declaration</option>
+            <option value="OTHER">Other</option>
+          </select>
         </div>
       </div>
 
-      {/* 3. WORK QUEUE TABLE */}
-      <div className="mt-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. WORK QUEUE TABLE */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : error ? (
-          <ErrorState onRetry={() => refetch()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load client action items.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : filteredActions.length === 0 ? (
-          <EmptyState
-            icon={<ListTodo className="size-7" />}
-            title="No client action items found"
-            description="No active directives match the specified filters."
-            action={
-              <Button
-                variant="gold"
-                size="xs"
-                leftIcon={<Plus className="size-3.5" />}
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                Dispatch First Action Item
-              </Button>
-            }
-          />
+          <div className="p-12 text-center space-y-3">
+            <ListTodo className="size-8 text-slate-300 mx-auto" />
+            <h3 className="text-sm font-bold text-slate-800">No client action items found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              No active directives match the specified filters.
+            </p>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors inline-flex items-center gap-1.5"
+            >
+              <Plus className="size-3.5" />
+              <span>Dispatch First Action Item</span>
+            </button>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Directive / Requirement</TableHead>
-                  <TableHead>Dossier #</TableHead>
-                  <TableHead>Client Entity</TableHead>
-                  <TableHead>Urgency</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedActions.map((action) => (
-                  <TableRow key={action.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <div className="space-y-0.5">
-                        <Link
-                          href={`/admin/actions/${action.id}`}
-                          className="font-bold text-xs text-foreground hover:text-gold-dark dark:hover:text-gold hover:underline block"
-                        >
-                          {action.title}
-                        </Link>
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 max-w-sm">
-                          {action.description}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {action.application ? (
-                        <Link
-                          href={`/admin/applications/${action.application.id}`}
-                          className="font-mono text-xs font-bold text-navy dark:text-gold hover:underline"
-                        >
-                          #{action.application.applicationNumber}
-                        </Link>
-                      ) : (
-                        <span className="text-xs text-muted-foreground font-mono">
-                          {action.applicationId?.slice(0, 8)}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs font-semibold text-foreground">
-                      {action.application?.client?.fullName ||
-                        action.application?.client?.businessName ||
-                        "Verified Client"}
-                    </TableCell>
-                    <TableCell>
-                      <PriorityBadge priority={action.priority} size="sm" />
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        tone={
-                          action.status === "COMPLETED"
-                            ? "success"
-                            : action.status === "CANCELLED"
-                            ? "neutral"
-                            : "warning"
-                        }
-                        size="sm"
-                      >
-                        {action.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {action.dueAt ? (
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-3 text-amber-600" />
-                          {formatDate(action.dueAt)}
-                        </span>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link href={`/admin/actions/${action.id}`}>
-                          <Button variant="ghost" size="xs" leftIcon={<Eye className="size-3.5" />}>
-                            Details
-                          </Button>
-                        </Link>
-                        {action.status === "OPEN" && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            className="text-destructive hover:bg-destructive/10"
-                            onClick={() => setSelectedActionForCancel(action)}
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Directive / Requirement</th>
+                    <th className="py-3 px-4">Dossier #</th>
+                    <th className="py-3 px-4">Client Entity</th>
+                    <th className="py-3 px-4">Urgency</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Deadline</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {paginatedActions.map((action) => (
+                    <tr key={action.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
+                        <div className="space-y-0.5">
+                          <Link
+                            href={`/admin/actions/${action.id}`}
+                            className="font-bold text-xs text-slate-900 hover:text-amber-700 hover:underline block"
                           >
-                            Cancel
-                          </Button>
+                            {action.title}
+                          </Link>
+                          <p className="text-[11px] text-slate-500 line-clamp-1 max-w-xs font-medium">
+                            {action.description}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {action.application ? (
+                          <Link
+                            href={`/admin/applications/${action.application.id}`}
+                            className="font-mono text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
+                          >
+                            #{action.application.applicationNumber}
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-slate-500 font-mono">
+                            {action.applicationId?.slice(0, 8)}
+                          </span>
                         )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </td>
+                      <td className="py-3 px-4 text-xs font-bold text-slate-800">
+                        {action.application?.client?.fullName ||
+                          action.application?.client?.businessName ||
+                          "Verified Client"}
+                      </td>
+                      <td className="py-3 px-4">
+                        <PriorityBadge priority={action.priority} size="sm" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                            action.status === "COMPLETED"
+                              ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                              : action.status === "CANCELLED"
+                              ? "bg-slate-100 text-slate-600 border-slate-200"
+                              : "bg-amber-50 text-amber-800 border-amber-200/80"
+                          }`}
+                        >
+                          {action.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-medium">
+                        {action.dueAt ? (
+                          <span className="flex items-center gap-1 font-mono">
+                            <Clock className="size-3 text-amber-600" />
+                            {formatDate(action.dueAt)}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link href={`/admin/actions/${action.id}`}>
+                            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all inline-flex items-center gap-1">
+                              <Eye className="size-3 text-slate-500" />
+                              <span>Details</span>
+                            </button>
+                          </Link>
+                          {action.status === "OPEN" && (
+                            <button
+                              onClick={() => setSelectedActionForCancel(action)}
+                              className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded-lg border border-rose-200 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalItems={filteredActions.length}
-              pageSize={pageSize}
-              onChange={(p) => setPage(p)}
-            />
+            {totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {page} of {totalPages} ({filteredActions.length} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -419,7 +470,7 @@ export default function AdminActionsPage() {
               />
             </FormField>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
               <Button
                 variant="outline"
                 size="sm"
@@ -441,6 +492,6 @@ export default function AdminActionsPage() {
           </div>
         </Modal>
       )}
-    </PageShell>
+    </div>
   );
 }

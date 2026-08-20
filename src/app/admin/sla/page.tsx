@@ -91,206 +91,265 @@ export default function AdminSlaPage() {
   const pagination = appsData?.pagination;
 
   return (
-    <PageShell
-      eyebrow="CASE OPERATIONS"
-      title="SLA Operations & Health Command"
-      description="Real-time statutory deadline countdowns, breach mitigation, automated health sweeps, and official SLA pause controls."
-      actions={
-        <Button
-          variant="outline"
-          size="sm"
-          leftIcon={<RotateCw className={`size-3.5 ${sweepMutation.isPending ? "animate-spin" : ""}`} />}
-          isLoading={sweepMutation.isPending}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            SLA Operations &amp; Health Command
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Real-time statutory deadline countdowns, breach mitigation, automated health sweeps, and official SLA pause controls.
+          </p>
+        </div>
+
+        <button
           onClick={() => sweepMutation.mutate()}
+          disabled={sweepMutation.isPending}
+          className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50 shrink-0 self-start sm:self-auto"
         >
-          Run SLA Evaluation Sweep
-        </Button>
-      }
-    >
-      {/* 1. SLA HEALTH METRICS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard
-          title="Tracked Filings"
-          value={metrics?.totalTracked ?? metrics?.totalActive ?? applications.length}
-          subtitle="Active SLA timers"
-          icon={<Clock className="size-5 text-navy dark:text-gold" />}
-        />
-
-        <StatCard
-          title="Compliant (On Track)"
-          value={metrics?.onTrack ?? 0}
-          subtitle="Within statutory limits"
-          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
-        />
-
-        <StatCard
-          title="At Risk (< 25% Time)"
-          value={metrics?.atRisk ?? metrics?.dueSoon ?? 0}
-          subtitle="Urgent processing required"
-          variant={Number(metrics?.atRisk || metrics?.dueSoon || 0) > 0 ? "gold" : "default"}
-          icon={<TrendingDown className="size-5 text-gold-dark dark:text-gold" />}
-        />
-
-        <StatCard
-          title="SLA Breached"
-          value={metrics?.breached ?? metrics?.overdue ?? 0}
-          subtitle="Statutory deadline exceeded"
-          variant={Number(metrics?.breached || metrics?.overdue || 0) > 0 ? "elevated" : "default"}
-          icon={<AlertTriangle className="size-5 text-destructive" />}
-        />
-
-        <StatCard
-          title="Clock Paused"
-          value={metrics?.paused ?? 0}
-          subtitle="Awaiting client / registry"
-          icon={<Pause className="size-5 text-muted-foreground" />}
-        />
+          <RotateCw className={`size-3.5 text-slate-500 ${sweepMutation.isPending ? "animate-spin" : ""}`} />
+          <span>Run SLA Evaluation Sweep</span>
+        </button>
       </div>
 
-      {/* 2. FILTERS & SEARCH */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. SLA HEALTH METRICS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Tracked Filings</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">
+              {metrics?.totalTracked ?? metrics?.totalActive ?? applications.length}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Active SLA timers</span>
+          </div>
+          <div className="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <Clock className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Compliant (On Track)</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">{metrics?.onTrack ?? 0}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Within statutory limits</span>
+          </div>
+          <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <CheckCircle2 className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">At Risk (&lt; 25% Time)</span>
+            <span className="text-xl font-extrabold text-amber-600 font-mono mt-0.5 block">
+              {metrics?.atRisk ?? metrics?.dueSoon ?? 0}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Urgent processing</span>
+          </div>
+          <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <TrendingDown className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">SLA Breached</span>
+            <span className="text-xl font-extrabold text-rose-600 font-mono mt-0.5 block">
+              {metrics?.breached ?? metrics?.overdue ?? 0}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Deadline exceeded</span>
+          </div>
+          <div className="p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
+            <AlertTriangle className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Clock Paused</span>
+            <span className="text-xl font-extrabold text-slate-700 font-mono mt-0.5 block">{metrics?.paused ?? 0}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Awaiting client/registry</span>
+          </div>
+          <div className="p-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200">
+            <Pause className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. FILTERS & SEARCH */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by dossier #, client, or service..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Select
-            value={slaFilter}
-            onChange={(e) => {
-              setSlaFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-48 text-xs"
-            options={[
-              { value: "", label: "All SLA States" },
-              { value: "AT_RISK", label: "At Risk (< 25% Time Left)" },
-              { value: "BREACHED", label: "Breached (Overdue)" },
-              { value: "PAUSED", label: "Paused (On Hold)" },
-              { value: "ON_TRACK", label: "On Track (Compliant)" },
-            ]}
-          />
-        </div>
+        <select
+          value={slaFilter}
+          onChange={(e) => {
+            setSlaFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full sm:w-56 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+        >
+          <option value="">All SLA States</option>
+          <option value="AT_RISK">At Risk (&lt; 25% Time Left)</option>
+          <option value="BREACHED">Breached (Overdue)</option>
+          <option value="PAUSED">Paused (On Hold)</option>
+          <option value="ON_TRACK">On Track (Compliant)</option>
+        </select>
       </div>
 
-      {/* 3. SLA APPLICATIONS TABLE */}
-      <div className="mt-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. SLA APPLICATIONS TABLE */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {isAppsLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : appsError ? (
-          <ErrorState onRetry={() => refetchApps()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load SLA tracked applications.</p>
+            <button
+              onClick={() => refetchApps()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : applications.length === 0 ? (
-          <EmptyState
-            icon={<Clock className="size-7" />}
-            title="No applications in this SLA category"
-            description="All monitored filings are performing within acceptable parameters."
-          />
+          <div className="p-12 text-center space-y-2">
+            <h3 className="text-sm font-bold text-slate-800">No applications in this SLA category</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              All monitored filings are performing within acceptable parameters.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Dossier #</TableHead>
-                  <TableHead>Statutory Service</TableHead>
-                  <TableHead>Client Entity</TableHead>
-                  <TableHead>Filing Status</TableHead>
-                  <TableHead>SLA Health</TableHead>
-                  <TableHead>Deadline / Due</TableHead>
-                  <TableHead>Assigned Officer</TableHead>
-                  <TableHead className="text-right">SLA Controls</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {applications.map((app) => (
-                  <TableRow key={app.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <Link
-                        href={`/admin/applications/${app.id}`}
-                        className="font-mono text-xs font-bold text-navy dark:text-gold hover:underline"
-                      >
-                        #{app.applicationNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-semibold text-xs text-foreground">
-                      {app.service?.name || "Statutory Service"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {app.client?.fullName || app.client?.businessName || "Verified Entity"}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={app.status} size="sm" />
-                    </TableCell>
-                    <TableCell>
-                      <SlaBadge status={app.slaStatus} size="sm" />
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground font-mono">
-                      {app.slaDueAt ? formatDate(app.slaDueAt) : "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {app.assignedAdmin?.fullName || (
-                        <Badge tone="warning" size="sm">Unassigned</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {app.slaStatus === "PAUSED" ? (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            className="text-emerald-600 hover:bg-emerald-500/10"
-                            leftIcon={<Play className="size-3" />}
-                            onClick={() => {
-                              setSelectedAppForSla(app);
-                              setSlaModalMode("RESUME");
-                            }}
-                          >
-                            Resume
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            className="text-amber-600 hover:bg-amber-500/10"
-                            leftIcon={<Pause className="size-3" />}
-                            onClick={() => {
-                              setSelectedAppForSla(app);
-                              setSlaModalMode("PAUSE");
-                            }}
-                          >
-                            Pause
-                          </Button>
-                        )}
-                        <Link href={`/admin/applications/${app.id}`}>
-                          <Button variant="ghost" size="xs" leftIcon={<Eye className="size-3.5" />}>
-                            Dossier
-                          </Button>
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Dossier #</th>
+                    <th className="py-3 px-4">Statutory Service</th>
+                    <th className="py-3 px-4">Client Entity</th>
+                    <th className="py-3 px-4">Filing Status</th>
+                    <th className="py-3 px-4">SLA Health</th>
+                    <th className="py-3 px-4">Deadline / Due</th>
+                    <th className="py-3 px-4">Assigned Officer</th>
+                    <th className="py-3 px-4 text-right">SLA Controls</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {applications.map((app) => (
+                    <tr key={app.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/admin/applications/${app.id}`}
+                          className="font-mono text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
+                        >
+                          #{app.applicationNumber}
                         </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </td>
+                      <td className="py-3 px-4 font-bold text-xs text-slate-900">
+                        {app.service?.name || "Statutory Service"}
+                      </td>
+                      <td className="py-3 px-4 text-xs font-medium text-slate-600">
+                        {app.client?.fullName || app.client?.businessName || "Verified Entity"}
+                      </td>
+                      <td className="py-3 px-4">
+                        <StatusBadge status={app.status} size="sm" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <SlaBadge status={app.slaStatus} size="sm" />
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-mono">
+                        {app.slaDueAt ? formatDate(app.slaDueAt) : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-600">
+                        {app.assignedAdmin?.fullName || (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/80">Unassigned</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {app.slaStatus === "PAUSED" ? (
+                            <button
+                              onClick={() => {
+                                setSelectedAppForSla(app);
+                                setSlaModalMode("RESUME");
+                              }}
+                              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 transition-colors inline-flex items-center gap-1"
+                            >
+                              <Play className="size-3" />
+                              <span>Resume</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setSelectedAppForSla(app);
+                                setSlaModalMode("PAUSE");
+                              }}
+                              className="text-xs font-bold text-amber-700 hover:text-amber-800 hover:bg-amber-50 px-2 py-1 rounded-lg border border-amber-200 transition-colors inline-flex items-center gap-1"
+                            >
+                              <Pause className="size-3" />
+                              <span>Pause</span>
+                            </button>
+                          )}
+                          <Link href={`/admin/applications/${app.id}`}>
+                            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all inline-flex items-center gap-1">
+                              <Eye className="size-3 text-slate-500" />
+                              <span>Dossier</span>
+                            </button>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            {pagination && (
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.total}
-                pageSize={pagination.limit}
-                onChange={(p) => setPage(p)}
-              />
+            {pagination && pagination.totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -310,6 +369,6 @@ export default function AdminSlaPage() {
           }}
         />
       )}
-    </PageShell>
+    </div>
   );
 }

@@ -115,199 +115,212 @@ export default function AdminGovernmentDetailPage() {
   const history = historyData || filing.statusHistory || [];
 
   return (
-    <PageShell
-      eyebrow={`GOVERNMENT FILING • ${filing.platform}`}
-      title={filing.governmentAgency || "Statutory Agency Filing"}
-      description={`Reference: ${filing.externalReference || "Pending Agency Ref"} • Status: ${filing.status}`}
-      actions={
-        <div className="flex items-center gap-2">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/80">
+              Agency: {filing.platform}
+            </span>
+            <span className="text-xs text-slate-500 font-mono font-medium">
+              Ref: {filing.externalReference || "Pending Agency Ref"}
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-1">
+            {filing.governmentAgency || "Statutory Agency Filing"}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
           <Link href="/admin/government">
-            <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="size-3.5" />}>
-              Registry Queue
-            </Button>
+            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-xs">
+              <ArrowLeft className="size-3.5 text-slate-500" />
+              <span>Registry Queue</span>
+            </button>
           </Link>
-          <Button
-            variant="gold"
-            size="sm"
-            leftIcon={<Sliders className="size-3.5" />}
+          <button
             onClick={() => {
               setNewStatus(filing.status);
               setUpdatedReference(filing.externalReference || "");
               setIsUpdateModalOpen(true);
             }}
+            className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
           >
-            Update Agency Status
-          </Button>
+            <Sliders className="size-3.5" />
+            <span>Update Agency Status</span>
+          </button>
         </div>
-      }
-    >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Left 2 Cols: Filing Details & History */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2">
           {/* Main Overview Card */}
-          <Card padding="md" className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                   Statutory Submission Profile
                 </span>
-                <h3 className="text-base font-bold text-foreground">
+                <h3 className="text-base font-bold text-slate-900">
                   {filing.governmentService || filing.platform}
                 </h3>
               </div>
-              <Badge
-                tone={
+              <span
+                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md border ${
                   filing.status === "APPROVED"
-                    ? "success"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
                     : filing.status === "QUERY_RAISED" || filing.status === "REJECTED"
-                    ? "warning"
-                    : "gold"
-                }
-                size="md"
+                    ? "bg-rose-50 text-rose-800 border-rose-200/80"
+                    : "bg-amber-50 text-amber-800 border-amber-200/80"
+                }`}
               >
                 {filing.status}
-              </Badge>
+              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Platform</span>
-                <strong className="text-foreground">{filing.platform}</strong>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Platform</span>
+                <strong className="text-slate-900 font-bold block mt-0.5">{filing.platform}</strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Agency Tracking #</span>
-                <strong className="text-foreground font-mono">{filing.externalReference || "—"}</strong>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Agency Tracking #</span>
+                <strong className="text-slate-900 font-mono font-bold block mt-0.5">{filing.externalReference || "—"}</strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Submitted Date</span>
-                <span className="text-foreground">{formatDate(filing.submittedAt || filing.createdAt)}</span>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Submitted Date</span>
+                <span className="text-slate-700 font-mono font-semibold block mt-0.5">{formatDate(filing.submittedAt || filing.createdAt)}</span>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Follow-Up Due</span>
-                <span className="text-gold-dark dark:text-gold font-semibold">
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Follow-Up Due</span>
+                <span className="text-amber-700 font-mono font-bold block mt-0.5">
                   {filing.followUpDate ? formatDate(filing.followUpDate) : "—"}
                 </span>
               </div>
             </div>
 
             {filing.notes && (
-              <div className="rounded-xs border border-border bg-muted/20 p-3 text-xs space-y-1">
-                <span className="text-[11px] font-bold text-muted-foreground">Officer Remarks & Notes:</span>
-                <p className="text-foreground">{filing.notes}</p>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3 text-xs space-y-1">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Officer Remarks &amp; Notes:</span>
+                <p className="text-slate-700 font-medium">{filing.notes}</p>
               </div>
             )}
 
             {filing.portalUrl && (
-              <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Official Government Portal Link:</span>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Official Government Portal Link:</span>
                 <a
                   href={filing.portalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gold-dark hover:underline dark:text-gold flex items-center gap-1 font-semibold"
+                  className="text-amber-700 hover:underline flex items-center gap-1 font-bold"
                 >
                   <span>Launch Agency Portal</span>
                   <ExternalLink className="size-3" />
                 </a>
               </div>
             )}
-          </Card>
+          </div>
 
           {/* Status Timeline History */}
-          <Card padding="md" className="space-y-4">
-            <CardHeader>
-              <CardTitle>Government Status Audit History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {history.length === 0 ? (
-                <p className="text-xs text-muted-foreground">No intermediate state transitions recorded.</p>
-              ) : (
-                <div className="space-y-3">
-                  {history.map((h: any, idx: number) => (
-                    <div
-                      key={h.id || idx}
-                      className="flex items-start justify-between rounded-xs border border-border bg-muted/20 p-3 text-xs"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge tone="neutral" size="sm">{h.toStatus || h.status}</Badge>
-                          {h.fromStatus && (
-                            <span className="text-[11px] text-muted-foreground">
-                              from {h.fromStatus}
-                            </span>
-                          )}
-                        </div>
-                        {h.remarks && <p className="text-foreground">{h.remarks}</p>}
-                        {h.queryDetails && (
-                          <p className="text-amber-600 font-semibold">Query: {h.queryDetails}</p>
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3">
+            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Government Status Audit History</h3>
+            {history.length === 0 ? (
+              <p className="text-xs text-slate-500">No intermediate state transitions recorded.</p>
+            ) : (
+              <div className="space-y-2">
+                {history.map((h: any, idx: number) => (
+                  <div
+                    key={h.id || idx}
+                    className="flex items-start justify-between rounded-xl border border-slate-200/80 bg-slate-50 p-3 text-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                          {h.toStatus || h.status}
+                        </span>
+                        {h.fromStatus && (
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            from {h.fromStatus}
+                          </span>
                         )}
                       </div>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        {formatDate(h.createdAt || h.timestamp)}
-                      </span>
+                      {h.remarks && <p className="text-slate-700 font-medium">{h.remarks}</p>}
+                      {h.queryDetails && (
+                        <p className="text-rose-600 font-bold">Query: {h.queryDetails}</p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <span className="text-[11px] text-slate-400 font-mono font-medium">
+                      {formatDate(h.createdAt || h.timestamp)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Col: Host Dossier Profile */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {filing.application && (
-            <Card padding="md" className="space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-foreground">Host Application</h4>
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h4 className="text-sm font-bold text-slate-900">Host Application</h4>
                 <Link
                   href={`/admin/applications/${filing.application.id}`}
-                  className="text-xs font-semibold text-gold-dark dark:text-gold hover:underline"
+                  className="text-xs font-bold text-amber-700 hover:underline"
                 >
                   Open 360
                 </Link>
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Dossier #</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Dossier #</span>
                   <Link
                     href={`/admin/applications/${filing.application.id}`}
-                    className="font-mono font-bold text-navy dark:text-gold hover:underline"
+                    className="font-mono font-bold text-amber-700 hover:underline"
                   >
                     #{filing.application.applicationNumber}
                   </Link>
                 </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Service Name</span>
-                  <span className="font-semibold text-foreground">{filing.application.service?.name}</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Service Name</span>
+                  <span className="font-bold text-slate-900">{filing.application.service?.name}</span>
                 </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Client Entity</span>
-                  <span className="font-bold text-foreground">
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Client Entity</span>
+                  <span className="font-bold text-slate-900">
                     {filing.application.client?.fullName ||
                       filing.application.client?.businessName ||
                       "Client"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Filing Status</span>
-                  <Badge tone="neutral" size="sm">{filing.application.status}</Badge>
+                  <span className="text-slate-500 font-medium">Filing Status</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                    {filing.application.status}
+                  </span>
                 </div>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Direct Approval Action Card */}
           {filing.status !== "APPROVED" && (
-            <Card padding="md" className="space-y-3 text-xs">
-              <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
+              <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                 <CheckCircle2 className="size-4 text-emerald-600" />
                 <span>Record Official Agency Approval</span>
               </h4>
-              <p className="text-muted-foreground">
+              <p className="text-slate-500 font-medium">
                 Once the registry issues the final registration number or certificate, certify approval here.
               </p>
               <FormField label="Official Registry Registration # (Optional)">
@@ -317,16 +330,14 @@ export default function AdminGovernmentDetailPage() {
                   onChange={(e) => setRegistrationNumber(e.target.value)}
                 />
               </FormField>
-              <Button
-                variant="gold"
-                size="sm"
-                className="w-full"
-                isLoading={approvalMutation.isPending}
+              <button
                 onClick={() => approvalMutation.mutate()}
+                disabled={approvalMutation.isPending}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5"
               >
-                Certify Statutory Approval
-              </Button>
-            </Card>
+                <span>Certify Statutory Approval</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -391,7 +402,7 @@ export default function AdminGovernmentDetailPage() {
               />
             </FormField>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
               <Button
                 variant="outline"
                 size="sm"
@@ -412,6 +423,6 @@ export default function AdminGovernmentDetailPage() {
           </div>
         </Modal>
       )}
-    </PageShell>
+    </div>
   );
 }

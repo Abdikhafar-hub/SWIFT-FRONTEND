@@ -144,215 +144,274 @@ export default function AdminReconciliationPage() {
   const pagination = recordsData?.pagination;
 
   return (
-    <PageShell
-      eyebrow="FINANCIAL INTEGRITY & AUDIT"
-      title="M-Pesa & Bank Reconciliation Engine"
-      description="Automated cross-check between Safaricom Daraja API settlements, bank statements, and issued statutory invoices."
-      actions={
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            isLoading={runSweepMutation.isPending}
-            leftIcon={<RefreshCw className="size-4" />}
-            onClick={() => runSweepMutation.mutate()}
-          >
-            Run Auto-Recon Sweep
-          </Button>
-          <Button
-            variant="gold"
-            size="sm"
-            leftIcon={<Upload className="size-4" />}
-            onClick={() => setIsIngestModalOpen(true)}
-          >
-            Ingest Statement
-          </Button>
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            M-Pesa &amp; Bank Reconciliation Engine
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Automated cross-check between Safaricom Daraja API settlements, bank statements, and issued statutory invoices.
+          </p>
         </div>
-      }
-    >
-      {/* 1. RECONCILIATION SUMMARY KPIS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Gross Invoiced"
-          value={isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalInvoiced || 0))}
-          subtitle={`${finSummary?.metrics.totalInvoices ?? 0} commercial invoices`}
-          icon={<Scale className="size-5 text-navy dark:text-gold" />}
-        />
 
-        <StatCard
-          title="Settled Collections"
-          value={isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalCollected || 0))}
-          subtitle="Daraja + Direct Wire"
-          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
-        />
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => runSweepMutation.mutate()}
+            disabled={runSweepMutation.isPending}
+            className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+          >
+            <RefreshCw className={`size-3.5 text-slate-500 ${runSweepMutation.isPending ? "animate-spin" : ""}`} />
+            <span>Run Auto-Recon Sweep</span>
+          </button>
 
-        <StatCard
-          title="Outstanding Receivable"
-          value={isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalOutstanding || 0))}
-          subtitle="Pending settlement"
-          variant={Number(finSummary?.metrics.totalOutstanding || 0) > 0 ? "gold" : "default"}
-          icon={<AlertTriangle className="size-5 text-amber-600" />}
-        />
-
-        <StatCard
-          title="Overdue Receivables"
-          value={isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalOverdue || 0))}
-          subtitle={`${finSummary?.metrics.overdueInvoicesCount ?? 0} overdue invoices`}
-          icon={<HelpCircle className="size-5 text-muted-foreground" />}
-        />
+          <button
+            onClick={() => setIsIngestModalOpen(true)}
+            className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5"
+          >
+            <Upload className="size-3.5 stroke-[3]" />
+            <span>Ingest Statement</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. RECONCILIATION RECORDS TABLE */}
-      <div className="mt-8 space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. RECONCILIATION SUMMARY KPIS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-foreground">Reconciliation & Settlement Register</h3>
-            <p className="text-xs text-muted-foreground">
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Gross Invoiced</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">
+              {isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalInvoiced || 0))}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">
+              {finSummary?.metrics.totalInvoices ?? 0} commercial invoices
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <Scale className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Settled Collections</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">
+              {isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalCollected || 0))}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Daraja + Direct Wire</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <CheckCircle2 className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Outstanding Receivable</span>
+            <span className="text-xl font-extrabold text-amber-600 font-mono mt-0.5 block">
+              {isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalOutstanding || 0))}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Pending settlement</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <AlertTriangle className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Overdue Receivables</span>
+            <span className="text-xl font-extrabold text-rose-600 font-mono mt-0.5 block">
+              {isSummaryLoading ? "—" : formatCurrency(Number(finSummary?.metrics.totalOverdue || 0))}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">
+              {finSummary?.metrics.overdueInvoicesCount ?? 0} overdue invoices
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
+            <HelpCircle className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. RECONCILIATION RECORDS CONTAINER */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-900">Reconciliation &amp; Settlement Register</h3>
+            <p className="text-xs text-slate-500 font-medium">
               M-Pesa reference matching, bank deposits, and automated invoice clearance.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="w-56">
-              <Input
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-full sm:w-60">
+              <Search className="absolute left-3 top-2.5 size-3.5 text-slate-400" />
+              <input
+                type="text"
                 placeholder="Search reference or note..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                leftAddon={<Search className="size-3.5" />}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
               />
             </div>
 
-            <Select
+            <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value as ReconciliationStatus | "");
                 setPage(1);
               }}
-              className="w-44 text-xs"
-              options={[
-                { value: "", label: "All Statuses" },
-                { value: "MATCHED", label: "Matched & Cleared" },
-                { value: "UNMATCHED", label: "Unmatched Discrepancy" },
-                { value: "DUPLICATE", label: "Duplicate Entry" },
-                { value: "SUSPICIOUS", label: "Suspicious Audit Flag" },
-                { value: "REVERSED", label: "Reversed Settlement" },
-              ]}
-            />
+              className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+            >
+              <option value="">All Statuses</option>
+              <option value="MATCHED">Matched &amp; Cleared</option>
+              <option value="UNMATCHED">Unmatched Discrepancy</option>
+              <option value="DUPLICATE">Duplicate Entry</option>
+              <option value="SUSPICIOUS">Suspicious Audit Flag</option>
+              <option value="REVERSED">Reversed Settlement</option>
+            </select>
           </div>
         </div>
 
         {isRecordsLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : error ? (
-          <ErrorState onRetry={() => refetch()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load reconciliation records.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : records.length === 0 ? (
-          <EmptyState
-            icon={<CheckCircle2 className="size-7 text-emerald-600" />}
-            title="Zero Outstanding Discrepancies"
-            description="All financial statement transactions are fully matched to commercial invoices."
-            action={
-              <Button
-                variant="gold"
-                size="xs"
-                leftIcon={<Upload className="size-3.5" />}
-                onClick={() => setIsIngestModalOpen(true)}
-              >
-                Ingest Statement Entry
-              </Button>
-            }
-          />
+          <div className="p-12 text-center space-y-3">
+            <CheckCircle2 className="size-8 text-emerald-600 mx-auto" />
+            <h3 className="text-sm font-bold text-slate-800">Zero Outstanding Discrepancies</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              All financial statement transactions are fully matched to commercial invoices.
+            </p>
+            <button
+              onClick={() => setIsIngestModalOpen(true)}
+              className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg shadow-xs transition-all inline-flex items-center gap-1.5"
+            >
+              <Upload className="size-3.5 stroke-[2.5]" />
+              <span>Ingest Statement Entry</span>
+            </button>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Reference / Tx Code</TableHead>
-                  <TableHead className="text-right">Statement Amount</TableHead>
-                  <TableHead>Recon Status</TableHead>
-                  <TableHead>Reconciled Date</TableHead>
-                  <TableHead>Ingested Date</TableHead>
-                  <TableHead className="text-right">Audit Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {records.map((item: ReconciliationRecord) => (
-                  <TableRow key={item.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 font-semibold text-xs">
-                        {item.provider === "MPESA" ? (
-                          <Smartphone className="size-3.5 text-emerald-600" />
-                        ) : (
-                          <Building2 className="size-3.5 text-navy dark:text-gold" />
-                        )}
-                        <span>{item.provider || "MPESA"}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs text-foreground font-semibold">
-                      {item.reference || "—"}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs font-bold text-foreground text-right">
-                      {formatCurrency(Number(item.amount || 0), item.currency || "KES")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        tone={
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Provider</th>
+                    <th className="py-3 px-4">Reference / Tx Code</th>
+                    <th className="py-3 px-4 text-right">Statement Amount</th>
+                    <th className="py-3 px-4">Recon Status</th>
+                    <th className="py-3 px-4">Reconciled Date</th>
+                    <th className="py-3 px-4">Ingested Date</th>
+                    <th className="py-3 px-4 text-right">Audit Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {records.map((item: ReconciliationRecord) => (
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800">
+                          {item.provider === "MPESA" ? (
+                            <Smartphone className="size-3.5 text-emerald-600" />
+                          ) : (
+                            <Building2 className="size-3.5 text-amber-700" />
+                          )}
+                          <span>{item.provider || "MPESA"}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-xs text-slate-900 font-bold">
+                        {item.reference || "—"}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-xs font-extrabold text-slate-900 text-right">
+                        {formatCurrency(Number(item.amount || 0), item.currency || "KES")}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                           item.status === "MATCHED"
-                            ? "success"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
                             : item.status === "SUSPICIOUS" || item.status === "REVERSED"
-                            ? "destructive"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
                             : item.status === "DUPLICATE"
-                            ? "warning"
-                            : "neutral"
-                        }
-                        size="sm"
-                      >
-                        {item.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {item.reconciledAt ? formatDate(item.reconciledAt) : "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDate(item.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.status !== "MATCHED" ? (
-                        <Button
-                          variant="gold"
-                          size="xs"
-                          onClick={() => {
-                            setResolvingItem(item);
-                            setResolutionNotes(item.notes || "");
-                            setResolutionTransactionId(item.transactionId || "");
-                          }}
-                        >
-                          Resolve
-                        </Button>
-                      ) : (
-                        <span className="text-[11px] text-emerald-600 font-semibold flex items-center justify-end gap-1">
-                          <ShieldCheck className="size-3" />
-                          <span>Cleared</span>
+                            ? "bg-amber-50 text-amber-800 border-amber-200/80"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}>
+                          {item.status}
                         </span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-medium">
+                        {item.reconciledAt ? formatDate(item.reconciledAt) : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-medium">
+                        {formatDate(item.createdAt)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        {item.status !== "MATCHED" ? (
+                          <button
+                            onClick={() => {
+                              setResolvingItem(item);
+                              setResolutionNotes(item.notes || "");
+                              setResolutionTransactionId(item.transactionId || "");
+                            }}
+                            className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow-xs transition-all"
+                          >
+                            Resolve
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-emerald-700 font-bold inline-flex items-center gap-1">
+                            <ShieldCheck className="size-3" />
+                            <span>Cleared</span>
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            {pagination && (
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.total}
-                pageSize={pagination.limit}
-                onChange={(p: number) => setPage(p)}
-              />
+            {pagination && pagination.totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -376,7 +435,7 @@ export default function AdminReconciliationPage() {
               disabled={!ingestReference.trim() || !ingestAmount.trim()}
               onClick={() => ingestMutation.mutate()}
             >
-              Ingest & Match
+              Ingest &amp; Match
             </Button>
           </div>
         }
@@ -450,14 +509,14 @@ export default function AdminReconciliationPage() {
       >
         <div className="space-y-4 text-xs">
           {resolvingItem && (
-            <div className="rounded-xs border border-border bg-muted/20 p-3 space-y-1">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Reference:</span>
-                <span className="font-mono font-bold text-foreground">{resolvingItem.reference}</span>
+                <span className="text-slate-500 font-medium">Reference:</span>
+                <span className="font-mono font-bold text-slate-900">{resolvingItem.reference}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount:</span>
-                <span className="font-mono font-bold text-emerald-600">
+                <span className="text-slate-500 font-medium">Amount:</span>
+                <span className="font-mono font-extrabold text-emerald-600">
                   {formatCurrency(Number(resolvingItem.amount || 0), resolvingItem.currency || "KES")}
                 </span>
               </div>
@@ -496,6 +555,6 @@ export default function AdminReconciliationPage() {
           </FormField>
         </div>
       </Modal>
-    </PageShell>
+    </div>
   );
 }

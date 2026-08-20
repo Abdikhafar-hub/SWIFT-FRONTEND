@@ -71,171 +71,227 @@ export default function AdminQcPage() {
       : applications;
 
   return (
-    <PageShell
-      eyebrow="CASE OPERATIONS"
-      title="Quality Control Command Center"
-      description="Rigorous statutory compliance inspection, document legibility audits, identity verification, and formal sign-offs."
-    >
-      {/* 1. QC METRICS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Pending QC Inspection"
-          value={qcPendingApps.length}
-          subtitle="Awaiting compliance sign-off"
-          variant={qcPendingApps.length > 0 ? "gold" : "default"}
-          icon={<CheckSquare className="size-5 text-navy dark:text-gold" />}
-        />
-
-        <StatCard
-          title="Certified QC Passes"
-          value={applications.filter((a) => a.status === "READY_FOR_SUBMISSION" || a.status === "SUBMITTED" || a.status === "DELIVERED" || a.status === "CLOSED").length}
-          subtitle="Passed statutory inspection"
-          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
-        />
-
-        <StatCard
-          title="Returned / Flagged"
-          value={applications.filter((a) => a.status === "ADDITIONAL_INFORMATION_REQUIRED" || a.status === "ON_HOLD" || a.status === "CANCELLED").length}
-          subtitle="Deficiencies identified"
-          icon={<AlertTriangle className="size-5 text-destructive" />}
-        />
-
-        <StatCard
-          title="Total Monitored"
-          value={applications.length}
-          subtitle="Applications in workstream"
-          icon={<FileCheck className="size-5 text-muted-foreground" />}
-        />
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Quality Control Command Center
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Rigorous statutory compliance inspection, document legibility audits, identity verification, and formal sign-offs.
+          </p>
+        </div>
       </div>
 
-      {/* 2. FILTERS & SEARCH */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. QC METRICS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Pending Inspection</span>
+            <span className="text-xl font-extrabold text-amber-600 font-mono mt-0.5 block">{qcPendingApps.length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Awaiting compliance sign-off</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <CheckSquare className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Certified QC Passes</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">
+              {applications.filter((a) => a.status === "READY_FOR_SUBMISSION" || a.status === "SUBMITTED" || a.status === "DELIVERED" || a.status === "CLOSED").length}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Passed statutory inspection</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <CheckCircle2 className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Returned / Flagged</span>
+            <span className="text-xl font-extrabold text-rose-600 font-mono mt-0.5 block">
+              {applications.filter((a) => a.status === "ADDITIONAL_INFORMATION_REQUIRED" || a.status === "ON_HOLD" || a.status === "CANCELLED").length}
+            </span>
+            <span className="text-[10px] text-slate-500 font-medium">Deficiencies identified</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
+            <AlertTriangle className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Monitored</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">{applications.length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Applications in workstream</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <FileCheck className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. FILTERS & SEARCH */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by dossier #, client name, or service..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Select
-            value={filterState}
-            onChange={(e) => {
-              setFilterState(e.target.value);
-              setPage(1);
-            }}
-            className="w-48 text-xs"
-            options={[
-              { value: "ALL", label: "All Workstream Dossiers" },
-              { value: "PENDING", label: "QC Inspection Pending" },
-              { value: "PASSED", label: "Certified / Approved" },
-            ]}
-          />
-        </div>
+        <select
+          value={filterState}
+          onChange={(e) => {
+            setFilterState(e.target.value);
+            setPage(1);
+          }}
+          className="w-full sm:w-56 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+        >
+          <option value="ALL">All Workstream Dossiers</option>
+          <option value="PENDING">QC Inspection Pending</option>
+          <option value="PASSED">Certified / Approved</option>
+        </select>
       </div>
 
-      {/* 3. QC QUEUE TABLE */}
-      <div className="mt-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. QC QUEUE TABLE */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : error ? (
-          <ErrorState onRetry={() => refetch()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load quality control queue.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : filteredApps.length === 0 ? (
-          <EmptyState
-            icon={<ShieldCheck className="size-7" />}
-            title="No applications pending inspection"
-            description="All candidate dossiers have undergone quality checks."
-          />
+          <div className="p-12 text-center space-y-2">
+            <h3 className="text-sm font-bold text-slate-800">No applications pending inspection</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              All candidate dossiers have undergone quality checks or match current criteria.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Dossier #</TableHead>
-                  <TableHead>Statutory Service</TableHead>
-                  <TableHead>Client Entity</TableHead>
-                  <TableHead>Current Status</TableHead>
-                  <TableHead>Requirements</TableHead>
-                  <TableHead>Date Filed</TableHead>
-                  <TableHead className="text-right">Inspection Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredApps.map((app) => (
-                  <TableRow key={app.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <Link
-                        href={`/admin/qc/${app.id}`}
-                        className="font-mono text-xs font-bold text-navy dark:text-gold hover:underline"
-                      >
-                        #{app.applicationNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-semibold text-xs text-foreground">
-                      {app.service?.name || "Statutory Service"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {app.client?.fullName || app.client?.businessName || "Verified Client"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        tone={
-                          app.status === "QUALITY_CHECK"
-                            ? "warning"
-                            : app.status === "DELIVERED" || app.status === "CLOSED" || app.status === "READY_FOR_SUBMISSION"
-                            ? "success"
-                            : "neutral"
-                        }
-                        size="sm"
-                      >
-                        {app.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground font-mono">
-                      {app.requirements?.length || 0} items
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDate(app.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="gold"
-                          size="xs"
-                          leftIcon={<ShieldCheck className="size-3.5" />}
-                          onClick={() => setSelectedAppForQc(app)}
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Dossier #</th>
+                    <th className="py-3 px-4">Statutory Service</th>
+                    <th className="py-3 px-4">Client Entity</th>
+                    <th className="py-3 px-4">Current Status</th>
+                    <th className="py-3 px-4">Requirements</th>
+                    <th className="py-3 px-4">Date Filed</th>
+                    <th className="py-3 px-4 text-right">Inspection Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {filteredApps.map((app) => (
+                    <tr key={app.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/admin/qc/${app.id}`}
+                          className="font-mono text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
                         >
-                          QC Inspect
-                        </Button>
-                        <Link href={`/admin/qc/${app.id}`}>
-                          <Button variant="ghost" size="xs" leftIcon={<Eye className="size-3.5" />}>
-                            Dossier
-                          </Button>
+                          #{app.applicationNumber}
                         </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </td>
+                      <td className="py-3 px-4 font-bold text-xs text-slate-900">
+                        {app.service?.name || "Statutory Service"}
+                      </td>
+                      <td className="py-3 px-4 text-xs font-medium text-slate-600">
+                        {app.client?.fullName || app.client?.businessName || "Verified Client"}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                          app.status === "QUALITY_CHECK"
+                            ? "bg-amber-50 text-amber-800 border-amber-200/80"
+                            : app.status === "DELIVERED" || app.status === "CLOSED" || app.status === "READY_FOR_SUBMISSION"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                            : "bg-slate-100 text-slate-700 border-slate-200"
+                        }`}>
+                          {app.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-mono">
+                        {app.requirements?.length || 0} items
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-medium">
+                        {formatDate(app.createdAt)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedAppForQc(app)}
+                            className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow-xs transition-all flex items-center gap-1"
+                          >
+                            <ShieldCheck className="size-3 stroke-[2.5]" />
+                            <span>QC Inspect</span>
+                          </button>
+                          <Link href={`/admin/qc/${app.id}`}>
+                            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1">
+                              <Eye className="size-3 text-slate-500" />
+                              <span>Dossier</span>
+                            </button>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            {pagination && (
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.total}
-                pageSize={pagination.limit}
-                onChange={(p) => setPage(p)}
-              />
+            {pagination && pagination.totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -254,6 +310,6 @@ export default function AdminQcPage() {
           }}
         />
       )}
-    </PageShell>
+    </div>
   );
 }

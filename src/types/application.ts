@@ -303,6 +303,7 @@ export interface AdminDashboardOverview {
     newRegistrations?: number;
     unassigned: number;
     overdue: number;
+    atRisk?: number;
     dueSoon: number;
     qualityCheck: number;
     awaitingGovernment: number;
@@ -317,8 +318,23 @@ export interface AdminDashboardOverview {
     onTrackCount: number;
     atRiskCount: number;
     overdueCount: number;
-    breachRate: number;
+    breachRate?: number;
     averageCompletionHours: number;
+    complianceRate?: number;
+    momChangePercent?: number;
+  };
+  trends?: {
+    intake: number[];
+    sla: number[];
+    collections: number[];
+    velocity: number[];
+  };
+  turnaroundByStage?: {
+    intakeHours: number;
+    qcHours: number;
+    registryHours: number;
+    deliveryHours: number;
+    completionHours: number;
   };
   governmentAgencyStats: Array<{
     agency: string;
@@ -327,9 +343,12 @@ export interface AdminDashboardOverview {
   recentActivities: Array<{
     id: string;
     applicationNumber: string;
+    serviceName?: string;
     clientName: string;
+    officerName?: string;
     action: string;
-    createdAt: string;
+    message?: string;
+    timestamp: string;
   }>;
 }
 

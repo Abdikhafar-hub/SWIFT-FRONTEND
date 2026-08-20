@@ -124,33 +124,43 @@ export default function AdminApplicationsPage() {
   const pagination = data?.pagination;
 
   return (
-    <PageShell
-      eyebrow="OPERATIONAL DISPATCH"
-      title="Master Statutory Work Queue"
-      description="Process client registrations, enforce statutory QA standards, track registry filings, and maintain strict SLAs."
-      actions={
-        <Button
-          variant="gold"
-          size="sm"
-          leftIcon={<Plus className="size-4" />}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Master Statutory Work Queue
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Process client dossiers, enforce statutory QA standards, track registry filings, and maintain strict SLAs.
+          </p>
+        </div>
+
+        <button
           onClick={() => setIsNewModalOpen(true)}
+          className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all transform hover:-translate-y-0.5 flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
         >
-          New Client Filing
-        </Button>
-      }
-    >
-      {/* 1. QUEUE FILTER TABS */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
+          <Plus className="size-3.5 stroke-[3]" />
+          <span>New Client Filing</span>
+        </button>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. QUEUE FILTER TABS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-wrap items-center gap-2 pb-1 border-b border-slate-200/60">
         <button
           type="button"
           onClick={() => {
             setActiveTab("all");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "all"
-              ? "bg-navy text-white dark:bg-gold dark:text-navy-dark shadow-xs"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <span>All Filings</span>
@@ -162,10 +172,10 @@ export default function AdminApplicationsPage() {
             setActiveTab("visa");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "visa"
-              ? "bg-navy text-white dark:bg-gold dark:text-navy-dark shadow-xs"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <Landmark className="size-3.5" />
@@ -178,10 +188,10 @@ export default function AdminApplicationsPage() {
             setActiveTab("unassigned");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "unassigned"
-              ? "bg-navy text-white dark:bg-gold dark:text-navy-dark shadow-xs"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <Inbox className="size-3.5" />
@@ -194,10 +204,10 @@ export default function AdminApplicationsPage() {
             setActiveTab("qc");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "qc"
-              ? "bg-navy text-white dark:bg-gold dark:text-navy-dark shadow-xs"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <ShieldCheck className="size-3.5" />
@@ -210,14 +220,14 @@ export default function AdminApplicationsPage() {
             setActiveTab("government");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "government"
-              ? "bg-navy text-white dark:bg-gold dark:text-navy-dark shadow-xs"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <Landmark className="size-3.5" />
-          <span>Gov Registry Processing</span>
+          <span>Gov Processing</span>
         </button>
 
         <button
@@ -226,10 +236,10 @@ export default function AdminApplicationsPage() {
             setActiveTab("dueSoon");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "dueSoon"
               ? "bg-amber-600 text-white shadow-xs"
-              : "text-amber-600 hover:bg-amber-500/10"
+              : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
           }`}
         >
           <Clock className="size-3.5" />
@@ -242,171 +252,204 @@ export default function AdminApplicationsPage() {
             setActiveTab("overdue");
             setPage(1);
           }}
-          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
             activeTab === "overdue"
-              ? "bg-destructive text-white shadow-xs"
-              : "text-destructive hover:bg-destructive/10"
+              ? "bg-rose-600 text-white shadow-xs"
+              : "bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100"
           }`}
         >
           <AlertTriangle className="size-3.5" />
-          <span>SLA Breached / Overdue</span>
+          <span>SLA Overdue</span>
         </button>
       </div>
 
-      {/* 2. SEARCH & FILTER CONTROLS */}
-      <div className="mt-4 mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. SEARCH & FILTER CONTROLS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by app #, client name, PIN, or service..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Select
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <select
             value={priorityFilter}
             onChange={(e) => {
               setPriorityFilter(e.target.value);
               setPage(1);
             }}
-            className="w-36 text-xs"
-            options={[
-              { value: "", label: "All Priorities" },
-              { value: "URGENT", label: "Urgent Priority" },
-              { value: "HIGH", label: "High Priority" },
-              { value: "NORMAL", label: "Normal Priority" },
-              { value: "LOW", label: "Low Priority" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="">All Priorities</option>
+            <option value="URGENT">Urgent Priority</option>
+            <option value="HIGH">High Priority</option>
+            <option value="NORMAL">Normal Priority</option>
+            <option value="LOW">Low Priority</option>
+          </select>
 
-          <Select
+          <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-48 text-xs"
-            options={[
-              { value: "", label: "All Lifecycle States" },
-              { value: "NEW", label: "New Application" },
-              { value: "QUALIFICATION", label: "Qualification" },
-              { value: "REQUIREMENTS_PENDING", label: "Requirements Pending" },
-              { value: "DOCUMENT_REVIEW", label: "Document Review" },
-              { value: "READY_FOR_SUBMISSION", label: "Ready for Submission" },
-              { value: "SUBMITTED", label: "Submitted" },
-              { value: "GOVERNMENT_PROCESSING", label: "Government Processing" },
-              { value: "APPROVED", label: "Approved" },
-              { value: "QUALITY_CHECK", label: "Quality Check" },
-              { value: "READY_FOR_DELIVERY", label: "Ready for Delivery" },
-              { value: "CLOSED", label: "Closed / Completed" },
-            ]}
-          />
+            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+          >
+            <option value="">All Lifecycle States</option>
+            <option value="NEW">New Application</option>
+            <option value="QUALIFICATION">Qualification</option>
+            <option value="REQUIREMENTS_PENDING">Requirements Pending</option>
+            <option value="DOCUMENT_REVIEW">Document Review</option>
+            <option value="READY_FOR_SUBMISSION">Ready for Submission</option>
+            <option value="SUBMITTED">Submitted</option>
+            <option value="GOVERNMENT_PROCESSING">Government Processing</option>
+            <option value="APPROVED">Approved</option>
+            <option value="QUALITY_CHECK">Quality Check</option>
+            <option value="READY_FOR_DELIVERY">Ready for Delivery</option>
+            <option value="CLOSED">Closed / Completed</option>
+          </select>
         </div>
       </div>
 
-      {/* 3. TABLE / QUEUE LIST */}
-      {isLoading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : error ? (
-        <ErrorState onRetry={() => refetch()} />
-      ) : applications.length === 0 ? (
-        <EmptyState
-          title="No applications in selected queue"
-          description="No statutory applications matched the current filters or workload bucket."
-        />
-      ) : (
-        <div className="space-y-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Dossier #</TableHead>
-                <TableHead>Client Entity</TableHead>
-                <TableHead>Statutory Service</TableHead>
-                <TableHead>Lifecycle State</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Officer</TableHead>
-                <TableHead>SLA Progress</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {applications.map((app) => (
-                <TableRow key={app.id}>
-                  <TableCell className="font-mono text-xs font-bold text-foreground">
-                    #{app.applicationNumber}
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-0.5">
-                      <span className="font-semibold text-xs text-foreground block">
-                        {app.client?.fullName || app.client?.businessName || "Client"}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        {app.client?.phone || app.client?.email || ""}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-medium text-xs text-foreground block">
-                      {app.service?.name || "Statutory Service"}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {app.service?.category?.name || "Government Filing"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={app.status} size="sm" />
-                  </TableCell>
-                  <TableCell>
-                    <PriorityBadge priority={app.priority} size="sm" />
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {app.assignedAdmin ? (
-                      <span className="inline-flex items-center gap-1 font-semibold text-foreground">
-                        <UserCheck className="size-3 text-emerald-600" />
-                        {app.assignedAdmin.fullName || app.assignedAdmin.email}
-                      </span>
-                    ) : (
-                      <Badge tone="neutral" size="sm">
-                        Unassigned
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <SlaBadge status={app.slaStatus} size="sm" />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Link href={`/admin/applications/${app.id}`}>
-                      <Button variant="gold" size="xs" rightIcon={<ChevronRight className="size-3.5" />}>
-                        Process
-                      </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. TABLE CONTAINER */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
+        {isLoading ? (
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load work queue items.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
+        ) : applications.length === 0 ? (
+          <div className="p-12 text-center space-y-2">
+            <h3 className="text-sm font-bold text-slate-800">No applications in selected queue</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              No statutory applications matched the current filters or workload bucket.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Dossier #</th>
+                    <th className="py-3 px-4">Client Entity</th>
+                    <th className="py-3 px-4">Statutory Service</th>
+                    <th className="py-3 px-4">Lifecycle State</th>
+                    <th className="py-3 px-4">Priority</th>
+                    <th className="py-3 px-4">Officer</th>
+                    <th className="py-3 px-4">SLA Progress</th>
+                    <th className="py-3 px-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {applications.map((app) => (
+                    <tr key={app.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                        #{app.applicationNumber}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 text-xs">
+                            {app.client?.fullName || app.client?.businessName || "Client"}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {app.client?.phone || app.client?.email || ""}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-slate-900 text-xs block group-hover:text-amber-700 transition-colors">
+                          {app.service?.name || "Statutory Service"}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {app.service?.category?.name || "Government Filing"}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <StatusBadge status={app.status} size="sm" />
+                      </td>
+                      <td className="py-3 px-4">
+                        <PriorityBadge priority={app.priority} size="sm" />
+                      </td>
+                      <td className="py-3 px-4">
+                        {app.assignedAdmin ? (
+                          <span className="inline-flex items-center gap-1 font-bold text-slate-800 text-[11px]">
+                            <UserCheck className="size-3 text-emerald-600" />
+                            {app.assignedAdmin.fullName || app.assignedAdmin.email}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                            Unassigned
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <SlaBadge status={app.slaStatus} size="sm" />
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link href={`/admin/applications/${app.id}`}>
+                          <button className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors bg-amber-50 hover:bg-amber-100/80 px-2.5 py-1 rounded-lg border border-amber-200/60">
+                            <span>Process Dossier</span>
+                            <ChevronRight className="size-3.5" />
+                          </button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          {pagination && (
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.total}
-              pageSize={pagination.limit}
-              onChange={(p) => setPage(p)}
-            />
-          )}
-        </div>
-      )}
+            {/* PAGINATION FOOTER */}
+            {pagination && (pagination.totalPages ?? 0) > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* NEW APPLICATION INTAKE MODAL */}
       <Modal
@@ -483,6 +526,6 @@ export default function AdminApplicationsPage() {
           </FormField>
         </div>
       </Modal>
-    </PageShell>
+    </div>
   );
 }

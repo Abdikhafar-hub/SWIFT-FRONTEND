@@ -97,173 +97,188 @@ export default function AdminActionDetailPage() {
   }
 
   return (
-    <PageShell
-      eyebrow={`CLIENT DIRECTIVE • #${matchedAction.id.slice(0, 8)}`}
-      title={matchedAction.title}
-      description={`Application: #${matchedApp?.applicationNumber || matchedAction.applicationId} • Priority: ${matchedAction.priority}`}
-      actions={
-        <div className="flex items-center gap-2">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/80">
+              Directive #{matchedAction.id.slice(0, 8)}
+            </span>
+            <span className="text-xs text-slate-500 font-medium">
+              Dossier #{matchedApp?.applicationNumber || matchedAction.applicationId}
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-1">
+            {matchedAction.title}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
           <Link href="/admin/actions">
-            <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="size-3.5" />}>
-              Action Center
-            </Button>
+            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-xs">
+              <ArrowLeft className="size-3.5 text-slate-500" />
+              <span>Action Center</span>
+            </button>
           </Link>
           {matchedApp && (
             <Link href={`/admin/applications/${matchedApp.id}`}>
-              <Button variant="gold" size="sm" rightIcon={<ExternalLink className="size-3.5" />}>
-                View Application Dossier
-              </Button>
+              <button className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                <span>View Dossier</span>
+                <ExternalLink className="size-3.5" />
+              </button>
             </Link>
           )}
         </div>
-      }
-    >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Left 2 Cols: Directive Specification */}
-        <div className="space-y-6 lg:col-span-2">
-          <Card padding="md" className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div className="space-y-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Statutory Directive Description
+        <div className="space-y-4 lg:col-span-2">
+          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  Statutory Directive Specification
                 </span>
-                <h3 className="text-base font-bold text-foreground">{matchedAction.title}</h3>
+                <h3 className="text-base font-bold text-slate-900">{matchedAction.title}</h3>
               </div>
               <div className="flex items-center gap-2">
                 <PriorityBadge priority={matchedAction.priority} size="sm" />
-                <Badge
-                  tone={
+                <span
+                  className={`text-[10px] font-bold px-2.5 py-0.5 rounded-md border ${
                     matchedAction.status === "COMPLETED"
-                      ? "success"
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
                       : matchedAction.status === "CANCELLED"
-                      ? "neutral"
-                      : "warning"
-                  }
-                  size="md"
+                      ? "bg-slate-100 text-slate-600 border-slate-200"
+                      : "bg-amber-50 text-amber-800 border-amber-200/80"
+                  }`}
                 >
                   {matchedAction.status}
-                </Badge>
+                </span>
               </div>
             </div>
 
-            <div className="text-xs leading-relaxed text-foreground whitespace-pre-wrap rounded-xs border border-border bg-muted/20 p-3.5">
+            <div className="text-xs leading-relaxed text-slate-700 whitespace-pre-wrap rounded-xl border border-slate-200/80 bg-slate-50 p-3.5 font-medium">
               {matchedAction.description}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Directive Type</span>
-                <strong className="text-foreground">{matchedAction.actionType}</strong>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Directive Type</span>
+                <strong className="text-slate-900 font-bold block mt-0.5">{matchedAction.actionType}</strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Due Date</span>
-                <strong className="text-foreground">
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Due Date</span>
+                <strong className="text-slate-900 font-mono font-bold block mt-0.5">
                   {matchedAction.dueAt ? formatDate(matchedAction.dueAt) : "No Fixed Deadline"}
                 </strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Created Date</span>
-                <span className="text-foreground">{formatDate(matchedAction.createdAt)}</span>
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Created Date</span>
+                <span className="text-slate-700 font-mono font-semibold block mt-0.5">{formatDate(matchedAction.createdAt)}</span>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Resolved Date</span>
-                <span className="text-foreground">
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3">
+                <span className="text-slate-400 block text-[10px] font-extrabold uppercase tracking-wider">Resolved Date</span>
+                <span className="text-slate-700 font-mono font-semibold block mt-0.5">
                   {matchedAction.completedAt ? formatDate(matchedAction.completedAt) : "Pending"}
                 </span>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* Action Control Panel */}
           {matchedAction.status === "OPEN" && (
-            <Card padding="md" className="space-y-3">
-              <h4 className="text-sm font-bold text-foreground">Operational Action Controls</h4>
-              <p className="text-xs text-muted-foreground">
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3">
+              <h4 className="text-sm font-bold text-slate-900">Operational Action Controls</h4>
+              <p className="text-xs text-slate-500 font-medium">
                 Administrative intervention options for this directive.
               </p>
-              <div className="flex items-center gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10"
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                <button
                   onClick={() => setIsCancelModalOpen(true)}
+                  className="px-3 py-1.5 bg-rose-50 text-rose-700 border border-rose-200/80 rounded-lg text-xs font-bold hover:bg-rose-100 transition-colors"
                 >
                   Cancel Directive
-                </Button>
+                </button>
                 {matchedApp && (
                   <Link href={`/admin/applications/${matchedApp.id}`}>
-                    <Button variant="gold" size="sm">
+                    <button className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors">
                       Inspect in Application 360
-                    </Button>
+                    </button>
                   </Link>
                 )}
               </div>
-            </Card>
+            </div>
           )}
         </div>
 
         {/* Right Col: Host Application & Client Profile */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {matchedApp && (
-            <Card padding="md" className="space-y-3 text-xs">
-              <h4 className="text-sm font-bold text-foreground">Host Application</h4>
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
+              <h4 className="text-sm font-bold text-slate-900">Host Application</h4>
               <div className="space-y-2">
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Dossier #</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Dossier #</span>
                   <Link
                     href={`/admin/applications/${matchedApp.id}`}
-                    className="font-mono font-bold text-navy dark:text-gold hover:underline"
+                    className="font-mono font-bold text-amber-700 hover:underline"
                   >
                     #{matchedApp.applicationNumber}
                   </Link>
                 </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Service</span>
-                  <span className="font-semibold text-foreground">{matchedApp.service?.name}</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Service</span>
+                  <span className="font-bold text-slate-900">{matchedApp.service?.name}</span>
                 </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Status</span>
-                  <Badge tone="neutral" size="sm">{matchedApp.status}</Badge>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Status</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                    {matchedApp.status}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Priority</span>
+                  <span className="text-slate-500 font-medium">Priority</span>
                   <PriorityBadge priority={matchedApp.priority} size="sm" />
                 </div>
               </div>
-            </Card>
+            </div>
           )}
 
           {matchedApp?.client && (
-            <Card padding="md" className="space-y-3 text-xs">
-              <h4 className="text-sm font-bold text-foreground">Client Entity</h4>
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
+              <h4 className="text-sm font-bold text-slate-900">Client Entity</h4>
               <div className="space-y-2">
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Client Name</span>
-                  <span className="font-bold text-foreground">
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Client Name</span>
+                  <span className="font-bold text-slate-900">
                     {matchedApp.client.fullName || matchedApp.client.businessName}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Email</span>
-                  <span className="text-foreground">{matchedApp.client.email}</span>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Email</span>
+                  <span className="text-slate-700 font-medium">{matchedApp.client.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phone</span>
-                  <span className="font-mono text-foreground">{matchedApp.client.phone || "N/A"}</span>
+                  <span className="text-slate-500 font-medium">Phone</span>
+                  <span className="font-mono text-slate-700 font-medium">{matchedApp.client.phone || "N/A"}</span>
                 </div>
               </div>
-              <div className="pt-2 border-t border-border">
+              <div className="pt-2 border-t border-slate-100">
                 <Link
                   href={`/admin/clients/${matchedApp.client.id}`}
-                  className="text-xs font-semibold text-gold-dark dark:text-gold hover:underline block text-center"
+                  className="text-xs font-bold text-amber-700 hover:underline block text-center"
                 >
                   View Full Client 360 Dossier
                 </Link>
               </div>
-            </Card>
+            </div>
           )}
         </div>
       </div>
@@ -287,7 +302,7 @@ export default function AdminActionDetailPage() {
               />
             </FormField>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
               <Button
                 variant="outline"
                 size="sm"
@@ -309,6 +324,6 @@ export default function AdminActionDetailPage() {
           </div>
         </Modal>
       )}
-    </PageShell>
+    </div>
   );
 }

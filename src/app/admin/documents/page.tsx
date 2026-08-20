@@ -106,204 +106,258 @@ export default function AdminDocumentsPage() {
   const paginatedDocs = filteredDocuments.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <PageShell
-      eyebrow="CLIENT OPERATIONS"
-      title="Central Document Vault & Expiry Monitor"
-      description="All statutory client documents, identity certifications, registry filings, and automatic expiry sweeps."
-      actions={
-        <Button
-          variant="gold"
-          size="sm"
-          isLoading={sweepMutation.isPending}
-          leftIcon={<RefreshCw className="size-3.5" />}
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Central Document Vault &amp; Expiry Monitor
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            All statutory client documents, identity certifications, registry filings, and automatic expiry sweeps.
+          </p>
+        </div>
+
+        <button
           onClick={() => sweepMutation.mutate()}
+          disabled={sweepMutation.isPending}
+          className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 shrink-0 self-start sm:self-auto disabled:opacity-50 transform hover:-translate-y-0.5"
         >
-          Run Document Expiry Sweep
-        </Button>
-      }
-    >
-      {/* 1. VAULT METRICS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Vault Documents"
-          value={totalCount}
-          subtitle="Across all active dossiers"
-          icon={<FileText className="size-5 text-navy dark:text-gold" />}
-        />
+          <RefreshCw className={`size-3.5 ${sweepMutation.isPending ? "animate-spin" : ""}`} />
+          <span>Run Document Expiry Sweep</span>
+        </button>
+      </div>
 
-        <StatCard
-          title="Verified & Approved"
-          value={approvedCount}
-          subtitle="Statutory compliance checked"
-          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
-        />
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. VAULT METRICS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Vault Documents</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">{totalCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Across active dossiers</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <FileText className="size-4" />
+          </div>
+        </div>
 
-        <StatCard
-          title="Pending Officer Review"
-          value={submittedCount}
-          subtitle="Requires compliance verification"
-          variant={submittedCount > 0 ? "gold" : "default"}
-          icon={<Clock className="size-5 text-gold-dark dark:text-gold" />}
-        />
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Verified &amp; Approved</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">{approvedCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Compliance checked</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <CheckCircle2 className="size-4" />
+          </div>
+        </div>
 
-        <StatCard
-          title="Flagged / Rejected"
-          value={rejectedCount}
-          subtitle="Document defects identified"
-          variant={rejectedCount > 0 ? "elevated" : "default"}
-          icon={<AlertTriangle className="size-5 text-destructive" />}
-        />
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Pending Officer Review</span>
+            <span className="text-xl font-extrabold text-amber-600 font-mono mt-0.5 block">{submittedCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Requires verification</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <Clock className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Flagged / Rejected</span>
+            <span className="text-xl font-extrabold text-rose-600 font-mono mt-0.5 block">{rejectedCount}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Defects identified</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
+            <AlertTriangle className="size-4" />
+          </div>
+        </div>
       </div>
 
       {/* EXPIRY SWEEP BANNER */}
       {sweepResult && (
-        <div className="mt-4 rounded-xs border border-emerald-500/40 bg-emerald-500/10 p-3.5 flex items-center justify-between text-xs">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-600" />
-            <span className="font-bold text-foreground">
+            <span className="font-bold text-emerald-900">
               Document Expiry Sweep Executed: Checked {sweepResult.checkedCount || totalCount} documents.
             </span>
           </div>
-          <Button variant="ghost" size="xs" onClick={() => setSweepResult(null)}>
+          <button
+            onClick={() => setSweepResult(null)}
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-900"
+          >
             Dismiss
-          </Button>
+          </button>
         </div>
       )}
 
-      {/* 2. FILTERS & SEARCH */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. FILTERS & SEARCH */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by document type, file name, client, or case #..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          <Select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            className="w-48 text-xs"
-            options={[
-              { value: "ALL", label: "All Document States" },
-              { value: "SUBMITTED", label: "Pending Review" },
-              { value: "APPROVED", label: "Approved" },
-              { value: "REJECTED", label: "Rejected" },
-              { value: "PENDING", label: "Pending Upload" },
-            ]}
-          />
-        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
+          className="w-full sm:w-52 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold text-slate-700"
+        >
+          <option value="ALL">All Document States</option>
+          <option value="SUBMITTED">Pending Review</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="PENDING">Pending Upload</option>
+        </select>
       </div>
 
-      {/* 3. DOCUMENTS VAULT TABLE */}
-      <div className="mt-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. DOCUMENTS VAULT TABLE */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : error ? (
-          <ErrorState onRetry={() => refetch()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load document vault.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : filteredDocuments.length === 0 ? (
-          <EmptyState
-            icon={<FileText className="size-7" />}
-            title="No documents found"
-            description="Uploaded client documentation will appear in this centralized repository."
-          />
+          <div className="p-12 text-center space-y-2">
+            <h3 className="text-sm font-bold text-slate-800">No documents found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              Uploaded client documentation will appear in this centralized repository.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Document Key / Type</TableHead>
-                  <TableHead>Dossier #</TableHead>
-                  <TableHead>Client Entity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>File Size / Format</TableHead>
-                  <TableHead>Upload Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedDocs.map(({ req, application }) => (
-                  <TableRow key={req.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <Link
-                        href={`/admin/documents/${req.id}`}
-                        className="font-semibold text-xs text-navy dark:text-gold hover:underline block"
-                      >
-                        {req.documentName || req.requirementKey?.replace(/_/g, " ") || "Statutory Document"}
-                      </Link>
-                      <span className="font-mono text-[11px] text-muted-foreground block">
-                        {req.requirementKey}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/applications/${application.id}`}
-                        className="font-mono text-xs font-bold text-foreground hover:underline"
-                      >
-                        #{application.applicationNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-xs text-foreground font-semibold">
-                      {application.client?.fullName || application.client?.businessName || "Verified Client"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        tone={
-                          req.status === "APPROVED"
-                            ? "success"
-                            : req.status === "REJECTED"
-                            ? "destructive"
-                            : req.status === "SUBMITTED"
-                            ? "gold"
-                            : "neutral"
-                        }
-                        size="sm"
-                      >
-                        {req.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs font-mono text-muted-foreground">
-                      {req.fileSize ? `${Math.round(req.fileSize / 1024)} KB` : "—"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground font-mono">
-                      {formatDate(req.uploadedAt || req.updatedAt || req.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Link href={`/admin/documents/${req.id}`}>
-                          <Button variant="ghost" size="xs" leftIcon={<Eye className="size-3.5" />}>
-                            Inspect
-                          </Button>
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Document Key / Type</th>
+                    <th className="py-3 px-4">Dossier #</th>
+                    <th className="py-3 px-4">Client Entity</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">File Size / Format</th>
+                    <th className="py-3 px-4">Upload Date</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {paginatedDocs.map(({ req, application }) => (
+                    <tr key={req.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/admin/documents/${req.id}`}
+                          className="font-bold text-xs text-slate-900 group-hover:text-amber-700 transition-colors block"
+                        >
+                          {req.documentName || req.requirementKey?.replace(/_/g, " ") || "Statutory Document"}
                         </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                        <span className="font-mono text-[10px] text-slate-400 block mt-0.5">
+                          {req.requirementKey}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/admin/applications/${application.id}`}
+                          className="font-mono text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
+                        >
+                          #{application.applicationNumber}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-800 font-semibold">
+                        {application.client?.fullName || application.client?.businessName || "Verified Client"}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                          req.status === "APPROVED"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                            : req.status === "REJECTED"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : req.status === "SUBMITTED"
+                            ? "bg-amber-50 text-amber-800 border-amber-200/80"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}>
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs font-mono text-slate-500">
+                        {req.fileSize ? `${Math.round(req.fileSize / 1024)} KB` : "—"}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-medium">
+                        {formatDate(req.uploadedAt || req.updatedAt || req.createdAt)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link href={`/admin/documents/${req.id}`}>
+                          <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all inline-flex items-center gap-1">
+                            <Eye className="size-3 text-slate-500" />
+                            <span>Inspect</span>
+                          </button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalItems={filteredDocuments.length}
-              pageSize={pageSize}
-              onChange={(p) => setPage(p)}
-            />
+            {/* PAGINATION FOOTER */}
+            {totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {page} of {totalPages} ({filteredDocuments.length} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-    </PageShell>
+    </div>
   );
 }

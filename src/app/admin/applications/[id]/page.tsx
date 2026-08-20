@@ -196,30 +196,43 @@ export default function AdminApplicationDetailPage() {
   const clientActions = application.clientActions || [];
 
   return (
-    <PageShell
-      eyebrow={`DOSSIER #${application.applicationNumber}`}
-      title={application.service?.name || "Statutory Dossier"}
-      description={`Client: ${application.client?.fullName || application.client?.businessName || "Verified Entity"} • Reference: ${application.id}`}
-      actions={
-        <div className="flex items-center gap-2">
-          <Link href="/admin/applications">
-            <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="size-3.5" />}>
-              Work Queue
-            </Button>
-          </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-gold-dark border-gold/40 hover:bg-gold/10"
-            leftIcon={<ShieldCheck className="size-4" />}
-            onClick={() => setIsQcModalOpen(true)}
-          >
-            Statutory QC
-          </Button>
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+              DOSSIER #{application.applicationNumber}
+            </span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
+            {application.service?.name || "Statutory Dossier"}
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Client: <strong className="text-slate-800">{application.client?.fullName || application.client?.businessName || "Verified Entity"}</strong> • Reference ID: <span className="font-mono text-slate-600">{application.id}</span>
+          </p>
         </div>
-      }
-    >
-      {/* 1. TOP STATUS & SLA COMPLIANCE CONTROL PANEL */}
+
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+          <Link href="/admin/applications">
+            <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-1.5">
+              <ArrowLeft className="size-3.5" />
+              <span>Work Queue</span>
+            </button>
+          </Link>
+          <button
+            onClick={() => setIsQcModalOpen(true)}
+            className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 transform hover:-translate-y-0.5"
+          >
+            <ShieldCheck className="size-3.5 stroke-[2.5]" />
+            <span>Statutory QC Audit</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. TOP STATUS & SLA COMPLIANCE CONTROL PANEL */}
       <AdminStatusControl
         application={application}
         onUpdated={() => {
@@ -228,27 +241,27 @@ export default function AdminApplicationDetailPage() {
         }}
       />
 
-      {/* 2. DOSSIER 7-TAB NAVIGATION */}
-      <div className="mt-6 flex flex-wrap items-center gap-1 border-b border-border pb-1">
+      {/* 3. DOSSIER 7-TAB NAVIGATION */}
+      <div className="flex flex-wrap items-center gap-1.5 pb-1 border-b border-slate-200/60">
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "overview"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
-          <span>1. Overview & Readiness</span>
+          <span>1. Overview &amp; Readiness</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("requirements")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "requirements"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <FileCheck className="size-3.5" />
@@ -258,36 +271,36 @@ export default function AdminApplicationDetailPage() {
         <button
           type="button"
           onClick={() => setActiveTab("government")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "government"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <Landmark className="size-3.5" />
-          <span>3. Government Filings ({governmentApplications.length})</span>
+          <span>3. Gov Filings ({governmentApplications.length})</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("financials")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "financials"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <DollarSign className="size-3.5" />
-          <span>4. Financials & Settlement</span>
+          <span>4. Financials</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab("documents")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "documents"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <FolderOpen className="size-3.5" />
@@ -297,10 +310,10 @@ export default function AdminApplicationDetailPage() {
         <button
           type="button"
           onClick={() => setActiveTab("delivery")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "delivery"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <Truck className="size-3.5" />
@@ -310,14 +323,14 @@ export default function AdminApplicationDetailPage() {
         <button
           type="button"
           onClick={() => setActiveTab("notes")}
-          className={`flex items-center gap-2 rounded-xs px-3.5 py-2 text-xs font-bold transition-all ${
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
             activeTab === "notes"
-              ? "border-b-2 border-gold text-gold-dark dark:text-gold bg-gold/5"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              ? "bg-slate-900 text-white shadow-xs"
+              : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
           }`}
         >
           <MessageSquare className="size-3.5" />
-          <span>7. Notes & Actions ({notes.length})</span>
+          <span>7. Notes &amp; Actions ({notes.length})</span>
         </button>
       </div>
 
@@ -1182,6 +1195,6 @@ export default function AdminApplicationDetailPage() {
           receiptId={selectedReceiptId}
         />
       )}
-    </PageShell>
+    </div>
   );
 }

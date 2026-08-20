@@ -75,144 +75,205 @@ export default function AdminReceiptsPage() {
   const totalReceiptsAmount = filteredReceipts.reduce((sum, r) => sum + (r.amount || 0), 0);
 
   return (
-    <PageShell
-      eyebrow="FINANCIAL OPERATIONS"
-      title="Official Statutory Receipts"
-      description="Fiscal receipts, automated VAT invoices, and statutory payment certifications issued to clients."
-    >
-      {/* 1. RECEIPTS METRICS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Receipts Issued"
-          value={pagination?.total || rawReceipts.length}
-          subtitle="Certified official receipts"
-          icon={<FileCheck className="size-5 text-navy dark:text-gold" />}
-        />
-
-        <StatCard
-          title="Gross Value Receipted"
-          value={formatCurrency(summary?.totalCollected || totalReceiptsAmount)}
-          subtitle="Cumulative receipted revenue"
-          icon={<DollarSign className="size-5 text-emerald-600" />}
-        />
-
-        <StatCard
-          title="M-Pesa Receipts"
-          value={rawReceipts.filter((r) => r.paymentMethod === "MPESA").length}
-          subtitle="Mobile money confirmations"
-          icon={<CreditCard className="size-5 text-gold-dark dark:text-gold" />}
-        />
-
-        <StatCard
-          title="Bank / EFT Receipts"
-          value={rawReceipts.filter((r) => r.paymentMethod !== "MPESA").length}
-          subtitle="Wire & direct transfers"
-          icon={<FileText className="size-5 text-muted-foreground" />}
-        />
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {/* ------------------------------------------------------------------ */}
+      {/* 1. HEADER SECTION */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-slate-200/60">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            Official Statutory Receipts
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Fiscal receipts, automated VAT invoices, and statutory payment certifications issued to clients.
+          </p>
+        </div>
       </div>
 
-      {/* 2. FILTERS & SEARCH */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-3 max-w-md">
-          <Input
+      {/* ------------------------------------------------------------------ */}
+      {/* 2. RECEIPTS METRICS */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Total Receipts Issued</span>
+            <span className="text-xl font-extrabold text-slate-900 font-mono mt-0.5 block">{pagination?.total || rawReceipts.length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Certified official receipts</span>
+          </div>
+          <div className="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+            <FileCheck className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Gross Value Receipted</span>
+            <span className="text-xl font-extrabold text-emerald-600 font-mono mt-0.5 block">{formatCurrency(summary?.totalCollected || totalReceiptsAmount)}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Cumulative receipted revenue</span>
+          </div>
+          <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+            <DollarSign className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">M-Pesa Receipts</span>
+            <span className="text-xl font-extrabold text-amber-700 font-mono mt-0.5 block">{rawReceipts.filter((r) => r.paymentMethod === "MPESA").length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Mobile money confirmations</span>
+          </div>
+          <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60">
+            <CreditCard className="size-4" />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Bank / EFT Receipts</span>
+            <span className="text-xl font-extrabold text-slate-700 font-mono mt-0.5 block">{rawReceipts.filter((r) => r.paymentMethod !== "MPESA").length}</span>
+            <span className="text-[10px] text-slate-500 font-medium">Wire &amp; direct transfers</span>
+          </div>
+          <div className="p-2 rounded-xl bg-slate-100 text-slate-600 border border-slate-200">
+            <FileText className="size-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 3. FILTERS & SEARCH */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+          <input
+            type="text"
             placeholder="Search by receipt #, payment reference, or client..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            leftAddon={<Search className="size-4" />}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-slate-800 placeholder-slate-400"
           />
         </div>
       </div>
 
-      {/* 3. RECEIPTS TABLE */}
-      <div className="mt-6">
+      {/* ------------------------------------------------------------------ */}
+      {/* 4. RECEIPTS TABLE */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] overflow-hidden">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="p-6 space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+            ))}
           </div>
         ) : error ? (
-          <ErrorState onRetry={() => refetch()} />
+          <div className="p-8 text-center space-y-3">
+            <p className="text-xs font-bold text-rose-600">Failed to load receipts.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
         ) : filteredReceipts.length === 0 ? (
-          <EmptyState
-            icon={<FileCheck className="size-7" />}
-            title="No receipts recorded"
-            description="Receipts generated upon payment settlement will appear in this ledger."
-          />
+          <div className="p-12 text-center space-y-3">
+            <FileCheck className="size-8 text-slate-300 mx-auto" />
+            <h3 className="text-sm font-bold text-slate-800">No receipts recorded</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              Receipts generated upon payment settlement will appear in this ledger.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Receipt #</TableHead>
-                  <TableHead>Invoice / Payment Ref</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Payment Method</TableHead>
-                  <TableHead>Issued Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredReceipts.map((receipt) => (
-                  <TableRow key={receipt.id} className="hover:bg-muted/30">
-                    <TableCell>
-                      <Link
-                        href={`/admin/receipts/${receipt.id}`}
-                        className="font-mono text-xs font-bold text-navy dark:text-gold hover:underline block"
-                      >
-                        {receipt.receiptNumber || `#${receipt.id.slice(0, 8)}`}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/invoices/${receipt.paymentId}`}
-                        className="font-mono text-xs text-muted-foreground hover:underline"
-                      >
-                        #{receipt.paymentId.slice(0, 8)}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs font-bold text-foreground">
-                      {formatCurrency(receipt.amount)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge tone="neutral" size="sm">{receipt.paymentMethod}</Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground font-mono">
-                      {formatDate(receipt.issuedAt || receipt.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          leftIcon={<Eye className="size-3.5" />}
-                          onClick={() => setSelectedReceipt(receipt)}
+          <div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    <th className="py-3 px-4">Receipt #</th>
+                    <th className="py-3 px-4">Invoice / Payment Ref</th>
+                    <th className="py-3 px-4">Amount</th>
+                    <th className="py-3 px-4">Payment Method</th>
+                    <th className="py-3 px-4">Issued Date</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {filteredReceipts.map((receipt) => (
+                    <tr key={receipt.id} className="hover:bg-slate-50/80 transition-colors group">
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/admin/receipts/${receipt.id}`}
+                          className="font-mono text-xs font-bold text-amber-700 hover:underline block"
                         >
-                          Preview
-                        </Button>
-                        <Link href={`/admin/receipts/${receipt.id}`}>
-                          <Button variant="ghost" size="xs">
-                            Dossier
-                          </Button>
+                          {receipt.receiptNumber || `#${receipt.id.slice(0, 8)}`}
                         </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Link
+                          href={`/admin/invoices/${receipt.paymentId}`}
+                          className="font-mono text-xs text-slate-500 font-semibold hover:underline"
+                        >
+                          #{receipt.paymentId.slice(0, 8)}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-xs font-bold text-slate-900">
+                        {formatCurrency(receipt.amount)}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                          {receipt.paymentMethod}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 font-mono">
+                        {formatDate(receipt.issuedAt || receipt.createdAt)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedReceipt(receipt)}
+                            className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all inline-flex items-center gap-1"
+                          >
+                            <Eye className="size-3 text-slate-500" />
+                            <span>Preview</span>
+                          </button>
+                          <Link href={`/admin/receipts/${receipt.id}`}>
+                            <span className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-2.5 py-1 rounded-lg transition-all inline-block">
+                              Dossier
+                            </span>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-            {pagination && (
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.total}
-                pageSize={pagination.limit}
-                onChange={(p) => setPage(p)}
-              />
+            {pagination && pagination.totalPages > 1 && (
+              <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-600">
+                <span>
+                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -226,6 +287,6 @@ export default function AdminReceiptsPage() {
           onClose={() => setSelectedReceipt(null)}
         />
       )}
-    </PageShell>
+    </div>
   );
 }
