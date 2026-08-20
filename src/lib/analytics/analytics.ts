@@ -10,7 +10,6 @@ type EventParams = Record<string, string | number | boolean>;
  */
 export function trackEvent(name: string, params?: EventParams): void {
   if (typeof window === "undefined") return;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const gtag = (window as any).gtag;
   if (typeof gtag !== "function") return;
 

@@ -386,6 +386,61 @@ export default function AdminApplicationDetailPage() {
                 </Card>
               )}
 
+              {/* Visa Application Specific Context Card */}
+              {(() => {
+                const meta = (application.metadata || {}) as Record<string, any>;
+                if (!meta.destinationCountry && !meta.passportNumber && !meta.visaCategory) return null;
+                return (
+                  <Card padding="md" className="space-y-3 border-gold/40 bg-gold/5">
+                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Landmark className="size-4 text-gold" />
+                      <span>Consular Intake & Visa Passport Parameters</span>
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      {meta.destinationCountry && (
+                        <div className="rounded-xs border border-border bg-card p-2.5">
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Destination Country</span>
+                          <strong className="text-foreground">{String(meta.destinationCountry)}</strong>
+                        </div>
+                      )}
+                      {meta.visaCategory && (
+                        <div className="rounded-xs border border-border bg-card p-2.5">
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Visa Category</span>
+                          <strong className="text-foreground">{String(meta.visaCategory)}</strong>
+                        </div>
+                      )}
+                      {meta.passportNumber && (
+                        <div className="rounded-xs border border-border bg-card p-2.5">
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Passport Number</span>
+                          <strong className="font-mono text-foreground">{String(meta.passportNumber)}</strong>
+                        </div>
+                      )}
+                      {meta.passportExpiry && (
+                        <div className="rounded-xs border border-border bg-card p-2.5">
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Passport Expiry</span>
+                          <strong className="font-mono text-foreground">{String(meta.passportExpiry)}</strong>
+                        </div>
+                      )}
+                      {(meta.travelStartDate || meta.travelEndDate) && (
+                        <div className="rounded-xs border border-border bg-card p-2.5 sm:col-span-2">
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Intended Travel Period</span>
+                          <strong className="text-foreground">
+                            {meta.travelStartDate ? String(meta.travelStartDate) : "N/A"} to{" "}
+                            {meta.travelEndDate ? String(meta.travelEndDate) : "N/A"}
+                          </strong>
+                        </div>
+                      )}
+                      {meta.processingEmbassy && (
+                        <div className="rounded-xs border border-border bg-card p-2.5 sm:col-span-2">
+                          <span className="text-muted-foreground block text-[10px] uppercase font-bold">Processing Authority / Embassy</span>
+                          <strong className="text-gold-dark dark:text-gold">{String(meta.processingEmbassy)}</strong>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })()}
+
               {/* Client Action Items Bar */}
               <Card padding="md" className="space-y-3">
                 <div className="flex items-center justify-between">

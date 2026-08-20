@@ -232,35 +232,48 @@ export default function ClientDashboardPage() {
               >
                 <div className="flex flex-col">
                   <span className="font-semibold text-foreground group-hover:text-gold transition-colors">
+                    UK Visitor & Student Visas
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">UKVI & TLScontact Document Dossiers</span>
+                </div>
+                <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-foreground" />
+              </Link>
+
+              <Link
+                href="/client/services"
+                className="flex items-center justify-between p-2.5 rounded-xs border border-border/70 hover:border-gold hover:bg-gold/5 transition-all group"
+              >
+                <div className="flex flex-col">
+                  <span className="font-semibold text-foreground group-hover:text-gold transition-colors">
+                    US B1/B2 & F1 Visas
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">DS-160 Prep & Embassy Interview Slot</span>
+                </div>
+                <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-foreground" />
+              </Link>
+
+              <Link
+                href="/client/services"
+                className="flex items-center justify-between p-2.5 rounded-xs border border-border/70 hover:border-gold hover:bg-gold/5 transition-all group"
+              >
+                <div className="flex flex-col">
+                  <span className="font-semibold text-foreground group-hover:text-gold transition-colors">
+                    Schengen (France, Germany, Czech)
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">VFS Global & Embassy Processing</span>
+                </div>
+                <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-foreground" />
+              </Link>
+
+              <Link
+                href="/client/services"
+                className="flex items-center justify-between p-2.5 rounded-xs border border-border/70 hover:border-gold hover:bg-gold/5 transition-all group"
+              >
+                <div className="flex flex-col">
+                  <span className="font-semibold text-foreground group-hover:text-gold transition-colors">
                     BRS Company Incorporation
                   </span>
                   <span className="text-[10px] text-muted-foreground">CR1, CR2, CR8 Packages</span>
-                </div>
-                <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-foreground" />
-              </Link>
-
-              <Link
-                href="/client/services"
-                className="flex items-center justify-between p-2.5 rounded-xs border border-border/70 hover:border-gold hover:bg-gold/5 transition-all group"
-              >
-                <div className="flex flex-col">
-                  <span className="font-semibold text-foreground group-hover:text-gold transition-colors">
-                    KRA Tax Compliance Certificate
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">TCC Clearance & Pin Registration</span>
-                </div>
-                <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-foreground" />
-              </Link>
-
-              <Link
-                href="/client/services"
-                className="flex items-center justify-between p-2.5 rounded-xs border border-border/70 hover:border-gold hover:bg-gold/5 transition-all group"
-              >
-                <div className="flex flex-col">
-                  <span className="font-semibold text-foreground group-hover:text-gold transition-colors">
-                    NSSF & SHA Statutory Compliance
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">Employer Registry & Monthly Returns</span>
                 </div>
                 <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-foreground" />
               </Link>

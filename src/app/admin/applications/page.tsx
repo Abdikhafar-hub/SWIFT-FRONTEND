@@ -38,7 +38,7 @@ import { adminApi } from "@/lib/api/admin";
 import { formatDate } from "@/lib/utils/format";
 import type { ApplicationStatus, ApplicationPriority } from "@/types";
 
-type QueueTab = "all" | "unassigned" | "qc" | "government" | "dueSoon" | "overdue";
+type QueueTab = "all" | "visa" | "unassigned" | "qc" | "government" | "dueSoon" | "overdue";
 
 export default function AdminApplicationsPage() {
   const queryClient = useQueryClient();
@@ -84,7 +84,9 @@ export default function AdminApplicationsPage() {
         priority: priorityFilter || undefined,
       };
 
-      if (activeTab === "unassigned") {
+      if (activeTab === "visa") {
+        queueParams.search = search ? `visa ${search}` : "visa";
+      } else if (activeTab === "unassigned") {
         queueParams.needsAttention = "unassigned";
       } else if (activeTab === "qc") {
         queueParams.status = "DOCUMENT_REVIEW";
@@ -152,6 +154,22 @@ export default function AdminApplicationsPage() {
           }`}
         >
           <span>All Filings</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("visa");
+            setPage(1);
+          }}
+          className={`flex items-center gap-1.5 rounded-xs px-3 py-1.5 text-xs font-semibold transition-all ${
+            activeTab === "visa"
+              ? "bg-navy text-white dark:bg-gold dark:text-navy-dark shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Landmark className="size-3.5" />
+          <span>Visa Dossiers</span>
         </button>
 
         <button

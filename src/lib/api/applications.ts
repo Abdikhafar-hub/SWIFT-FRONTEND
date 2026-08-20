@@ -136,6 +136,19 @@ export const applicationsApi = {
   },
 
   /**
+   * Get SLA timeline and breakdown for an application
+   */
+  async getSlaTimeline(applicationId: string): Promise<any> {
+    const res = await apiClient.get<ApiResponse<any>>(
+      `/applications/${applicationId}/sla-timeline`
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch SLA timeline");
+    }
+    return res.data.data;
+  },
+
+  /**
    * Fetch direct client-to-officer messages for an application
    */
   async getMessages(applicationId: string): Promise<ApplicationMessage[]> {

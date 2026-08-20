@@ -35,6 +35,8 @@ import { RequirementSubmissionCard } from "@/components/domain/requirement-submi
 import { GovernmentTrackerCard } from "@/components/domain/government-tracker-card";
 import { ApplicationMessages } from "@/components/domain/application-messages";
 import { ApplicationTimelineView } from "@/components/domain/application-timeline-view";
+import { SlaTimelineView } from "@/components/domain/sla-timeline-view";
+import { DeliveryStatusView } from "@/components/domain/delivery-status-view";
 import { MpesaPaymentModal } from "@/components/domain/mpesa-payment-modal";
 import { ReceiptModal } from "@/components/domain/receipt-modal";
 import { Skeleton, ErrorState } from "@/components/ui/feedback-primitives";
@@ -44,7 +46,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { formatDate, formatKES } from "@/lib/utils/format";
 import type { ApplicationStatus, Receipt } from "@/types";
 
-type DossierTab = "requirements" | "government" | "financials" | "messages" | "timeline" | "delivery";
+type DossierTab = "requirements" | "government" | "financials" | "messages" | "timeline" | "delivery" | "sla";
 
 export default function ClientApplicationDetailPage() {
   const params = useParams();
@@ -163,7 +165,7 @@ export default function ClientApplicationDetailPage() {
               {application.service?.name}
             </h2>
             <span className="text-xs text-muted-foreground">
-              Authority: {application.service?.authority || application.service?.category?.name || "Official Registry"} &bull; Target SLA:{" "}
+              Authority: {application.service?.authority || application.service?.defaultGovernmentAgency || application.service?.category?.name || "Official Registry"} &bull; Target SLA:{" "}
               {application.service?.slaHours ? `${application.service.slaHours} Hours` : "2-4 Business Days"}
             </span>
           </div>
@@ -190,6 +192,52 @@ export default function ClientApplicationDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Visa Context Banner if metadata contains Visa details */}
+        {(() => {
+          const meta = (application.metadata || {}) as Record<string, any>;
+          if (!meta.destinationCountry && !meta.passportNumber && !meta.visaCategory) return null;
+          const rawPassport = meta.passportNumber ? String(meta.passportNumber) : "";
+          const maskedPassport = rawPassport.length > 4 ? `${rawPassport.slice(0, 3)}***${rawPassport.slice(-2)}` : rawPassport;
+
+          return (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 p-3.5 rounded-xs border border-gold/30 bg-gold/5 text-xs">
+              {meta.destinationCountry && (
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Destination</span>
+                  <span className="font-bold text-foreground">{String(meta.destinationCountry)}</span>
+                </div>
+              )}
+              {meta.visaCategory && (
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Visa Type</span>
+                  <span className="font-bold text-foreground">{String(meta.visaCategory)}</span>
+                </div>
+              )}
+              {meta.passportNumber && (
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Passport No.</span>
+                  <span className="font-mono font-bold text-foreground" title={rawPassport}>{maskedPassport}</span>
+                </div>
+              )}
+              {meta.passportExpiry && (
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Passport Expiry</span>
+                  <span className="font-mono font-semibold text-foreground">{String(meta.passportExpiry)}</span>
+                </div>
+              )}
+              {(meta.travelStartDate || meta.travelEndDate) && (
+                <div>
+                  <span className="text-[9px] uppercase font-extrabold text-gold-dark dark:text-gold block">Travel Dates</span>
+                  <span className="font-semibold text-foreground">
+                    {meta.travelStartDate ? String(meta.travelStartDate) : "TBD"}
+                    {meta.travelEndDate ? ` - ${String(meta.travelEndDate)}` : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Readiness Checklist Progress Bar */}
         <div className="space-y-1.5 pt-2 border-t border-border/70">
@@ -285,6 +333,18 @@ export default function ClientApplicationDetailPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab("sla")}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+            activeTab === "sla"
+              ? "border-gold text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Clock className="size-3.5" />
+          <span>SLA & Operational Performance</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab("timeline")}
           className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
             activeTab === "timeline"
@@ -296,19 +356,17 @@ export default function ClientApplicationDetailPage() {
           <span>Timeline & Audit Trail</span>
         </button>
 
-        {delivery && (
-          <button
-            onClick={() => setActiveTab("delivery")}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
-              activeTab === "delivery"
-                ? "border-gold text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Truck className="size-3.5" />
-            <span>Courier Delivery</span>
-          </button>
-        )}
+        <button
+          onClick={() => setActiveTab("delivery")}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 font-bold transition-all whitespace-nowrap ${
+            activeTab === "delivery"
+              ? "border-gold text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Truck className="size-3.5" />
+          <span>Courier Delivery</span>
+        </button>
       </div>
 
       {/* TAB CONTENT AREAS */}
@@ -529,7 +587,21 @@ export default function ClientApplicationDetailPage() {
         <ApplicationMessages applicationId={application.id} />
       )}
 
-      {/* 5. TIMELINE TAB */}
+      {/* 5. SLA TAB */}
+      {activeTab === "sla" && (
+        <SlaTimelineView
+          slaStatus={application.slaStatus}
+          startedAt={application.startedAt}
+          dueAt={application.dueAt || application.slaDueAt}
+          completedAt={application.completedAt}
+          pausedAt={application.pausedAt}
+          totalPausedDurationMinutes={application.totalPausedDuration}
+          slaEvents={application.slaEvents}
+          slaHours={application.service?.slaHours}
+        />
+      )}
+
+      {/* 6. TIMELINE TAB */}
       {activeTab === "timeline" && (
         <Card padding="md">
           <CardHeader>
@@ -541,59 +613,13 @@ export default function ClientApplicationDetailPage() {
         </Card>
       )}
 
-      {/* 6. DELIVERY TAB */}
-      {activeTab === "delivery" && delivery && (
-        <div className="rounded-sm border border-border bg-card p-6 space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-border/70">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xs bg-gold/15 text-gold">
-                <Truck className="size-5" />
-              </div>
-              <div>
-                <h4 className="font-display text-base font-bold text-foreground">
-                  Official Document Courier Dispatch
-                </h4>
-                <span className="text-xs text-muted-foreground">
-                  Method: {delivery.deliveryMethod} &bull; Courier: {delivery.courierName || "Swift Doc Courier"}
-                </span>
-              </div>
-            </div>
-            <span className="rounded-xs bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              {delivery.status}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="space-y-1">
-              <span className="text-muted-foreground">Recipient Name & Phone:</span>
-              <div className="font-bold text-foreground">
-                {delivery.recipientName} ({delivery.recipientPhone})
-              </div>
-            </div>
-            <div className="space-y-1">
-              <span className="text-muted-foreground">Delivery Destination Address:</span>
-              <div className="font-medium text-foreground">
-                {delivery.deliveryAddress || "Nairobi CBD Office"}
-              </div>
-            </div>
-            {delivery.trackingNumber && (
-              <div className="space-y-1">
-                <span className="text-muted-foreground">Courier Waybill / Tracking Number:</span>
-                <div className="font-mono font-bold text-foreground">
-                  {delivery.trackingNumber}
-                </div>
-              </div>
-            )}
-            {delivery.dispatchedAt && (
-              <div className="space-y-1">
-                <span className="text-muted-foreground">Dispatch Timestamp:</span>
-                <div className="text-foreground">
-                  {new Date(delivery.dispatchedAt).toLocaleString()}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* 7. DELIVERY TAB */}
+      {activeTab === "delivery" && (
+        <DeliveryStatusView
+          deliveries={deliveryData.length > 0 ? deliveryData : application.delivery || application.deliveries || []}
+          deliveredAt={application.deliveredAt}
+          status={application.status}
+        />
       )}
 
       {/* M-PESA PAYMENT MODAL */}
