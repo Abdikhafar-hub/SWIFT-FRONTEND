@@ -98,7 +98,7 @@ export function FileUpload({
         onDrop={handleDrop}
         onClick={() => !disabled && inputRef.current?.click()}
         className={cn(
-          "relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xs transition-all duration-200 cursor-pointer bg-card/50",
+          "relative flex flex-col items-center justify-center p-4 sm:p-6 border-2 border-dashed rounded-xs transition-all duration-200 cursor-pointer bg-card/50",
           dragActive
             ? "border-gold bg-gold/5 scale-[1.01]"
             : "border-border hover:border-gold/60 hover:bg-gold/5",
@@ -116,22 +116,22 @@ export function FileUpload({
         />
 
         {selectedFile ? (
-          <div className="flex w-full items-center justify-between gap-4">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xs bg-gold/15 text-gold">
-                <FileText className="size-5" />
+          <div className="flex w-full items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xs bg-gold/15 text-gold">
+                <FileText className="size-4 sm:size-5" />
               </div>
-              <div className="flex flex-col overflow-hidden text-left">
-                <span className="truncate text-sm font-semibold text-foreground">
+              <div className="flex flex-col overflow-hidden text-left min-w-0">
+                <span className="truncate text-xs sm:text-sm font-semibold text-foreground">
                   {selectedFile.name}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[11px] sm:text-xs text-muted-foreground">
                   {formatFileSize(selectedFile.size)}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={removeFile}
@@ -144,13 +144,13 @@ export function FileUpload({
           </div>
         ) : (
           <div className="flex flex-col items-center text-center">
-            <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-gold/10 text-gold">
-              <UploadCloud className="size-6" />
+            <div className="mb-2 sm:mb-3 flex size-10 sm:size-12 items-center justify-center rounded-full bg-gold/10 text-gold">
+              <UploadCloud className="size-5 sm:size-6" />
             </div>
-            <span className="text-sm font-semibold text-foreground">{label}</span>
-            <span className="mt-1 text-xs text-muted-foreground">{hint}</span>
-            <span className="mt-3 inline-block rounded-xs bg-muted px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Select or Drop File
+            <span className="text-xs sm:text-sm font-semibold text-foreground">{label}</span>
+            <span className="mt-1 text-[11px] sm:text-xs text-muted-foreground">{hint}</span>
+            <span className="mt-2.5 sm:mt-3 inline-block rounded-xs bg-muted px-2.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Tap or Select File
             </span>
           </div>
         )}

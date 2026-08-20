@@ -35,14 +35,14 @@ export function ModalContent({
       <ModalOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-card p-6 shadow-xl duration-200 rounded-xs",
+          "fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-card p-4 sm:p-6 shadow-xl duration-200 rounded-xs max-h-[90vh] overflow-y-auto",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
           className
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xs p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gold text-muted-foreground hover:text-foreground">
+        <DialogPrimitive.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-xs p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-gold text-muted-foreground hover:text-foreground">
           <X className="size-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -69,7 +69,7 @@ export function ModalFooter({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-3 border-t border-border/60", className)}
+      className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-2 pt-3 border-t border-border/60", className)}
       {...props}
     />
   );
@@ -81,7 +81,7 @@ export function ModalTitle({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("font-display text-lg font-bold leading-none tracking-tight text-foreground", className)}
+      className={cn("font-display text-base sm:text-lg font-bold leading-none tracking-tight text-foreground", className)}
       {...props}
     />
   );
@@ -138,25 +138,25 @@ export function Modal({
   }[size];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-150">
       <div
         className={cn(
-          "relative w-full rounded-xs border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col",
+          "relative w-full max-w-[calc(100vw-1.25rem)] sm:max-w-full rounded-xs border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] flex flex-col",
           sizeClasses,
           className
         )}
       >
         {/* Header */}
         {(title || description || onClose) && (
-          <div className="flex items-center justify-between border-b border-border/70 px-6 py-4 bg-muted/40 shrink-0">
-            <div>
+          <div className="flex items-center justify-between border-b border-border/70 px-4 sm:px-6 py-3 sm:py-4 bg-muted/40 shrink-0">
+            <div className="pr-4">
               {title && (
-                <h3 className="font-display text-sm font-bold text-foreground">
+                <h3 className="font-display text-xs sm:text-sm font-bold text-foreground">
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-[11px] text-muted-foreground mt-0.5">
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
                   {description}
                 </p>
               )}
@@ -165,7 +165,7 @@ export function Modal({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1 rounded-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="p-1 rounded-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
                 aria-label="Close modal"
               >
                 <X className="size-4" />
@@ -175,13 +175,13 @@ export function Modal({
         )}
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="border-t border-border/70 px-6 py-3 bg-muted/20 shrink-0">
+          <div className="border-t border-border/70 px-4 sm:px-6 py-3 bg-muted/20 shrink-0">
             {footer}
           </div>
         )}

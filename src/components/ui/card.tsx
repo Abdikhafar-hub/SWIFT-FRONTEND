@@ -16,9 +16,9 @@ export const cardVariants = cva(
       },
       padding: {
         none: "p-0",
-        sm: "p-4",
-        md: "p-6",
-        lg: "p-8",
+        sm: "p-3 sm:p-4",
+        md: "p-4 sm:p-6",
+        lg: "p-5 sm:p-8",
       },
     },
     defaultVariants: {
@@ -42,7 +42,7 @@ export function Card({ className, variant, padding, children, ...props }: CardPr
 
 export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex flex-col space-y-1.5 pb-4 border-b border-border/60", className)} {...props}>
+    <div className={cn("flex flex-col space-y-1 pb-3 sm:pb-4 border-b border-border/60", className)} {...props}>
       {children}
     </div>
   );
@@ -50,7 +50,7 @@ export function CardHeader({ className, children, ...props }: React.HTMLAttribut
 
 export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("font-display text-lg font-bold tracking-tight text-foreground", className)} {...props}>
+    <h3 className={cn("font-display text-base sm:text-lg font-bold tracking-tight text-foreground", className)} {...props}>
       {children}
     </h3>
   );
@@ -58,19 +58,19 @@ export function CardTitle({ className, children, ...props }: React.HTMLAttribute
 
 export function CardDescription({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-xs text-muted-foreground", className)} {...props}>
+    <p className={cn("text-xs text-muted-foreground leading-relaxed", className)} {...props}>
       {children}
     </p>
   );
 }
 
 export function CardContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("pt-4", className)} {...props}>{children}</div>;
+  return <div className={cn("pt-3 sm:pt-4", className)} {...props}>{children}</div>;
 }
 
 export function CardFooter({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex items-center pt-4 mt-4 border-t border-border/60", className)} {...props}>
+    <div className={cn("flex flex-wrap items-center gap-2 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-border/60", className)} {...props}>
       {children}
     </div>
   );
@@ -101,29 +101,29 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <Card variant={variant} padding="md" className={cn("flex flex-col justify-between", className)} {...props}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
             {title}
           </span>
-          <span className="mt-2 font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <span className="mt-1 sm:mt-2 font-display text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground truncate">
             {value}
           </span>
         </div>
         {icon && (
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xs bg-gold/15 text-gold dark:bg-gold/20">
+          <div className="flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-xs bg-gold/15 text-gold dark:bg-gold/20">
             {icon}
           </div>
         )}
       </div>
 
       {(subtitle || trend) && (
-        <div className="mt-4 flex items-center justify-between gap-2 pt-2 text-xs border-t border-border/40">
-          {subtitle && <span className="text-muted-foreground truncate">{subtitle}</span>}
+        <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-between gap-1.5 pt-2 text-xs border-t border-border/40">
+          {subtitle && <span className="text-muted-foreground truncate text-[11px] sm:text-xs">{subtitle}</span>}
           {trend && (
             <div
               className={cn(
-                "inline-flex items-center gap-1 font-bold",
+                "inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold shrink-0",
                 trend.direction === "up" && "text-emerald-brand",
                 trend.direction === "down" && "text-destructive",
                 trend.direction === "neutral" && "text-muted-foreground"

@@ -82,6 +82,8 @@ function Sparkline({
 /**
  * Statutory Agency Distribution Donut Chart
  */
+const AGENCY_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ec4899", "#64748b"];
+
 /**
  * Statutory Agency Distribution Donut Chart (Compact)
  */
@@ -90,8 +92,6 @@ function AgencyDonutChart({
 }: {
   stats?: Array<{ agency: string; count: number }>;
 }) {
-  const agencyColors = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ec4899", "#64748b"];
-
   const { items, total } = useMemo(() => {
     const list = stats || [];
     const sum = list.reduce((acc, curr) => acc + curr.count, 0);
@@ -113,12 +113,12 @@ function AgencyDonutChart({
 
       return {
         ...item,
-        color: agencyColors[idx % agencyColors.length],
+        color: AGENCY_COLORS[idx % AGENCY_COLORS.length],
         strokeDasharray,
         strokeDashoffset,
       };
     });
-  }, [items, total, agencyColors]);
+  }, [items, total]);
 
   return (
     <div className="flex items-center justify-between gap-4">
@@ -163,7 +163,7 @@ function AgencyDonutChart({
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
                   className="size-2 rounded-full shrink-0"
-                  style={{ backgroundColor: agencyColors[idx % agencyColors.length] }}
+                  style={{ backgroundColor: AGENCY_COLORS[idx % AGENCY_COLORS.length] }}
                 />
                 <span className="font-medium text-foreground truncate">{item.agency}</span>
               </div>
@@ -685,62 +685,112 @@ export default function AdminDashboardPage() {
                 <p className="text-[11px]">All client dossiers are currently processed or on schedule.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                    <tr>
-                      <th className="py-2.5 px-3">PRIORITY</th>
-                      <th className="py-2.5 px-3">APPLICATION ID</th>
-                      <th className="py-2.5 px-3">CLIENT</th>
-                      <th className="py-2.5 px-3">SERVICE</th>
-                      <th className="py-2.5 px-3">ASSIGNED TO</th>
-                      <th className="py-2.5 px-3">STATUS</th>
-                      <th className="py-2.5 px-3 text-right">SLA REMAINING</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs">
-                    {applications.map((app) => (
-                      <tr
-                        key={app.id}
-                        className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
-                        onClick={() => window.location.href = `/admin/applications/${app.id}`}
-                      >
-                        <td className="py-2.5 px-3 whitespace-nowrap">
+              <div>
+                {/* Mobile Card List View (< md) */}
+                <div className="block md:hidden divide-y divide-slate-100">
+                  {applications.map((app) => (
+                    <Link
+                      key={app.id}
+                      href={`/admin/applications/${app.id}`}
+                      className="block p-3.5 hover:bg-slate-50 transition-colors space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
                           <PriorityBadge priority={app.priority} size="sm" />
-                        </td>
-                        <td className="py-2.5 px-3 font-mono font-bold text-slate-900 group-hover:text-amber-700 whitespace-nowrap text-[11px]">
-                          #{app.applicationNumber}
-                        </td>
-                        <td className="py-2.5 px-3 font-semibold text-slate-800 whitespace-nowrap text-[11px]">
+                          <span className="font-mono font-bold text-xs text-slate-900">
+                            #{app.applicationNumber}
+                          </span>
+                        </div>
+                        <StatusBadge status={app.status} size="sm" />
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-0.5">
+                        <span className="font-semibold text-slate-800 truncate max-w-[170px]">
                           {app.client?.businessName || app.client?.fullName || "Client"}
-                        </td>
-                        <td className="py-2.5 px-3 text-slate-500 font-medium whitespace-nowrap text-[11px]">
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium truncate max-w-[130px]">
                           {app.service?.name || "Statutory Service"}
-                        </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-400">Assignee:</span>
                           {app.assignedAdmin ? (
-                            <div className="flex items-center gap-1.5">
-                              <div className="size-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[9px] text-slate-700 border border-slate-200">
-                                {(app.assignedAdmin.fullName || app.assignedAdmin.email || "A").charAt(0)}
-                              </div>
-                              <span className="text-[11px] font-medium text-slate-800">
-                                {app.assignedAdmin.fullName || app.assignedAdmin.email?.split("@")[0]}
-                              </span>
-                            </div>
+                            <span className="font-semibold text-slate-700">
+                              {app.assignedAdmin.fullName || app.assignedAdmin.email?.split("@")[0]}
+                            </span>
                           ) : (
-                            <span className="text-slate-400 italic text-[11px]">Unassigned</span>
+                            <span className="text-slate-400 italic">Unassigned</span>
                           )}
-                        </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
-                          <StatusBadge status={app.status} size="sm" />
-                        </td>
-                        <td className="py-2.5 px-3 text-right whitespace-nowrap text-[11px]">
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-slate-400">SLA:</span>
                           {formatSlaRemaining(app.dueAt)}
-                        </td>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                      <tr>
+                        <th className="py-2.5 px-3">PRIORITY</th>
+                        <th className="py-2.5 px-3">APPLICATION ID</th>
+                        <th className="py-2.5 px-3">CLIENT</th>
+                        <th className="py-2.5 px-3">SERVICE</th>
+                        <th className="py-2.5 px-3">ASSIGNED TO</th>
+                        <th className="py-2.5 px-3">STATUS</th>
+                        <th className="py-2.5 px-3 text-right">SLA REMAINING</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs">
+                      {applications.map((app) => (
+                        <tr
+                          key={app.id}
+                          className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                          onClick={() => window.location.href = `/admin/applications/${app.id}`}
+                        >
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            <PriorityBadge priority={app.priority} size="sm" />
+                          </td>
+                          <td className="py-2.5 px-3 font-mono font-bold text-slate-900 group-hover:text-amber-700 whitespace-nowrap text-[11px]">
+                            #{app.applicationNumber}
+                          </td>
+                          <td className="py-2.5 px-3 font-semibold text-slate-800 whitespace-nowrap text-[11px]">
+                            {app.client?.businessName || app.client?.fullName || "Client"}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-500 font-medium whitespace-nowrap text-[11px]">
+                            {app.service?.name || "Statutory Service"}
+                          </td>
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            {app.assignedAdmin ? (
+                              <div className="flex items-center gap-1.5">
+                                <div className="size-5 rounded-full bg-slate-100 flex items-center justify-center font-bold text-[9px] text-slate-700 border border-slate-200">
+                                  {(app.assignedAdmin.fullName || app.assignedAdmin.email || "A").charAt(0)}
+                                </div>
+                                <span className="text-[11px] font-medium text-slate-800">
+                                  {app.assignedAdmin.fullName || app.assignedAdmin.email?.split("@")[0]}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 italic text-[11px]">Unassigned</span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 whitespace-nowrap">
+                            <StatusBadge status={app.status} size="sm" />
+                          </td>
+                          <td className="py-2.5 px-3 text-right whitespace-nowrap text-[11px]">
+                            {formatSlaRemaining(app.dueAt)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

@@ -27,9 +27,6 @@ export const authApi = {
     }
     const { tokens, user, client } = res.data.data;
     tokenStorage.setAccessToken(tokens.accessToken);
-    if (tokens.refreshToken) {
-      tokenStorage.setRefreshToken(tokens.refreshToken);
-    }
     if (typeof window !== "undefined") {
       localStorage.setItem("swift_doc_user", JSON.stringify(user));
       if (client) {
@@ -49,9 +46,6 @@ export const authApi = {
     }
     const { tokens, user, client } = res.data.data;
     tokenStorage.setAccessToken(tokens.accessToken);
-    if (tokens.refreshToken) {
-      tokenStorage.setRefreshToken(tokens.refreshToken);
-    }
     if (typeof window !== "undefined") {
       localStorage.setItem("swift_doc_user", JSON.stringify(user));
       localStorage.setItem("swift_doc_client", JSON.stringify(client));
@@ -87,31 +81,55 @@ export const authApi = {
   },
 
   /**
-   * Refreshes access token
+   * Refreshes access token via HttpOnly cookie
    */
-  async refresh(refreshToken: string): Promise<RefreshResponseData> {
-    const res = await apiClient.post<ApiResponse<RefreshResponseData>>("/auth/refresh", {
-      refreshToken,
-    });
+  async refresh(): Promise<RefreshResponseData> {
+    const res = await apiClient.post<ApiResponse<RefreshResponseData>>("/auth/refresh", {});
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Token refresh failed");
     }
+    tokenStorage.setAccessToken(res.data.data.tokens.accessToken);
     return res.data.data;
   },
 
   /**
-   * Logs out user and revokes active session
+   * Extends server session activity timestamp
+   */
+  async pingSession(): Promise<void> {
+    await apiClient.post("/auth/ping", {});
+  },
+
+  /**
+   * Logs out user and revokes current session on backend
    */
   async logout(): Promise<void> {
     try {
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (refreshToken) {
-        await apiClient.post("/auth/logout", { refreshToken });
-      }
+      await apiClient.post("/auth/logout", {});
     } catch {
-      // Best-effort logout
+      // Best-effort server logout
     } finally {
-      tokenStorage.clearTokens();
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("swift_doc_user");
+        localStorage.removeItem("swift_doc_client");
+      }
+      tokenStorage.clearTokens("LOGOUT");
+    }
+  },
+
+  /**
+   * Revokes all active sessions for current user across all devices
+   */
+  async logoutAll(): Promise<void> {
+    try {
+      await apiClient.post("/auth/logout-all", {});
+    } catch {
+      // Best-effort server logout
+    } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("swift_doc_user");
+        localStorage.removeItem("swift_doc_client");
+      }
+      tokenStorage.clearTokens("LOGOUT");
     }
   },
 

@@ -39,7 +39,7 @@ export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTa
   return (
     <th
       className={cn(
-        "h-11 px-4 text-left align-middle font-display text-xs font-bold uppercase tracking-wider text-muted-foreground",
+        "h-9 sm:h-11 px-2.5 sm:px-4 text-left align-middle font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground whitespace-nowrap",
         className
       )}
       {...props}
@@ -48,7 +48,7 @@ export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTa
 }
 
 export function TableCell({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return <td className={cn("p-4 align-middle text-foreground", className)} {...props} />;
+  return <td className={cn("p-2.5 sm:p-4 align-middle text-xs sm:text-sm text-foreground", className)} {...props} />;
 }
 
 export interface PaginationProps {
@@ -74,9 +74,9 @@ export function Pagination({
   if (totalPages <= 1) return null;
 
   return (
-    <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2", className)}>
+    <div className={cn("flex flex-col sm:flex-row items-center justify-between gap-3 py-3 px-2 text-center sm:text-left", className)}>
       {totalItems !== undefined && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[11px] sm:text-xs text-muted-foreground">
           Showing <span className="font-semibold text-foreground">{((currentPage - 1) * (pageSize || 10)) + 1}</span> to{" "}
           <span className="font-semibold text-foreground">
             {Math.min(currentPage * (pageSize || 10), totalItems)}
@@ -85,13 +85,14 @@ export function Pagination({
         </p>
       )}
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
         <Button
           variant="outline"
           size="xs"
           disabled={currentPage <= 1}
           onClick={() => handlePageChange(1)}
           aria-label="First page"
+          className="px-2"
         >
           <ChevronsLeft className="size-3.5" />
         </Button>
@@ -101,11 +102,12 @@ export function Pagination({
           disabled={currentPage <= 1}
           onClick={() => handlePageChange(currentPage - 1)}
           aria-label="Previous page"
+          className="px-2"
         >
           <ChevronLeft className="size-3.5" />
         </Button>
 
-        <span className="px-2 text-xs font-semibold text-foreground">
+        <span className="px-1.5 text-[11px] sm:text-xs font-semibold text-foreground whitespace-nowrap">
           Page {currentPage} of {totalPages}
         </span>
 
@@ -115,6 +117,7 @@ export function Pagination({
           disabled={currentPage >= totalPages}
           onClick={() => handlePageChange(currentPage + 1)}
           aria-label="Next page"
+          className="px-2"
         >
           <ChevronRight className="size-3.5" />
         </Button>
@@ -124,6 +127,7 @@ export function Pagination({
           disabled={currentPage >= totalPages}
           onClick={() => handlePageChange(totalPages)}
           aria-label="Last page"
+          className="px-2"
         >
           <ChevronsRight className="size-3.5" />
         </Button>

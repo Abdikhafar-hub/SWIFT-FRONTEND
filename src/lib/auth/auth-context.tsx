@@ -1,9 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 import { tokenStorage, subscribeAuthChange } from "@/lib/api/client";
-import { APP_CONFIG } from "@/lib/constants/config";
+import { useSessionTimer } from "@/hooks/use-session-timer";
+import { SessionTimeoutModal } from "@/components/auth/session-timeout-modal";
 import type {
   User,
   ClientProfile,
@@ -22,52 +24,48 @@ export interface AuthContextType {
   isAdmin: boolean;
   login: (payload: LoginPayload) => Promise<{ user: User; client: ClientProfile | null; role: UserRole }>;
   register: (payload: RegisterPayload) => Promise<{ user: User; client: ClientProfile | null; role: UserRole }>;
-  logout: () => Promise<void>;
+  logout: (reason?: string) => Promise<void>;
   refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [client, setClient] = useState<ClientProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const logout = useCallback(async (reason?: string) => {
+    setIsLoading(true);
+    try {
+      await authApi.logout();
+    } finally {
+      setUser(null);
+      setClient(null);
+      setIsLoading(false);
+      if (typeof window !== "undefined") {
+        if (reason === "expired") {
+          router.push("/login?reason=expired");
+        } else {
+          router.push("/login");
+        }
+      }
+    }
+  }, [router]);
+
   const initSession = useCallback(async () => {
     try {
-      const token = tokenStorage.getAccessToken();
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
+      // 1. Silent token refresh via HttpOnly cookie
+      await authApi.refresh();
 
-      // Check cached localStorage first for fast hydration
-      if (typeof window !== "undefined") {
-        const cachedUser = localStorage.getItem(APP_CONFIG.userStorageKey);
-        const cachedClient = localStorage.getItem(APP_CONFIG.clientStorageKey);
-        if (cachedUser) {
-          try {
-            setUser(JSON.parse(cachedUser));
-          } catch {
-            // parse error fallback
-          }
-        }
-        if (cachedClient) {
-          try {
-            setClient(JSON.parse(cachedClient));
-          } catch {
-            // parse error fallback
-          }
-        }
-      }
-
-      // Revalidate with backend /auth/me
+      // 2. Fetch authenticated profile
       const data = await authApi.getMe();
       setUser(data.user);
       setClient(data.client);
     } catch {
-      // Session expired or invalid
-      tokenStorage.clearTokens();
+      // Session expired, unauthenticated, or no cookie present
+      tokenStorage.clearTokens("SESSION_EXPIRED");
       setUser(null);
       setClient(null);
     } finally {
@@ -78,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initSession();
 
-    // Subscribe to forced logouts from 401 refresh interceptors
+    // Subscribe to forced logouts from 401 refresh interceptors or multi-tab broadcast
     const unsubscribe = subscribeAuthChange((isLoggedOut) => {
       if (isLoggedOut) {
         setUser(null);
@@ -113,17 +111,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    setIsLoading(true);
-    try {
-      await authApi.logout();
-    } finally {
-      setUser(null);
-      setClient(null);
-      setIsLoading(false);
-    }
-  };
-
   const refreshSession = async () => {
     await initSession();
   };
@@ -132,6 +119,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = Boolean(user && tokenStorage.getAccessToken());
   const isClient = role === "CLIENT";
   const isAdmin = role === "ADMIN";
+
+  // Client-side 5-minute inactivity session timer & 30-second warning modal
+  const { showWarningModal, countdownSeconds, staySignedIn } = useSessionTimer({
+    isAuthenticated,
+    onLogout: (reason) => logout(reason),
+  });
 
   const value: AuthContextType = {
     user,
@@ -147,7 +140,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshSession,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <SessionTimeoutModal
+        isOpen={showWarningModal}
+        countdownSeconds={countdownSeconds}
+        onStaySignedIn={staySignedIn}
+        onLogout={() => logout("user_initiated")}
+      />
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth(): AuthContextType {

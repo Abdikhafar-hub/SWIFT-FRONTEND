@@ -185,16 +185,16 @@ export function StartFilingModal({ isOpen, onClose, service }: StartFilingModalP
   const totalFee = Number(service.totalFee || (govFee + svcFee));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-sm border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="relative w-[calc(100vw-2rem)] max-w-xl max-h-[90vh] flex flex-col rounded-sm border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/70 px-6 py-4 bg-muted/40">
+        <div className="flex items-center justify-between border-b border-border/70 px-4 sm:px-6 py-3.5 sm:py-4 bg-muted/40 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="flex size-8 items-center justify-center rounded-xs bg-gold/20 text-gold-dark dark:text-gold font-bold">
               {isVisaService ? <Globe className="size-4" /> : <Sparkles className="size-4" />}
             </div>
             <div>
-              <h3 className="font-display text-sm font-bold text-foreground">
+              <h3 className="font-display text-xs sm:text-sm font-bold text-foreground">
                 {isVisaService ? "Initiate Visa Application Dossier" : "Initiate Statutory Filing"}
               </h3>
               <p className="text-[10px] text-muted-foreground">
@@ -212,7 +212,7 @@ export function StartFilingModal({ isOpen, onClose, service }: StartFilingModalP
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
           {/* Service Summary Highlight Box */}
           <div className="rounded-xs border border-gold/30 bg-gold/5 p-4 space-y-3">
             <div className="flex items-start justify-between gap-2">

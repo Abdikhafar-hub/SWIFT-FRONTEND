@@ -556,7 +556,7 @@ export default function ClientMessagesPage() {
                     <Inbox className="size-10 text-slate-300 mx-auto" />
                     <h3 className="text-sm font-bold text-slate-800">No messages in this folder</h3>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                      Use the "Compose" button to open a direct messaging thread with your assigned statutory compliance manager.
+                      Use the &quot;Compose&quot; button to open a direct messaging thread with your assigned statutory compliance manager.
                     </p>
                   </div>
                 ) : (

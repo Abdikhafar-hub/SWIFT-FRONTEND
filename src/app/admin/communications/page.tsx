@@ -345,7 +345,7 @@ export default function AdminCommunicationsPage() {
               <span>Multi-Channel Engine</span>
             </div>
             <p className="text-[10px] text-slate-300 leading-snug">
-              Every message sent here dispatches simultaneously via Resend Email & Africa's Talking SMS.
+              Every message sent here dispatches simultaneously via Resend Email &amp; Africa&apos;s Talking SMS.
             </p>
           </div>
         </div>
@@ -557,7 +557,7 @@ export default function AdminCommunicationsPage() {
                     <Inbox className="size-10 text-slate-300 mx-auto" />
                     <h3 className="text-sm font-bold text-slate-800">No messages in this folder</h3>
                     <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                      Use the "Dispatch Notice" button to start a multi-channel thread with any registered client dossier.
+                      Use the &quot;Dispatch Notice&quot; button to start a multi-channel thread with any registered client dossier.
                     </p>
                   </div>
                 ) : (

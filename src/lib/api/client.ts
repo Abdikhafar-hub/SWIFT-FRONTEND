@@ -10,12 +10,26 @@ import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig 
 import { APP_CONFIG } from "@/lib/constants/config";
 import type { ApiResponse, RefreshResponseData } from "@/types";
 
-let accessToken: string | null = null;
+let inMemoryAccessToken: string | null = null;
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
   reject: (error: unknown) => void;
 }> = [];
+
+// Multi-Tab Synchronization Channel
+const AUTH_BROADCAST_CHANNEL = "swiftdoc_auth_channel";
+let authChannel: BroadcastChannel | null = null;
+
+if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+  authChannel = new BroadcastChannel(AUTH_BROADCAST_CHANNEL);
+  authChannel.onmessage = (event) => {
+    if (event.data?.type === "LOGOUT" || event.data?.type === "SESSION_EXPIRED") {
+      inMemoryAccessToken = null;
+      notifyAuthChange(true);
+    }
+  };
+}
 
 // Event listener for auth logout
 type AuthListener = (isLoggedOut: boolean) => void;
@@ -43,44 +57,19 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 export const tokenStorage = {
   getAccessToken: (): string | null => {
-    if (accessToken) return accessToken;
-    if (typeof window !== "undefined") {
-      accessToken = localStorage.getItem(APP_CONFIG.tokenStorageKey);
-    }
-    return accessToken;
+    return inMemoryAccessToken;
   },
   setAccessToken: (token: string | null): void => {
-    accessToken = token;
-    if (typeof window !== "undefined") {
-      if (token) {
-        localStorage.setItem(APP_CONFIG.tokenStorageKey, token);
-      } else {
-        localStorage.removeItem(APP_CONFIG.tokenStorageKey);
+    inMemoryAccessToken = token;
+  },
+  clearTokens: (reason: "LOGOUT" | "SESSION_EXPIRED" = "LOGOUT"): void => {
+    inMemoryAccessToken = null;
+    if (authChannel) {
+      try {
+        authChannel.postMessage({ type: reason });
+      } catch {
+        // Fallback silently if channel is closed
       }
-    }
-  },
-  getRefreshToken: (): string | null => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(APP_CONFIG.refreshTokenStorageKey);
-    }
-    return null;
-  },
-  setRefreshToken: (token: string | null): void => {
-    if (typeof window !== "undefined") {
-      if (token) {
-        localStorage.setItem(APP_CONFIG.refreshTokenStorageKey, token);
-      } else {
-        localStorage.removeItem(APP_CONFIG.refreshTokenStorageKey);
-      }
-    }
-  },
-  clearTokens: (): void => {
-    accessToken = null;
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(APP_CONFIG.tokenStorageKey);
-      localStorage.removeItem(APP_CONFIG.refreshTokenStorageKey);
-      localStorage.removeItem(APP_CONFIG.userStorageKey);
-      localStorage.removeItem(APP_CONFIG.clientStorageKey);
     }
     notifyAuthChange(true);
   },
@@ -88,6 +77,7 @@ export const tokenStorage = {
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: APP_CONFIG.apiBaseUrl,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -120,7 +110,7 @@ apiClient.interceptors.response.use(
         originalRequest.url?.includes("/auth/refresh") ||
         originalRequest.url?.includes("/auth/login")
       ) {
-        tokenStorage.clearTokens();
+        tokenStorage.clearTokens("SESSION_EXPIRED");
         return Promise.reject(error);
       }
 
@@ -141,26 +131,19 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        isRefreshing = false;
-        tokenStorage.clearTokens();
-        return Promise.reject(error);
-      }
-
       try {
         const refreshResponse = await axios.post<ApiResponse<RefreshResponseData>>(
           `${APP_CONFIG.apiBaseUrl}/auth/refresh`,
-          { refreshToken },
-          { headers: { "Content-Type": "application/json" } }
+          {},
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
         );
 
         if (refreshResponse.data && refreshResponse.data.success) {
           const { tokens } = refreshResponse.data.data;
           tokenStorage.setAccessToken(tokens.accessToken);
-          if (tokens.refreshToken) {
-            tokenStorage.setRefreshToken(tokens.refreshToken);
-          }
 
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
@@ -173,7 +156,7 @@ apiClient.interceptors.response.use(
         }
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        tokenStorage.clearTokens();
+        tokenStorage.clearTokens("SESSION_EXPIRED");
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;
