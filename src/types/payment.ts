@@ -18,6 +18,7 @@ export type PaymentStatus =
   | "REVERSED"
   | "DRAFT"
   | "ISSUED"
+  | "PAYMENT_UNDER_REVIEW"
   | "PARTIALLY_PAID"
   | "PAID"
   | "OVERDUE"

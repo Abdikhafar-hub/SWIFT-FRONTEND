@@ -16,7 +16,13 @@ import {
   Ban,
   FileText,
   ExternalLink,
+  Eye,
+  Download,
+  Printer,
+  Loader2,
+  Send,
 } from "lucide-react";
+import { downloadElementAsPdf } from "@/lib/utils/pdf";
 import { PageShell } from "@/components/ui/layout-primitives";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +47,7 @@ export default function AdminInvoiceDetailPage() {
   const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false);
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
   const [voidReason, setVoidReason] = useState("");
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const {
     data: invoice,
@@ -65,6 +72,21 @@ export default function AdminInvoiceDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
     },
   });
+
+  const sendMutation = useMutation({
+    mutationFn: () => adminApi.resendInvoiceNotification(id),
+    onSuccess: () => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-invoices-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
+    },
+  });
+
+  const handleDownloadPdf = async () => {
+    if (!invoice) return;
+    setIsDownloadingPdf(true);
+    window.location.href = `/admin/invoices/${id}/document`;
+  };
 
   if (isLoading) {
     return (
@@ -119,13 +141,43 @@ export default function AdminInvoiceDetailPage() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-auto">
           <Link href="/admin/invoices">
             <button className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-xs">
               <ArrowLeft className="size-3.5 text-slate-500" />
               <span>All Invoices</span>
             </button>
           </Link>
+
+          {/* Prominent View Invoice & Download PDF Action Buttons */}
+          <Link href={`/admin/invoices/${id}/document`}>
+            <button className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 border border-slate-800">
+              <Eye className="size-3.5 text-amber-400" />
+              <span>View Invoice</span>
+            </button>
+          </Link>
+
+          <Link href={`/admin/invoices/${id}/document`}>
+            <button className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5">
+              <Download className="size-3.5 text-amber-600" />
+              <span>Download PDF</span>
+            </button>
+          </Link>
+
+          <button
+            onClick={() => sendMutation.mutate()}
+            disabled={sendMutation.isPending}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-50"
+            title="Send / Resend Invoice Notification to Client (In-App & Email)"
+          >
+            {sendMutation.isPending ? (
+              <Loader2 className="size-3.5 animate-spin text-white" />
+            ) : (
+              <Send className="size-3.5 text-emerald-200" />
+            )}
+            <span>{invoice.status === "DRAFT" ? "Issue & Send to Client" : "Send / Resend to Client"}</span>
+          </button>
+
           {invoice.status !== "PAID" && invoice.status !== "CANCELLED" && (
             <>
               <button

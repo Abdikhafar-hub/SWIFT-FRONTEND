@@ -360,6 +360,136 @@ export const adminApi = {
     return this.performQualityCheck(payload.applicationId, payload);
   },
 
+  /**
+   * Fetch dynamic Quality Control metrics
+   */
+  async getQcMetrics(): Promise<{
+    pendingInspection: number;
+    certifiedPasses: number;
+    returnedFlagged: number;
+    totalMonitored: number;
+  }> {
+    const res = await apiClient.get<ApiResponse<any>>("/admin/quality/metrics");
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to fetch QC metrics");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch Quality Control queue with filters & requirement progress
+   */
+  async getQcQueue(params?: {
+    search?: string;
+    status?: string;
+    priority?: string;
+    serviceId?: string;
+    reviewerId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResult<any>> {
+    const res = await apiClient.get<ApiResponse<PaginatedResult<any>>>("/admin/quality/queue", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to fetch QC queue");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch candidate applications eligible for QC inspection
+   */
+  async getQcEligibleApplications(search?: string): Promise<Array<{
+    id: string;
+    applicationNumber: string;
+    client?: { id: string; fullName: string; businessName?: string; email: string };
+    service?: { id: string; name: string };
+    status: string;
+    priority: string;
+    eligible: boolean;
+    ineligibilityReason?: string;
+  }>> {
+    const res = await apiClient.get<ApiResponse<any>>("/admin/quality/eligible-applications", {
+      params: search ? { search } : undefined,
+    });
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to fetch eligible applications");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Initialize a Quality Control Inspection
+   */
+  async startQcInspection(payload: {
+    applicationId: string;
+    reviewerId?: string;
+    priority?: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+    notes?: string;
+  }): Promise<{ applicationId: string; status: string }> {
+    const res = await apiClient.post<ApiResponse<any>>("/admin/quality/inspections", payload);
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to start QC inspection");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch full QC workspace dataset for dossier
+   */
+  async getQcWorkspace(applicationId: string): Promise<any> {
+    const res = await apiClient.get<ApiResponse<any>>(`/admin/quality/inspections/${applicationId}`);
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to fetch QC workspace");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Record individual item / document review in QC workspace
+   */
+  async reviewQcItem(
+    applicationId: string,
+    payload: {
+      requirementId: string;
+      documentId?: string;
+      action: "PASS" | "FAIL" | "REQUEST_REPLACEMENT" | "NOT_APPLICABLE";
+      deficiencyCategory?: string;
+      reviewerFeedback?: string;
+      notes?: string;
+    }
+  ): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(
+      `/admin/quality/inspections/${applicationId}/item-review`,
+      payload
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to review item in QC");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Submit formal QC decision sign-off
+   */
+  async submitQcDecision(
+    applicationId: string,
+    payload: {
+      decision: "CERTIFY_PASS" | "RETURN_TO_CLIENT" | "FAIL_FLAG" | "SAVE_PROGRESS";
+      checklist?: Record<string, boolean>;
+      notes?: string;
+      failedReason?: string;
+    }
+  ): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(
+      `/admin/quality/inspections/${applicationId}/decision`,
+      payload
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to submit QC decision");
+    }
+    return res.data.data;
+  },
+
   // =========================================================================
   // 4. GOVERNMENT AGENCY OPERATIONS TRACKING
   // =========================================================================
@@ -620,6 +750,105 @@ export const adminApi = {
   },
 
   /**
+   * Fetch paginated SLA application records with multi-criteria filtering
+   */
+  async getSlaRecords(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    slaStatus?: string;
+    priority?: string;
+    serviceId?: string;
+    dateRange?: string;
+    startDate?: string;
+    endDate?: string;
+    viewMode?: "ACTIVE" | "HISTORICAL" | "ALL";
+  }): Promise<{ items: any[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
+    const res = await apiClient.get<ApiResponse<any[]>>("/admin/sla", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch SLA records");
+    }
+    return {
+      items: res.data.data,
+      pagination: (res.data as any).pagination || { total: res.data.data.length, page: 1, limit: 15, totalPages: 1 },
+    };
+  },
+
+  /**
+   * Create a manual SLA entry for an application
+   */
+  async createManualSlaEntry(payload: {
+    applicationId: string;
+    slaType: string;
+    durationValue: number;
+    durationUnit: "DAYS" | "HOURS" | "MINUTES";
+    startedAt: string;
+    dueAt: string;
+    isManualDueDateOverride?: boolean;
+    priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+    initialSlaState: "ON_TRACK" | "AT_RISK" | "PAUSED" | "BREACHED";
+    reason: string;
+  }): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>("/admin/sla", payload);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to create manual SLA entry");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Modify SLA parameters (priority, due date, duration, reason)
+   */
+  async updateSlaRecord(
+    applicationId: string,
+    payload: {
+      priority?: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+      slaHours?: number;
+      dueAt?: string;
+      reason: string;
+    }
+  ): Promise<any> {
+    const res = await apiClient.patch<ApiResponse<any>>(`/admin/sla/${applicationId}`, payload);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to update SLA record");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Force Recalculate SLA state
+   */
+  async recalculateSla(applicationId: string, payload?: { reason?: string }): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(`/admin/sla/${applicationId}/recalculate`, payload || {});
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to recalculate SLA");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Mark SLA Completed
+   */
+  async completeSla(applicationId: string, payload?: { reason?: string }): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(`/admin/sla/${applicationId}/complete`, payload || {});
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to complete SLA");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch SLA detail timeline and breakdown history
+   */
+  async getSlaDetail(applicationId: string): Promise<any> {
+    const res = await apiClient.get<ApiResponse<any>>(`/admin/sla/${applicationId}/history`);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch SLA detail");
+    }
+    return res.data.data;
+  },
+
+  /**
    * Trigger SLA status update sweep across all active applications
    */
   async triggerSlaSweep(): Promise<any> {
@@ -657,6 +886,7 @@ export const adminApi = {
     }
     return res.data.data;
   },
+
 
   // =========================================================================
   // 7. DELIVERY & FULFILLMENT OPERATIONS
@@ -1027,11 +1257,21 @@ export const adminApi = {
       search?: string;
     }
   ): Promise<PaginatedResult<Payment>> {
-    const res = await apiClient.get<ApiResponse<PaginatedResult<Payment>>>("/admin/invoices", { params });
+    const res = await apiClient.get<any>("/admin/invoices", { params });
     if (!res.data.success) {
-      throw new Error(res.data.error.message || "Failed to fetch invoices");
+      throw new Error(res.data.error?.message || "Failed to fetch invoices");
     }
-    return res.data.data;
+    const rawData = res.data;
+    const items: Payment[] = Array.isArray(rawData.data)
+      ? rawData.data
+      : (rawData.data?.items || rawData.items || []);
+    const pagination = rawData.pagination || rawData.data?.pagination || rawData.meta || {
+      total: items.length,
+      page: params?.page || 1,
+      limit: params?.limit || 15,
+      totalPages: Math.ceil(items.length / (params?.limit || 15)),
+    };
+    return { items, pagination };
   },
 
   /**
@@ -1074,6 +1314,17 @@ export const adminApi = {
     const res = await apiClient.post<ApiResponse<Payment>>(`/admin/invoices/${id}/issue`, payload || {});
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Failed to issue invoice");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Resend / Send invoice notification to client (in-app & email)
+   */
+  async resendInvoiceNotification(id: string): Promise<Payment> {
+    const res = await apiClient.post<ApiResponse<Payment>>(`/admin/invoices/${id}/send`, {});
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to send invoice notification");
     }
     return res.data.data;
   },
@@ -1426,5 +1677,53 @@ export const adminApi = {
       matchedTransactionId: payload.resolvedTransactionId,
       notes: payload.notes,
     });
+  },
+
+
+
+  /**
+   * Fetch payment proof submissions queue for admin verification
+   */
+  async getPaymentProofs(params?: { status?: string; search?: string; page?: number; limit?: number }): Promise<any> {
+    const res = await apiClient.get<ApiResponse<any>>("/admin/payment-verifications", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch payment verifications queue");
+    }
+    return res.data;
+  },
+
+  /**
+   * Get single payment proof submission detail
+   */
+  async getPaymentProofById(id: string): Promise<any> {
+    const res = await apiClient.get<ApiResponse<any>>(`/admin/payment-verifications/${id}`);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch payment proof details");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Approve payment proof submission
+   */
+  async approvePaymentProof(id: string): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(`/admin/payment-verifications/${id}/approve`);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to approve payment proof");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Reject payment proof submission with mandatory reason
+   */
+  async rejectPaymentProof(id: string, rejectionReason: string): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(`/admin/payment-verifications/${id}/reject`, {
+      rejectionReason,
+    });
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to reject payment proof");
+    }
+    return res.data.data;
   },
 };

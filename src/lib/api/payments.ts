@@ -218,4 +218,29 @@ export const paymentsApi = {
     }
     return res.data.data;
   },
+  /**
+   * Submit manual payment proof for an invoice
+   */
+  async submitPaymentProof(
+    invoiceId: string,
+    payload: {
+      paymentMethod: string;
+      claimedAmount: number;
+      paymentDate?: string;
+      referenceNumber?: string;
+      notes?: string;
+      fileName: string;
+      mimeType: string;
+      base64Data: string;
+    }
+  ): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>(
+      `/client/invoices/${invoiceId}/proof`,
+      payload
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to submit payment proof");
+    }
+    return res.data.data;
+  },
 };

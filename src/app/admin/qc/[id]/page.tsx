@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -13,9 +13,11 @@ import {
   AlertTriangle,
   ExternalLink,
   UserCheck,
+  Clock,
+  RefreshCw,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/layout-primitives";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge, SlaBadge, PriorityBadge } from "@/components/domain/status-badges";
@@ -27,29 +29,39 @@ import { formatDate } from "@/lib/utils/format";
 export default function AdminQcDetailPage() {
   const params = useParams();
   const id = String(params.id);
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const [isQcModalOpen, setIsQcModalOpen] = useState(false);
 
+  // Query QC Workspace Dataset
   const {
-    data: application,
+    data: workspaceData,
     isLoading,
     error,
     refetch,
   } = useQuery({
+    queryKey: ["admin-qc-workspace", id],
+    queryFn: () => adminApi.getQcWorkspace(id),
+  });
+
+  const {
+    data: application,
+    isLoading: isAppLoading,
+    error: appError,
+  } = useQuery({
     queryKey: ["admin-application", id],
     queryFn: () => adminApi.getApplicationById(id),
+    enabled: !workspaceData?.application,
   });
 
-  const { data: readiness } = useQuery({
-    queryKey: ["admin-readiness", id],
-    queryFn: () => adminApi.getApplicationReadiness(id),
-    enabled: Boolean(id),
-  });
+  const app = workspaceData?.application || application;
+  const readiness = workspaceData?.readiness;
+  const slaTimeline = workspaceData?.slaTimeline;
 
-  if (isLoading) {
+  if (isLoading && isAppLoading) {
     return (
-      <PageShell title="Loading QC Inspection Dossier...">
+      <PageShell title="Loading QC Inspection Workspace...">
         <div className="space-y-4">
           <Skeleton className="h-28 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -58,22 +70,28 @@ export default function AdminQcDetailPage() {
     );
   }
 
-  if (error || !application) {
+  if ((error && appError) || !app) {
     return (
-      <PageShell title="QC Inspection Dossier">
+      <PageShell title="QC Inspection Workspace">
         <ErrorState onRetry={() => refetch()} />
       </PageShell>
     );
   }
 
-  const requirements = application.requirements || [];
-  const documents = application.documents || [];
+  const requirements = app.requirements || [];
+  const documents = app.documents || [];
+  const qualityChecks = app.qualityChecks || [];
+  const clientActions = app.clientActions || [];
+
+  const satisfiedCount = requirements.filter((r: any) => r.status === "APPROVED" || r.isSatisfied).length;
+  const totalCount = requirements.length;
+  const allSatisfied = totalCount > 0 && satisfiedCount === totalCount;
 
   return (
     <PageShell
-      eyebrow={`STATUTORY QC INSPECTION • #${application.applicationNumber}`}
-      title={application.service?.name || "Statutory Dossier"}
-      description={`Client: ${application.client?.fullName || application.client?.businessName || "Verified Entity"} • Status: ${application.status}`}
+      eyebrow={`STATUTORY QC WORKSPACE • #${app.applicationNumber}`}
+      title={app.service?.name || "Statutory Dossier"}
+      description={`Client: ${app.client?.fullName || app.client?.businessName || "Verified Entity"} • Status: ${app.status}`}
       actions={
         <div className="flex items-center gap-2">
           <Link href="/admin/qc">
@@ -82,18 +100,26 @@ export default function AdminQcDetailPage() {
             </Button>
           </Link>
           <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            leftIcon={<RefreshCw className="size-3.5" />}
+          >
+            Refresh
+          </Button>
+          <Button
             variant="gold"
             size="sm"
             leftIcon={<ShieldCheck className="size-4" />}
             onClick={() => setIsQcModalOpen(true)}
           >
-            Conduct QC Inspection
+            Execute QC Sign-Off
           </Button>
         </div>
       }
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left 2 Cols: Requirements & Document Reviewer */}
+        {/* Left 2 Cols: Readiness Audit & Requirements Inspection */}
         <div className="space-y-6 lg:col-span-2">
           {/* Readiness Banner */}
           {readiness && (
@@ -101,7 +127,7 @@ export default function AdminQcDetailPage() {
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <ShieldCheck className="size-4 text-gold" />
-                  <span>Statutory Submission Readiness Audit</span>
+                  <span>Statutory Readiness & Forensic Inspection</span>
                 </h4>
                 <Badge tone={readiness.ready ? "success" : "warning"} size="md">
                   {readiness.ready ? "READY FOR REGISTRY SUBMISSION" : "INCOMPLETE"}
@@ -140,25 +166,49 @@ export default function AdminQcDetailPage() {
             </Card>
           )}
 
-          {/* Interactive Requirements Reviewer */}
+          {/* Interactive Requirements & Document Reviewer */}
           <AdminRequirementReviewer
-            applicationId={application.id}
+            applicationId={app.id}
             requirements={requirements}
             documents={documents}
             onReviewed={() => {
               refetch();
-              queryClient.invalidateQueries({ queryKey: ["admin-readiness", id] });
+              queryClient.invalidateQueries({ queryKey: ["admin-qc-metrics"] });
             }}
           />
+
+          {/* Open Client Actions (if any returned items exist) */}
+          {clientActions.length > 0 && (
+            <Card padding="md" className="space-y-3">
+              <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <AlertTriangle className="size-4 text-amber-500" />
+                <span>Active Client Action Directives ({clientActions.length})</span>
+              </h4>
+
+              <div className="space-y-2 text-xs">
+                {clientActions.map((ca: any) => (
+                  <div key={ca.id} className="p-3 rounded border border-amber-200 bg-amber-50/40 flex items-start justify-between">
+                    <div>
+                      <strong className="text-amber-900 font-bold block">{ca.title}</strong>
+                      <p className="text-slate-600 text-[11px] mt-0.5">{ca.description}</p>
+                    </div>
+                    <Badge tone={ca.status === "OPEN" ? "warning" : "neutral"} size="sm">
+                      {ca.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
 
-        {/* Right Col: Host Application Summary & Controls */}
+        {/* Right Col: Host Profile & QC Decision Controls */}
         <div className="space-y-6">
           <Card padding="md" className="space-y-3 text-xs">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold text-foreground">Application Profile</h4>
               <Link
-                href={`/admin/applications/${application.id}`}
+                href={`/admin/applications/${app.id}`}
                 className="text-xs font-semibold text-gold-dark dark:text-gold hover:underline flex items-center gap-1"
               >
                 <span>Full Dossier</span>
@@ -169,33 +219,33 @@ export default function AdminQcDetailPage() {
             <div className="space-y-2">
               <div className="flex justify-between border-b border-border/50 pb-2">
                 <span className="text-muted-foreground">Dossier #</span>
-                <span className="font-mono font-bold text-foreground">#{application.applicationNumber}</span>
+                <span className="font-mono font-bold text-foreground">#{app.applicationNumber}</span>
               </div>
               <div className="flex justify-between border-b border-border/50 pb-2">
                 <span className="text-muted-foreground">Status</span>
-                <StatusBadge status={application.status} size="sm" />
+                <StatusBadge status={app.status} size="sm" />
               </div>
               <div className="flex justify-between border-b border-border/50 pb-2">
                 <span className="text-muted-foreground">SLA Health</span>
-                <SlaBadge status={application.slaStatus} size="sm" />
+                <SlaBadge status={app.slaStatus} size="sm" />
               </div>
               <div className="flex justify-between border-b border-border/50 pb-2">
                 <span className="text-muted-foreground">Priority</span>
-                <PriorityBadge priority={application.priority} size="sm" />
+                <PriorityBadge priority={app.priority} size="sm" />
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date Created</span>
-                <span className="text-foreground">{formatDate(application.createdAt)}</span>
+                <span className="text-foreground">{formatDate(app.createdAt)}</span>
               </div>
             </div>
           </Card>
 
-          {application.client && (
+          {app.client && (
             <Card padding="md" className="space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-foreground">Client Entity</h4>
                 <Link
-                  href={`/admin/clients/${application.client.id}`}
+                  href={`/admin/clients/${app.client.id}`}
                   className="text-xs font-semibold text-gold-dark dark:text-gold hover:underline"
                 >
                   Client 360
@@ -206,17 +256,49 @@ export default function AdminQcDetailPage() {
                 <div className="flex justify-between border-b border-border/50 pb-2">
                   <span className="text-muted-foreground">Name</span>
                   <span className="font-bold text-foreground">
-                    {application.client.fullName || application.client.businessName}
+                    {app.client.fullName || app.client.businessName}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-border/50 pb-2">
                   <span className="text-muted-foreground">KRA PIN</span>
-                  <span className="font-mono text-foreground">{application.client.kraPin || "N/A"}</span>
+                  <span className="font-mono text-foreground">{app.client.kraPin || "N/A"}</span>
+                </div>
+                <div className="flex justify-between border-b border-border/50 pb-2">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="text-foreground">{app.client.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Email</span>
-                  <span className="text-foreground">{application.client.email}</span>
+                  <span className="text-muted-foreground">Phone</span>
+                  <span className="text-foreground">{app.client.phone || "N/A"}</span>
                 </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Previous Quality Check History */}
+          {qualityChecks.length > 0 && (
+            <Card padding="md" className="space-y-3 text-xs">
+              <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
+                <Clock className="size-4 text-gold" />
+                <span>Inspection History ({qualityChecks.length})</span>
+              </h4>
+
+              <div className="space-y-2">
+                {qualityChecks.map((qc: any) => (
+                  <div key={qc.id} className="p-2.5 rounded border border-border bg-card space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Badge tone={qc.result === "PASSED" ? "success" : "danger"} size="sm">
+                        {qc.result}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{formatDate(qc.createdAt)}</span>
+                    </div>
+                    {qc.reviewer && (
+                      <p className="text-[11px] text-muted-foreground">Reviewer: {qc.reviewer.fullName || qc.reviewer.email}</p>
+                    )}
+                    {qc.notes && <p className="text-foreground text-[11px]">Note: {qc.notes}</p>}
+                    {qc.failedReason && <p className="text-rose-600 text-[11px]">Reason: {qc.failedReason}</p>}
+                  </div>
+                ))}
               </div>
             </Card>
           )}
@@ -225,10 +307,12 @@ export default function AdminQcDetailPage() {
           <Card padding="md" className="space-y-3 text-xs border-gold/40 bg-gold/5">
             <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
               <ShieldCheck className="size-4 text-gold" />
-              <span>Statutory Compliance Sign-Off</span>
+              <span>Statutory Compliance Certification</span>
             </h4>
             <p className="text-muted-foreground">
-              Pass or reject all statutory requirements and certify that this dossier satisfies all legal standards.
+              {allSatisfied
+                ? "All statutory requirements verified. Application is eligible for formal QC Pass certification."
+                : `${satisfiedCount} of ${totalCount} requirements satisfied. Outstanding items require verification before passing.`}
             </p>
             <Button
               variant="gold"
@@ -237,7 +321,7 @@ export default function AdminQcDetailPage() {
               leftIcon={<ShieldCheck className="size-3.5" />}
               onClick={() => setIsQcModalOpen(true)}
             >
-              Open QC Inspection Panel
+              Open Formal QC Decision Panel
             </Button>
           </Card>
         </div>
@@ -246,13 +330,14 @@ export default function AdminQcDetailPage() {
       {/* QC MODAL */}
       {isQcModalOpen && (
         <AdminQcModal
-          applicationId={application.id}
-          applicationNumber={application.applicationNumber}
+          applicationId={app.id}
+          applicationNumber={app.applicationNumber}
           isOpen={isQcModalOpen}
           onClose={() => setIsQcModalOpen(false)}
           onSuccess={() => {
             refetch();
-            queryClient.invalidateQueries({ queryKey: ["admin-readiness", id] });
+            queryClient.invalidateQueries({ queryKey: ["admin-qc-metrics"] });
+            queryClient.invalidateQueries({ queryKey: ["admin-qc-queue"] });
           }}
         />
       )}

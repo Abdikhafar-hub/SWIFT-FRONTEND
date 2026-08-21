@@ -68,6 +68,12 @@ export const CLIENT_NAV_SECTIONS: NavSection[] = [
     title: "Financials",
     items: [
       {
+        title: "Invoices",
+        href: "/client/invoices",
+        iconName: "Receipt",
+        description: "Official statutory commercial invoices and balance history",
+      },
+      {
         title: "Invoices & Payments",
         href: "/client/payments",
         iconName: "CreditCard",
@@ -196,6 +202,12 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
         href: "/admin/invoices",
         iconName: "DollarSign",
         description: "Commercial ledgers, fee breakdowns and draft invoices",
+      },
+      {
+        title: "Payment Verifications",
+        href: "/admin/payment-verifications",
+        iconName: "FileCheck",
+        description: "Queue for client manual payment proof review & approval",
       },
       {
         title: "Payment Transactions",

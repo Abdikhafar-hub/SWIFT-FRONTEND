@@ -255,6 +255,12 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, StatusMeta> = {
     tone: "warning",
     iconName: "FileText",
   },
+  PAYMENT_UNDER_REVIEW: {
+    label: "Payment Under Review",
+    description: "Client payment proof uploaded, pending administrative verification.",
+    tone: "info",
+    iconName: "Clock",
+  },
   PARTIALLY_PAID: {
     label: "Partially Paid",
     description: "Partial payment received, balance outstanding.",

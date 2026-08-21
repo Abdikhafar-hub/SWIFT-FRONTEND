@@ -15,6 +15,8 @@ import {
   Clock,
   CheckCircle2,
   FileText,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/layout-primitives";
 import { Card, StatCard } from "@/components/ui/card";
@@ -52,6 +54,7 @@ export default function AdminInvoicesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedInvoiceForDetail, setSelectedInvoiceForDetail] = useState<Payment | null>(null);
   const [selectedInvoiceForAdjustment, setSelectedInvoiceForAdjustment] = useState<Payment | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Financial summary query
   const { data: summary } = useQuery({
@@ -76,11 +79,42 @@ export default function AdminInvoicesPage() {
       }),
   });
 
+  // Issue & send invoice mutation
+  const issueMutation = useMutation({
+    mutationFn: (invoiceId: string) => adminApi.resendInvoiceNotification(invoiceId),
+    onSuccess: (updatedInvoice) => {
+      setToastMessage({
+        type: "success",
+        text: `Invoice #${updatedInvoice.invoiceNumber || updatedInvoice.id.slice(0, 8)} notification successfully sent to client via in-app & email!`,
+      });
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
+    },
+    onError: (err: any) => {
+      setToastMessage({
+        type: "error",
+        text: err?.message || "Failed to send invoice notification to client.",
+      });
+    },
+  });
+
   const invoices = invoicesData?.items || [];
   const pagination = invoicesData?.pagination;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
+      {toastMessage && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs text-emerald-900 font-bold flex items-center justify-between shadow-xs animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+            <span>{toastMessage.text}</span>
+          </div>
+          <button onClick={() => setToastMessage(null)} className="text-emerald-700 hover:text-emerald-950 font-bold text-xs">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* ------------------------------------------------------------------ */}
       {/* 1. HEADER SECTION */}
       {/* ------------------------------------------------------------------ */}
@@ -299,6 +333,19 @@ export default function AdminInvoicesPage() {
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
+                            onClick={() => issueMutation.mutate(inv.id)}
+                            disabled={issueMutation.isPending}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-2.5 py-1 rounded-lg transition-all inline-flex items-center gap-1 shadow-xs disabled:opacity-50"
+                            title="Send / Resend Invoice Notification to Client (In-App & Email)"
+                          >
+                            {issueMutation.isPending ? (
+                              <Loader2 className="size-3 animate-spin text-white" />
+                            ) : (
+                              <Send className="size-3 text-emerald-200" />
+                            )}
+                            <span>{inv.status === "DRAFT" ? "Send to Client" : "Resend"}</span>
+                          </button>
+                          <button
                             onClick={() => setSelectedInvoiceForAdjustment(inv)}
                             className="bg-white border border-slate-200 text-slate-700 font-bold text-xs px-2.5 py-1 rounded-lg hover:bg-slate-50 transition-all inline-flex items-center gap-1"
                           >
@@ -352,6 +399,10 @@ export default function AdminInvoicesPage() {
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           onSuccess={() => {
+            setToastMessage({
+              type: "success",
+              text: "Commercial Invoice successfully generated and dispatched to client ledger.",
+            });
             refetch();
             queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
           }}

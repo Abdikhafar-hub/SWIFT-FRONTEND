@@ -94,7 +94,8 @@ export function AdminLodgeDeliveryModal({
     queryFn: () => adminApi.getApplications({ page: 1, limit: 100 }),
     enabled: isOpen,
   });
-  const applications: Application[] = appsData?.items || [];
+  const rawFetchedItems = (appsData as any)?.items || (Array.isArray(appsData) ? appsData : []);
+  const applications: Application[] = rawFetchedItems;
 
   // Auto prefill recipient when client is selected
   useEffect(() => {

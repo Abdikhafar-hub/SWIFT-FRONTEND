@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import {
   CreditCard,
   Receipt as ReceiptIcon,
@@ -9,6 +10,8 @@ import {
   FileText,
   History,
   Printer,
+  Eye,
+  Download,
 } from "lucide-react";
 import { PaymentStatusBadge } from "@/components/domain/status-badges";
 import { MpesaPaymentModal } from "@/components/domain/mpesa-payment-modal";
@@ -260,27 +263,39 @@ export default function ClientPaymentsPage() {
                           {inv.dueAt ? formatDate(inv.dueAt) : "Immediate"}
                         </td>
                         <td className="py-3 px-4 text-right">
-                          {!isFullyPaid ? (
-                            <button
-                              onClick={() => setSelectedInvoiceForPayment(inv)}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-xs flex items-center gap-1 transition-colors ml-auto"
-                            >
-                              <Smartphone className="size-3.5" />
-                              <span>Pay M-Pesa</span>
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                if (inv.receipts && inv.receipts.length > 0) {
-                                  setSelectedReceipt(inv.receipts[0]);
-                                }
-                              }}
-                              className="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg border border-amber-200/60 text-xs font-bold flex items-center gap-1 transition-colors ml-auto"
-                            >
-                              <ReceiptIcon className="size-3.5" />
-                              <span>Receipt</span>
-                            </button>
-                          )}
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link href={`/client/invoices/${inv.id}/document`}>
+                              <button
+                                title="View A4 Commercial Invoice"
+                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors"
+                              >
+                                <Eye className="size-3.5 text-slate-500" />
+                                <span>Invoice</span>
+                              </button>
+                            </Link>
+
+                            {!isFullyPaid ? (
+                              <button
+                                onClick={() => setSelectedInvoiceForPayment(inv)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1 rounded-lg shadow-xs flex items-center gap-1 transition-colors"
+                              >
+                                <Smartphone className="size-3.5" />
+                                <span>Pay M-Pesa</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  if (inv.receipts && inv.receipts.length > 0) {
+                                    setSelectedReceipt(inv.receipts[0]);
+                                  }
+                                }}
+                                className="px-2.5 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg border border-amber-200/60 text-xs font-bold flex items-center gap-1 transition-colors"
+                              >
+                                <ReceiptIcon className="size-3.5" />
+                                <span>Receipt</span>
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

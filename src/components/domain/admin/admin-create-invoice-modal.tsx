@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Plus, Trash2, FileText, AlertCircle } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { adminApi } from "@/lib/api/admin";
 import { formatCurrency } from "@/lib/utils/format";
 import type {
+  Application,
   CreateInvoiceLineItemInput,
   InvoiceLineItemCategory,
   PaymentStatus,
@@ -52,6 +53,13 @@ export function AdminCreateInvoiceModal({
   const [dueAt, setDueAt] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState<PaymentStatus>("ISSUED");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (effectiveAppId) setApplicationId(effectiveAppId);
+    if (effectiveClientId) setClientId(effectiveClientId);
+    setValidationError(null);
+  }, [effectiveAppId, effectiveClientId, isOpen]);
 
   // Dynamic Line Items
   const [lineItems, setLineItems] = useState<LineItemDraft[]>([
@@ -76,13 +84,23 @@ export function AdminCreateInvoiceModal({
   ]);
 
   // Fetch applications list if no applicationId passed
-  const { data: appsData } = useQuery({
+  const { data: appsData, isLoading: isLoadingApps } = useQuery({
     queryKey: ["admin-applications-select"],
-    queryFn: () => adminApi.getApplications({ page: 1, limit: 50 }),
+    queryFn: () => adminApi.getApplications({ page: 1, limit: 100 }),
     enabled: !defaultAppId && isOpen,
   });
 
-  const applications = appsData?.items || [];
+  const rawFetchedItems = (appsData as any)?.items || (Array.isArray(appsData) ? appsData : []);
+  const applications: Application[] = rawFetchedItems;
+
+  const handleApplicationSelect = (selectedId: string) => {
+    setApplicationId(selectedId);
+    setValidationError(null);
+    const selectedApp = applications.find((a) => a.id === selectedId);
+    if (selectedApp?.clientId) {
+      setClientId(selectedApp.clientId);
+    }
+  };
 
   const handleAddLineItem = () => {
     setLineItems((prev) => [
@@ -109,6 +127,7 @@ export function AdminCreateInvoiceModal({
     field: keyof CreateInvoiceLineItemInput,
     value: any
   ) => {
+    setValidationError(null);
     setLineItems((prev) =>
       prev.map((item) => (item.tempId === tempId ? { ...item, [field]: value } : item))
     );
@@ -122,7 +141,7 @@ export function AdminCreateInvoiceModal({
 
   const createMutation = useMutation({
     mutationFn: () => {
-      if (!applicationId) throw new Error("Application ID is required");
+      if (!applicationId) throw new Error("Target Statutory Application is required");
       return adminApi.createInvoice({
         applicationId,
         clientId: clientId || undefined,
@@ -148,6 +167,42 @@ export function AdminCreateInvoiceModal({
     },
   });
 
+  const handleGenerateInvoice = () => {
+    setValidationError(null);
+    if (!applicationId) {
+      setValidationError("Please select a Target Statutory Application first.");
+      return;
+    }
+    if (lineItems.length === 0) {
+      setValidationError("At least one fee line item is required to generate an invoice.");
+      return;
+    }
+    const emptyDesc = lineItems.some((item) => !item.description.trim());
+    if (emptyDesc) {
+      setValidationError("All fee line items must have a valid description.");
+      return;
+    }
+    const invalidQty = lineItems.some((item) => {
+      const q = Number(item.quantity);
+      return isNaN(q) || q <= 0;
+    });
+    if (invalidQty) {
+      setValidationError("All fee line items must have a quantity greater than 0.");
+      return;
+    }
+    const invalidAmount = lineItems.some((item) => {
+      const u = Number(item.unitAmount);
+      return isNaN(u) || u < 0;
+    });
+    if (invalidAmount) {
+      setValidationError("Fee amounts cannot be negative or invalid numbers.");
+      return;
+    }
+    createMutation.mutate();
+  };
+
+  const errorMessage = validationError || (createMutation.error as Error)?.message;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -164,36 +219,56 @@ export function AdminCreateInvoiceModal({
             </strong>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} disabled={createMutation.isPending}>
               Cancel
             </Button>
             <Button
               variant="gold"
               size="sm"
               isLoading={createMutation.isPending}
-              disabled={!applicationId || lineItems.length === 0}
-              onClick={() => createMutation.mutate()}
+              disabled={createMutation.isPending}
+              onClick={handleGenerateInvoice}
             >
-              Generate Invoice
+              {createMutation.isPending ? "Generating Invoice..." : "Generate Invoice"}
             </Button>
           </div>
         </div>
       }
     >
       <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-1">
+        {/* Error Alert Banner */}
+        {errorMessage && (
+          <div className="rounded-xs border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive font-semibold flex items-center gap-2">
+            <AlertCircle className="size-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         {/* Application Target Selection */}
         {!defaultAppId ? (
           <FormField label="Target Statutory Application" required>
             <Select
               value={applicationId}
-              onChange={(e) => setApplicationId(e.target.value)}
-              options={[
-                { value: "", label: "Select an active statutory application..." },
-                ...applications.map((app) => ({
-                  value: app.id,
-                  label: `#${app.applicationNumber} — ${app.service?.name || "Statutory Service"} (${app.client?.fullName || "Client"})`,
-                })),
-              ]}
+              onChange={(e) => handleApplicationSelect(e.target.value)}
+              disabled={isLoadingApps}
+              options={
+                isLoadingApps
+                  ? [{ value: "", label: "Loading active client statutory applications..." }]
+                  : applications.length > 0
+                  ? [
+                      { value: "", label: "Select an active statutory application..." },
+                      ...applications.map((app) => {
+                        const clientName = app.client?.fullName || app.client?.businessName || app.user?.fullName || "Verified Client";
+                        const serviceName = app.service?.name || "Statutory Service";
+                        const appNum = app.applicationNumber || app.id.slice(0, 8);
+                        return {
+                          value: app.id,
+                          label: `${clientName} — Dossier #${appNum} (${serviceName})`,
+                        };
+                      }),
+                    ]
+                  : [{ value: "", label: "No active statutory applications found" }]
+              }
             />
           </FormField>
         ) : (
