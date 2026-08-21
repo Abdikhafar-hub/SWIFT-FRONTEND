@@ -825,7 +825,7 @@ export default function AdminDashboardPage() {
                 Recent Operations Stream
               </h2>
               <Link
-                href="/admin/audit"
+                href="/admin/audit-trail"
                 className="text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors"
               >
                 Audit Trail
@@ -866,7 +866,7 @@ export default function AdminDashboardPage() {
 
               <div className="pt-2 border-t border-slate-100 text-center">
                 <Link
-                  href="/admin/audit"
+                  href="/admin/audit-trail"
                   className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center gap-1"
                 >
                   <span>View Full Audit Trail</span>

@@ -35,6 +35,7 @@ import type {
   UpdateGovernmentStatusPayload,
   ClientAction,
   AuditLog,
+  AuditSummaryMetrics,
   QualityCheck,
   QCResult,
   QualityCheckChecklist,
@@ -154,14 +155,20 @@ export const adminApi = {
       search?: string;
     }
   ): Promise<PaginatedResult<Application>> {
-    const res = await apiClient.get<ApiResponse<PaginatedResult<Application>>>(
+    const res = await apiClient.get<any>(
       "/admin/applications/work-queue",
       { params }
     );
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Failed to fetch work queue");
     }
-    return res.data.data;
+    const rawData = res.data.data;
+    const items = Array.isArray(rawData) ? rawData : (rawData?.items || []);
+    return {
+      items,
+      pagination: res.data.pagination || rawData?.pagination,
+      buckets: res.data.buckets || rawData?.buckets,
+    } as any;
   },
 
   /**
@@ -1205,13 +1212,67 @@ export const adminApi = {
    * Fetch immutable audit logs
    */
   async getAuditLogs(
-    params?: QueryPaginationParams & { resource?: string; actorId?: string; action?: string; search?: string }
-  ): Promise<PaginatedResult<AuditLog>> {
-    const res = await apiClient.get<ApiResponse<PaginatedResult<AuditLog>>>("/admin/audit-logs", {
+    params?: QueryPaginationParams & {
+      search?: string;
+      actorId?: string;
+      actorEmail?: string;
+      role?: string;
+      action?: string;
+      category?: string;
+      entityType?: string;
+      resource?: string;
+      entityId?: string;
+      resourceId?: string;
+      status?: string;
+      from?: string;
+      to?: string;
+    }
+  ): Promise<PaginatedResult<AuditLog> & { summaryMetrics?: AuditSummaryMetrics }> {
+    const res = await apiClient.get<any>("/admin/audit-trail", {
       params,
     });
     if (!res.data.success) {
-      throw new Error(res.data.error.message || "Failed to fetch audit logs");
+      throw new Error(res.data.error?.message || "Failed to fetch audit logs");
+    }
+    if (Array.isArray(res.data.data)) {
+      const metaObj = res.data.meta || { total: res.data.data.length, page: 1, limit: 25, totalPages: 1 };
+      const totalPages = metaObj.totalPages || 1;
+      return {
+        items: res.data.data,
+        meta: metaObj,
+        pagination: {
+          page: metaObj.page,
+          limit: metaObj.limit,
+          total: metaObj.total,
+          totalPages,
+          hasNextPage: metaObj.page < totalPages,
+          hasPreviousPage: metaObj.page > 1,
+        },
+        summaryMetrics: res.data.summaryMetrics,
+      };
+    }
+    const dataObj = res.data.data;
+    if (dataObj && !dataObj.pagination && dataObj.meta) {
+      const totalPages = dataObj.meta.totalPages || 1;
+      dataObj.pagination = {
+        page: dataObj.meta.page,
+        limit: dataObj.meta.limit,
+        total: dataObj.meta.total,
+        totalPages,
+        hasNextPage: dataObj.meta.page < totalPages,
+        hasPreviousPage: dataObj.meta.page > 1,
+      };
+    }
+    return dataObj;
+  },
+
+  /**
+   * Fetch audit summary metrics
+   */
+  async getAuditSummary(): Promise<AuditSummaryMetrics> {
+    const res = await apiClient.get<ApiResponse<AuditSummaryMetrics>>("/admin/audit-trail/summary");
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to fetch audit summary metrics");
     }
     return res.data.data;
   },

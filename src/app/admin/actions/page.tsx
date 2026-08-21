@@ -439,6 +439,7 @@ export default function AdminActionsPage() {
       {/* MODAL: CREATE ACTION */}
       {isCreateModalOpen && (
         <AdminClientActionModal
+          applications={applications}
           applicationId={selectedAppForCreate || applications[0]?.id || ""}
           applicationNumber={
             applications.find((a) => a.id === selectedAppForCreate)?.applicationNumber

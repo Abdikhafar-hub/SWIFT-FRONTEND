@@ -60,7 +60,13 @@ export interface User {
   id: string;
   organizationId?: string;
   email: string;
+  firstName?: string | null;
+  lastName?: string | null;
   fullName?: string | null;
+  phone?: string | null;
+  avatarUrl?: string | null;
+  jobTitle?: string | null;
+  department?: string | null;
   role: UserRole;
   isActive: boolean;
   isEmailVerified: boolean;
@@ -68,6 +74,58 @@ export interface User {
   createdAt?: string;
   organization?: OrganizationInfo;
   clientProfile?: ClientProfile | null;
+  notificationPreference?: NotificationPreferences | null;
+}
+
+export interface NotificationPreferences {
+  id: string;
+  userId: string;
+  emailEnabled: boolean;
+  smsEnabled: boolean;
+  inAppEnabled: boolean;
+  marketingEnabled: boolean;
+  emailOperationalAlerts: boolean;
+  emailClientRegistrations: boolean;
+  emailApplicationAlerts: boolean;
+  emailPaymentNotifications: boolean;
+  emailClientActions: boolean;
+  emailSlaAlerts: boolean;
+  emailSecurityNotifications: boolean;
+  inAppOperationalAlerts: boolean;
+  inAppAssignments: boolean;
+  inAppClientActions: boolean;
+  inAppSlaAlerts: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateAdminProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  jobTitle?: string;
+  department?: string;
+}
+
+export interface UploadProfileImagePayload {
+  fileName: string;
+  mimeType: string;
+  base64Data: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export interface RequestEmailChangePayload {
+  currentPassword: string;
+  newEmail: string;
+}
+
+export interface VerifyEmailChangePayload {
+  code: string;
 }
 
 export interface AuthTokens {

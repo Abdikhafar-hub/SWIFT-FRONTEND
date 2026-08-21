@@ -15,6 +15,8 @@ import {
   AlertTriangle,
   Inbox,
   CheckCircle2,
+  Globe,
+  Plane,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/layout-primitives";
 import {
@@ -55,15 +57,24 @@ export default function AdminApplicationsPage() {
   const [newServiceId, setNewServiceId] = useState("");
   const [newPriority, setNewPriority] = useState<ApplicationPriority>("NORMAL");
   const [newNotes, setNewNotes] = useState("");
+  const [modalError, setModalError] = useState<string | null>(null);
+
+  // Dynamic Visa Intake State
+  const [destinationCountry, setDestinationCountry] = useState("");
+  const [visaCategory, setVisaCategory] = useState("Visitor / Tourist");
+  const [passportNumber, setPassportNumber] = useState("");
+  const [passportExpiry, setPassportExpiry] = useState("");
+  const [travelStartDate, setTravelStartDate] = useState("");
+  const [travelEndDate, setTravelEndDate] = useState("");
 
   // Fetch Clients & Services for creation dropdowns
-  const { data: clientsData } = useQuery({
+  const { data: clientsData, isLoading: isClientsLoading } = useQuery({
     queryKey: ["admin-clients-select"],
     queryFn: () => adminApi.getClients({ limit: 100 }),
     enabled: isNewModalOpen,
   });
 
-  const { data: servicesData } = useQuery({
+  const { data: servicesData, isLoading: isServicesLoading } = useQuery({
     queryKey: ["admin-services-select"],
     queryFn: () => adminApi.getServices(),
     enabled: isNewModalOpen,
@@ -71,6 +82,49 @@ export default function AdminApplicationsPage() {
 
   const clients = clientsData?.items || [];
   const services = servicesData || [];
+
+  const selectedService = services.find((s) => s.id === newServiceId);
+  const isVisaService = Boolean(
+    selectedService &&
+      (selectedService.code?.includes("VISA") ||
+        selectedService.name?.toLowerCase().includes("visa") ||
+        selectedService.category?.code === "CAT-VISA" ||
+        selectedService.category?.name?.toLowerCase().includes("visa"))
+  );
+
+  const handleServiceSelect = (serviceId: string) => {
+    setNewServiceId(serviceId);
+    setModalError(null);
+    const srv = services.find((s) => s.id === serviceId);
+    if (srv) {
+      const nameLower = srv.name.toLowerCase();
+      if (nameLower.includes("uk") || nameLower.includes("united kingdom")) {
+        setDestinationCountry("United Kingdom");
+      } else if (nameLower.includes("canada")) {
+        setDestinationCountry("Canada");
+      } else if (nameLower.includes("australia")) {
+        setDestinationCountry("Australia");
+      } else if (nameLower.includes("schengen") || nameLower.includes("germany")) {
+        setDestinationCountry("Germany");
+      } else if (nameLower.includes("us") || nameLower.includes("united states")) {
+        setDestinationCountry("United States");
+      } else {
+        setDestinationCountry("");
+      }
+
+      if (nameLower.includes("student") || nameLower.includes("study")) {
+        setVisaCategory("Student & Education");
+      } else if (nameLower.includes("work")) {
+        setVisaCategory("Work & Employment");
+      } else if (nameLower.includes("transit")) {
+        setVisaCategory("Transit / Courtesy");
+      } else if (nameLower.includes("family") || nameLower.includes("partner")) {
+        setVisaCategory("Family & Settlement");
+      } else {
+        setVisaCategory("Visitor / Tourist");
+      }
+    }
+  };
 
   // Work Queue Query
   const { data, isLoading, error, refetch } = useQuery({
@@ -103,22 +157,72 @@ export default function AdminApplicationsPage() {
   });
 
   const createApplicationMutation = useMutation({
-    mutationFn: () =>
-      adminApi.createAdminApplication({
-        clientId: newClientId,
-        serviceId: newServiceId,
-        priority: newPriority,
-        notesSummary: newNotes || undefined,
-      }),
+    mutationFn: (payload: {
+      clientId: string;
+      serviceId: string;
+      priority: ApplicationPriority;
+      notesSummary?: string;
+      metadata?: Record<string, unknown>;
+    }) => adminApi.createAdminApplication(payload),
     onSuccess: () => {
       setIsNewModalOpen(false);
       setNewClientId("");
       setNewServiceId("");
       setNewNotes("");
+      setModalError(null);
+      setDestinationCountry("");
+      setPassportNumber("");
+      setPassportExpiry("");
+      setTravelStartDate("");
+      setTravelEndDate("");
       queryClient.invalidateQueries({ queryKey: ["admin-work-queue"] });
       queryClient.invalidateQueries({ queryKey: ["admin-overview"] });
     },
+    onError: (err: any) => {
+      setModalError(err.message || "Failed to initiate filing application.");
+    },
   });
+
+  const handleCreateDossier = () => {
+    setModalError(null);
+    if (!newClientId) {
+      setModalError("Please select a target client entity.");
+      return;
+    }
+    if (!newServiceId) {
+      setModalError("Please select a statutory service catalog item.");
+      return;
+    }
+
+    const metadata: Record<string, any> = {};
+    if (isVisaService) {
+      if (!destinationCountry.trim()) {
+        setModalError("Destination Country is required for Visa applications.");
+        return;
+      }
+      if (!visaCategory.trim()) {
+        setModalError("Visa Category is required for Visa applications.");
+        return;
+      }
+      metadata.destinationCountry = destinationCountry.trim();
+      metadata.visaCategory = visaCategory.trim();
+      if (passportNumber.trim()) metadata.passportNumber = passportNumber.trim().toUpperCase();
+      if (passportExpiry) metadata.passportExpiry = passportExpiry;
+      if (travelStartDate) metadata.travelStartDate = travelStartDate;
+      if (travelEndDate) metadata.travelEndDate = travelEndDate;
+      if (selectedService?.defaultGovernmentAgency) {
+        metadata.processingEmbassy = selectedService.defaultGovernmentAgency;
+      }
+    }
+
+    createApplicationMutation.mutate({
+      clientId: newClientId,
+      serviceId: newServiceId,
+      priority: newPriority,
+      notesSummary: newNotes.trim() || undefined,
+      metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+    });
+  };
 
   const applications = data?.items || [];
   const pagination = data?.pagination;
@@ -454,20 +558,30 @@ export default function AdminApplicationsPage() {
       {/* NEW APPLICATION INTAKE MODAL */}
       <Modal
         isOpen={isNewModalOpen}
-        onClose={() => setIsNewModalOpen(false)}
+        onClose={() => {
+          setIsNewModalOpen(false);
+          setModalError(null);
+        }}
         title="Initiate Statutory Client Filing"
         description="Create a new government application dossier on behalf of an authenticated client entity."
         footer={
           <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setIsNewModalOpen(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setIsNewModalOpen(false);
+                setModalError(null);
+              }}
+            >
               Cancel
             </Button>
             <Button
               variant="gold"
               size="sm"
               isLoading={createApplicationMutation.isPending}
-              disabled={!newClientId || !newServiceId}
-              onClick={() => createApplicationMutation.mutate()}
+              disabled={createApplicationMutation.isPending}
+              onClick={handleCreateDossier}
             >
               Create Statutory Dossier
             </Button>
@@ -475,12 +589,31 @@ export default function AdminApplicationsPage() {
         }
       >
         <div className="space-y-4">
+          {modalError && (
+            <div className="rounded-xs border border-rose-500/30 bg-rose-500/10 p-3 text-xs font-semibold text-rose-800 flex items-center justify-between">
+              <span>{modalError}</span>
+              <button
+                type="button"
+                onClick={() => setModalError(null)}
+                className="text-rose-600 hover:text-rose-900 font-bold ml-2"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
           <FormField label="Target Client" required>
             <Select
               value={newClientId}
-              onChange={(e) => setNewClientId(e.target.value)}
+              onChange={(e) => {
+                setNewClientId(e.target.value);
+                setModalError(null);
+              }}
               options={[
-                { value: "", label: "Select client entity..." },
+                {
+                  value: "",
+                  label: isClientsLoading ? "Loading clients..." : "Select client entity...",
+                },
                 ...clients.map((c) => ({
                   value: c.id,
                   label: `${c.fullName || c.businessName || "Client"} (${c.phone || c.email})`,
@@ -492,9 +625,12 @@ export default function AdminApplicationsPage() {
           <FormField label="Statutory Service" required>
             <Select
               value={newServiceId}
-              onChange={(e) => setNewServiceId(e.target.value)}
+              onChange={(e) => handleServiceSelect(e.target.value)}
               options={[
-                { value: "", label: "Select statutory service catalog..." },
+                {
+                  value: "",
+                  label: isServicesLoading ? "Loading services catalog..." : "Select statutory service catalog...",
+                },
                 ...services.map((s) => ({
                   value: s.id,
                   label: `${s.name} — KES ${(Number(s.serviceFee) + Number(s.governmentFee || 0)).toLocaleString()}`,
@@ -502,6 +638,74 @@ export default function AdminApplicationsPage() {
               ]}
             />
           </FormField>
+
+          {/* DYNAMIC VISA INTAKE METADATA SECTION */}
+          {isVisaService && (
+            <div className="space-y-3 p-3 rounded-xs border border-amber-300/80 bg-amber-50/40 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900 border-b border-amber-200/80 pb-2">
+                <Globe className="size-4 text-amber-700" />
+                <span>Consular &amp; Visa Intake Metadata</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormField label="Destination Country" required>
+                  <Input
+                    value={destinationCountry}
+                    onChange={(e) => {
+                      setDestinationCountry(e.target.value);
+                      setModalError(null);
+                    }}
+                    placeholder="e.g. United Kingdom"
+                  />
+                </FormField>
+                <FormField label="Visa Category" required>
+                  <Select
+                    value={visaCategory}
+                    onChange={(e) => {
+                      setVisaCategory(e.target.value);
+                      setModalError(null);
+                    }}
+                    options={[
+                      { value: "Visitor / Tourist", label: "Visitor / Tourist" },
+                      { value: "Business & Investment", label: "Business & Investment" },
+                      { value: "Student & Education", label: "Student & Education" },
+                      { value: "Work & Employment", label: "Work & Employment" },
+                      { value: "Transit / Courtesy", label: "Transit / Courtesy" },
+                      { value: "Family & Settlement", label: "Family & Settlement" },
+                    ]}
+                  />
+                </FormField>
+                <FormField label="Passport Number">
+                  <Input
+                    value={passportNumber}
+                    onChange={(e) => setPassportNumber(e.target.value.toUpperCase())}
+                    placeholder="e.g. AK8910234"
+                    className="font-mono uppercase"
+                  />
+                </FormField>
+                <FormField label="Passport Expiry Date">
+                  <Input
+                    type="date"
+                    value={passportExpiry}
+                    onChange={(e) => setPassportExpiry(e.target.value)}
+                  />
+                </FormField>
+                <FormField label="Intended Travel Start Date">
+                  <Input
+                    type="date"
+                    value={travelStartDate}
+                    onChange={(e) => setTravelStartDate(e.target.value)}
+                  />
+                </FormField>
+                <FormField label="Intended Return Date">
+                  <Input
+                    type="date"
+                    value={travelEndDate}
+                    onChange={(e) => setTravelEndDate(e.target.value)}
+                  />
+                </FormField>
+              </div>
+            </div>
+          )}
 
           <FormField label="Priority Tier" required>
             <Select

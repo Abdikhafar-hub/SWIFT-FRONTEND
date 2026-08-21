@@ -131,17 +131,17 @@ export function Modal({
   if (!isModalOpen) return null;
 
   const sizeClasses = {
-    sm: "max-w-md",
-    md: "max-w-lg",
-    lg: "max-w-2xl",
-    xl: "max-w-4xl",
+    sm: "sm:max-w-md",
+    md: "sm:max-w-lg",
+    lg: "sm:max-w-2xl",
+    xl: "sm:max-w-4xl",
   }[size];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-150">
       <div
         className={cn(
-          "relative w-full max-w-[calc(100vw-1.25rem)] sm:max-w-full rounded-xs border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] flex flex-col",
+          "relative w-full max-w-[calc(100vw-1.5rem)] rounded-xs border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] flex flex-col my-auto mx-auto",
           sizeClasses,
           className
         )}

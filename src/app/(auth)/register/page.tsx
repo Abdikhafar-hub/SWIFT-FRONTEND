@@ -125,7 +125,7 @@ export default function RegisterPage() {
       if (res.client?.clientNumber) {
         setAssignedClientNumber(res.client.clientNumber);
       }
-      setResendCooldown(30);
+      setResendCooldown(60);
       setCurrentStep(2);
     } catch (err: unknown) {
       const parsed = parseApiError(err);
@@ -141,6 +141,7 @@ export default function RegisterPage() {
       await refreshSession();
       setOtpNotice("Email verified successfully!");
       setTimeout(() => {
+        setOtpNotice(null);
         setCurrentStep(3);
       }, 500);
     } catch (err: unknown) {
@@ -157,7 +158,7 @@ export default function RegisterPage() {
     try {
       const res = await authApi.resendOtp();
       setOtpNotice(res.message || "A new 6-digit code has been sent.");
-      setResendCooldown(45);
+      setResendCooldown(60);
     } catch (err: unknown) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
@@ -449,7 +450,7 @@ export default function RegisterPage() {
                 </p>
                 <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[11px] text-muted-foreground border border-border">
                   <KeyRound className="size-3 text-gold" />
-                  <span>Dev & Demo helper code: <strong>123456</strong></span>
+                  <span>Enter the 6-digit code sent to your email inbox</span>
                 </div>
               </div>
 
@@ -491,17 +492,6 @@ export default function RegisterPage() {
                   rightIcon={<ArrowRight className="size-4" />}
                 >
                   Verify Email & Continue
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  onClick={() => setCurrentStep(3)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                >
-                  Skip verification for now
                 </Button>
               </div>
             </form>
@@ -745,17 +735,6 @@ export default function RegisterPage() {
                   rightIcon={<ArrowRight className="size-4" />}
                 >
                   Save Profile & Complete Registration
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  fullWidth
-                  onClick={() => setCurrentStep(4)}
-                  className="text-xs text-muted-foreground hover:text-foreground"
-                >
-                  Skip and complete profile later
                 </Button>
               </div>
             </form>

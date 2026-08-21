@@ -100,6 +100,19 @@ export const paymentsApi = {
   },
 
   /**
+   * Query Daraja STK push status by CheckoutRequestID
+   */
+  async queryStkStatus(checkoutRequestId: string): Promise<{ transactionId: string; status: string; resultCode?: number; resultDesc?: string }> {
+    const res = await apiClient.get<ApiResponse<any>>(
+      `/client/payments/stkpush/query/${checkoutRequestId}`
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to query M-Pesa transaction status");
+    }
+    return res.data.data;
+  },
+
+  /**
    * Fetch receipts for authenticated client
    */
   async getReceipts(params?: QueryPaginationParams): Promise<PaginatedResult<Receipt> | Receipt[]> {

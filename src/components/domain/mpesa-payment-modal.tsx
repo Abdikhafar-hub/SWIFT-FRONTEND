@@ -11,12 +11,13 @@ import {
   RefreshCw,
   Lock,
   X,
+  Search,
 } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
 import { paymentsApi } from "@/lib/api/payments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatKES } from "@/lib/utils/format";
+import { normalizeKenyanPhone, isValidKenyanPhone } from "@/lib/utils/phone";
 
 interface MpesaPaymentModalProps {
   isOpen: boolean;
@@ -35,23 +36,6 @@ interface MpesaPaymentModalProps {
 
 type PaymentStep = "INPUT" | "POLLING" | "SUCCESS" | "FAILED";
 
-function normalizeKenyanPhone(phone: string): string {
-  const cleaned = phone.replace(/[^0-9]/g, "");
-  if (cleaned.startsWith("254") && cleaned.length === 12) {
-    return cleaned;
-  }
-  if (cleaned.startsWith("0") && cleaned.length === 10) {
-    return "254" + cleaned.substring(1);
-  }
-  if (cleaned.startsWith("7") && cleaned.length === 9) {
-    return "254" + cleaned;
-  }
-  if (cleaned.startsWith("1") && cleaned.length === 9) {
-    return "254" + cleaned;
-  }
-  return cleaned;
-}
-
 export function MpesaPaymentModal({
   isOpen,
   onClose,
@@ -65,8 +49,9 @@ export function MpesaPaymentModal({
 
   const [step, setStep] = useState<PaymentStep>("INPUT");
   const [phoneNumber, setPhoneNumber] = useState(clientPhone ? normalizeKenyanPhone(clientPhone) : "");
-  const [amount, setAmount] = useState(String(dueAmountNumber));
+  const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingQuery, setLoadingQuery] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(60);
 
@@ -77,9 +62,9 @@ export function MpesaPaymentModal({
     if (clientPhone) {
       setPhoneNumber(normalizeKenyanPhone(clientPhone));
     }
-    setAmount(String(dueAmountNumber));
     setStep("INPUT");
     setErrorMessage(null);
+    setCheckoutRequestId(null);
   }, [clientPhone, invoice.amountDue, invoice.totalAmount, dueAmountNumber, isOpen]);
 
   // Clean up timers on unmount
@@ -95,7 +80,18 @@ export function MpesaPaymentModal({
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
   };
 
-  const startPolling = (invoiceId: string) => {
+  const triggerSuccess = () => {
+    stopPolling();
+    setStep("SUCCESS");
+    queryClient.invalidateQueries({ queryKey: ["client-invoices"] });
+    queryClient.invalidateQueries({ queryKey: ["client-invoice", invoice.id] });
+    queryClient.invalidateQueries({ queryKey: ["client-payments"] });
+    queryClient.invalidateQueries({ queryKey: ["client-dashboard-overview"] });
+    queryClient.invalidateQueries({ queryKey: ["client-applications"] });
+    onPaymentSuccess?.();
+  };
+
+  const startPolling = (invoiceId: string, currentCheckoutId?: string) => {
     setSecondsRemaining(60);
     setStep("POLLING");
 
@@ -105,7 +101,7 @@ export function MpesaPaymentModal({
         if (prev <= 1) {
           stopPolling();
           setStep("FAILED");
-          setErrorMessage("Payment prompt timed out. If you received the M-Pesa prompt, your balance will refresh shortly.");
+          setErrorMessage("Payment prompt timed out. If you received the M-Pesa prompt, click 'Check Status' below.");
           return 0;
         }
         return prev - 1;
@@ -117,16 +113,15 @@ export function MpesaPaymentModal({
       try {
         const res = await paymentsApi.getInvoiceStatus(invoiceId);
         if (res.isPaid || Number(res.amountDue) <= 0 || res.status === "PAID") {
-          stopPolling();
-          setStep("SUCCESS");
-          queryClient.invalidateQueries({ queryKey: ["client-invoices"] });
-          queryClient.invalidateQueries({ queryKey: ["client-invoice", invoiceId] });
-          queryClient.invalidateQueries({ queryKey: ["client-payments"] });
-          queryClient.invalidateQueries({ queryKey: ["client-dashboard-overview"] });
-          queryClient.invalidateQueries({ queryKey: ["client-applications"] });
-          onPaymentSuccess?.();
+          triggerSuccess();
+        } else if (currentCheckoutId) {
+          // Check STK push query directly
+          const qRes = await paymentsApi.queryStkStatus(currentCheckoutId).catch(() => null);
+          if (qRes && (qRes.status === "COMPLETED" || qRes.status === "PAID")) {
+            triggerSuccess();
+          }
         }
-      } catch (err) {
+      } catch {
         // Continue polling silently
       }
     }, 2500);
@@ -137,30 +132,54 @@ export function MpesaPaymentModal({
     setErrorMessage(null);
 
     const normalized = normalizeKenyanPhone(phoneNumber);
-    if (!normalized || normalized.length !== 12 || !normalized.startsWith("254")) {
-      setErrorMessage("Please enter a valid Kenyan Safaricom phone number (e.g. 0712345678 or 254712345678).");
+    if (!isValidKenyanPhone(normalized)) {
+      setErrorMessage("Please enter a valid Safaricom phone number (e.g. 0712345678 or 254712345678).");
       return;
     }
 
-    const payAmount = Number(amount);
-    if (isNaN(payAmount) || payAmount <= 0) {
-      setErrorMessage("Please enter a valid payment amount.");
+    if (dueAmountNumber <= 0) {
+      setErrorMessage("Invoice is already fully settled.");
       return;
     }
 
     setLoading(true);
     try {
-      await paymentsApi.payInvoiceMpesa(invoice.id, {
+      const res = await paymentsApi.payInvoiceMpesa(invoice.id, {
         phoneNumber: normalized,
-        amount: payAmount,
+        amount: dueAmountNumber,
         idempotencyKey: `mpesa_${invoice.id}_${Date.now()}`,
       });
 
+      if (res.checkoutRequestId) {
+        setCheckoutRequestId(res.checkoutRequestId);
+      }
+
       setLoading(false);
-      startPolling(invoice.id);
+      startPolling(invoice.id, res.checkoutRequestId);
     } catch (err: any) {
       setLoading(false);
       setErrorMessage(err.message || "Failed to trigger M-Pesa STK Push. Please try again.");
+    }
+  };
+
+  const handleManualStatusQuery = async () => {
+    if (!checkoutRequestId) {
+      setErrorMessage("No active Checkout Request ID found.");
+      return;
+    }
+
+    setLoadingQuery(true);
+    try {
+      const qRes = await paymentsApi.queryStkStatus(checkoutRequestId);
+      if (qRes.status === "COMPLETED" || qRes.status === "PAID") {
+        triggerSuccess();
+      } else {
+        setErrorMessage(`Transaction status: ${qRes.status} (${qRes.resultDesc || "Pending PIN entry"})`);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || "Could not query Daraja STK status.");
+    } finally {
+      setLoadingQuery(false);
     }
   };
 
@@ -201,20 +220,25 @@ export function MpesaPaymentModal({
           {/* STEP 1: FORM INPUT */}
           {step === "INPUT" && (
             <form onSubmit={handleInitiatePayment} className="space-y-4">
-              {/* Billing Summary Box */}
-              <div className="rounded-xs border border-border bg-muted/20 p-3.5 space-y-1.5 text-xs">
-                <div className="flex justify-between text-muted-foreground">
+              {/* Billing Summary Box - Strict Server Derived Amount */}
+              <div className="rounded-xs border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-2">
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
                   <span>Total Invoice Amount:</span>
                   <span className="font-semibold text-foreground font-mono">
                     {formatKES(invoice.totalAmount)}
                   </span>
                 </div>
-                <div className="flex justify-between font-bold text-foreground pt-1 border-t border-border/60">
-                  <span>Payable Amount:</span>
-                  <span className="text-gold-dark dark:text-gold font-mono text-sm">
-                    {formatKES(amount || dueAmountNumber)}
+                <div className="flex justify-between items-center font-bold text-foreground pt-1.5 border-t border-emerald-500/20">
+                  <span className="text-xs uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                    Amount Payable:
+                  </span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-mono text-base font-extrabold">
+                    {formatKES(dueAmountNumber)}
                   </span>
                 </div>
+                <span className="block text-[10px] text-muted-foreground">
+                  Calculated automatically from invoice outstanding balance.
+                </span>
               </div>
 
               {/* Phone Input */}
@@ -237,25 +261,8 @@ export function MpesaPaymentModal({
                   />
                 </div>
                 <span className="block text-[11px] text-muted-foreground">
-                  The STK Push prompt will be sent directly to this handset.
+                  The M-Pesa STK Push prompt will be sent to this phone.
                 </span>
-              </div>
-
-              {/* Amount Input */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-foreground">
-                  Amount to Settle (KES)
-                </label>
-                <Input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="KES Amount"
-                  className="font-mono text-sm"
-                  min={1}
-                  required
-                  disabled={loading}
-                />
               </div>
 
               {errorMessage && (
@@ -273,13 +280,13 @@ export function MpesaPaymentModal({
                 disabled={loading}
               >
                 <Lock className="size-3.5" />
-                <span>Send M-Pesa Prompt</span>
+                <span>Send M-Pesa STK Push ({formatKES(dueAmountNumber)})</span>
                 <ArrowRight className="size-4 ml-auto" />
               </Button>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground pt-1">
                 <Lock className="size-3 text-emerald-600" />
-                <span>Encrypted 256-bit Safaricom Daraja v2 Gateway</span>
+                <span>Safaricom Daraja Verified Gateway</span>
               </div>
             </form>
           )}
@@ -299,7 +306,7 @@ export function MpesaPaymentModal({
                   Check Your Phone
                 </h4>
                 <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-                  An M-Pesa PIN prompt for <strong className="text-foreground">{formatKES(amount)}</strong> has been sent to{" "}
+                  An M-Pesa PIN prompt for <strong className="text-foreground">{formatKES(dueAmountNumber)}</strong> has been sent to{" "}
                   <strong className="text-foreground font-mono">{phoneNumber}</strong>.
                 </p>
               </div>
@@ -312,11 +319,25 @@ export function MpesaPaymentModal({
               <div className="w-full rounded-xs border border-border bg-card p-3 text-[11px] text-muted-foreground text-left space-y-1">
                 <div className="font-semibold text-foreground">Instructions:</div>
                 <ol className="list-decimal list-inside space-y-0.5">
-                  <li>Unlock your phone when the M-Pesa pop-up appears.</li>
+                  <li>Unlock your phone screen.</li>
                   <li>Enter your secret 4-digit M-Pesa PIN.</li>
-                  <li>Press <strong>OK</strong> to confirm payment.</li>
+                  <li>Press <strong>OK</strong> to approve payment.</li>
                 </ol>
               </div>
+
+              {checkoutRequestId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualStatusQuery}
+                  isLoading={loadingQuery}
+                  disabled={loadingQuery}
+                  className="w-full text-xs font-semibold gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+                >
+                  <Search className="size-3.5" />
+                  <span>Query M-Pesa Status Now</span>
+                </Button>
+              )}
 
               <Button
                 variant="ghost"
@@ -341,21 +362,21 @@ export function MpesaPaymentModal({
 
               <div className="space-y-1">
                 <h4 className="font-display text-base font-bold text-foreground">
-                  Payment Received & Verified
+                  Payment Verified & Completed
                 </h4>
                 <p className="text-xs text-muted-foreground max-w-xs">
-                  Your payment of <strong className="text-foreground">{formatKES(amount)}</strong> has been successfully reconciled. Official receipt generated.
+                  Your payment of <strong className="text-foreground">{formatKES(dueAmountNumber)}</strong> has been verified. Official immutable receipt generated.
                 </p>
               </div>
 
               <Button
-                className="w-full bg-gold hover:bg-gold-light text-ink font-bold"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                 onClick={() => {
                   stopPolling();
                   onClose();
                 }}
               >
-                Done & Return to Ledger
+                Done & View Receipts
               </Button>
             </div>
           )}
@@ -369,14 +390,28 @@ export function MpesaPaymentModal({
 
               <div className="space-y-1">
                 <h4 className="font-display text-base font-bold text-foreground">
-                  Verification Timeout
+                  Verification Pending / Timeout
                 </h4>
                 <p className="text-xs text-muted-foreground max-w-xs">
-                  {errorMessage || "We could not detect your M-Pesa PIN confirmation within the timeout window."}
+                  {errorMessage || "We could not automatically detect your M-Pesa PIN confirmation within 60 seconds."}
                 </p>
               </div>
 
-              <div className="flex w-full gap-2 pt-2">
+              {checkoutRequestId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualStatusQuery}
+                  isLoading={loadingQuery}
+                  disabled={loadingQuery}
+                  className="w-full text-xs font-semibold gap-1.5 border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+                >
+                  <Search className="size-3.5" />
+                  <span>Check Payment Status with M-Pesa</span>
+                </Button>
+              )}
+
+              <div className="flex w-full gap-2 pt-1">
                 <Button
                   variant="outline"
                   className="flex-1 text-xs"

@@ -252,9 +252,15 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
       },
       {
         title: "Audit Trail",
-        href: "/admin/audit",
+        href: "/admin/audit-trail",
         iconName: "ShieldAlert",
         description: "Immutable statutory audit and access logs",
+      },
+      {
+        title: "Account Settings",
+        href: "/admin/settings",
+        iconName: "Settings",
+        description: "Admin profile, security, and notification preferences",
       },
     ],
   },

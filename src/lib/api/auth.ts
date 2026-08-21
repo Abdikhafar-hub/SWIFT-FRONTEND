@@ -72,9 +72,17 @@ export const authApi = {
       role: data.role,
       isActive: data.isActive ?? true,
       isEmailVerified: data.isEmailVerified ?? false,
+      firstName: data.firstName ?? null,
+      lastName: data.lastName ?? null,
+      fullName: data.fullName ?? null,
+      phone: data.phone ?? null,
+      avatarUrl: data.avatarUrl ?? null,
+      jobTitle: data.jobTitle ?? null,
+      department: data.department ?? null,
       lastLoginAt: data.lastLoginAt ?? null,
       organizationId: data.organization?.id ?? data.organizationId ?? "",
       createdAt: data.createdAt,
+      organization: data.organization,
     };
     const client: ClientProfile | null = data.clientProfile || data.client || null;
     return { user, client };

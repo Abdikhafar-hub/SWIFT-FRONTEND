@@ -93,6 +93,7 @@ export const documentsApi = {
     if (onUploadProgress) onUploadProgress(60);
 
     const body = {
+      clientId: payload.clientId || undefined,
       applicationId: payload.applicationId || undefined,
       applicationRequirementId: payload.applicationRequirementId || undefined,
       documentType: payload.documentType,

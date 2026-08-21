@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ListTodo, Send, AlertTriangle, Clock } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ListTodo, Send, AlertTriangle, Clock, User } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { FormField, Textarea } from "@/components/ui/form-primitives";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { adminApi } from "@/lib/api/admin";
-import type { ClientActionType, ApplicationPriority } from "@/types";
+import type { ClientActionType, ApplicationPriority, Application } from "@/types";
 
 interface AdminClientActionModalProps {
-  applicationId: string;
+  applicationId?: string;
   applicationNumber?: string;
+  applications?: Application[];
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
@@ -41,6 +42,7 @@ const PRIORITIES: Array<{ value: ApplicationPriority; label: string }> = [
 export function AdminClientActionModal({
   applicationId,
   applicationNumber,
+  applications: passedApplications = [],
   isOpen,
   onClose,
   onSuccess,
@@ -48,6 +50,7 @@ export function AdminClientActionModal({
 }: AdminClientActionModalProps) {
   const queryClient = useQueryClient();
 
+  const [selectedAppId, setSelectedAppId] = useState<string>(applicationId || "");
   const [actionType, setActionType] = useState<ClientActionType>("UPLOAD_DOCUMENT");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -56,17 +59,44 @@ export function AdminClientActionModal({
   const [deadline, setDeadline] = useState("");
   const [requirementId, setRequirementId] = useState("");
 
+  // Fetch list of active client applications if not provided by parent
+  const { data: appsData, isLoading: isLoadingApps } = useQuery({
+    queryKey: ["admin-applications-dropdown-list"],
+    queryFn: () => adminApi.getApplications({ page: 1, limit: 100 }),
+    enabled: isOpen && passedApplications.length === 0,
+  });
+
+  const rawFetchedItems = (appsData as any)?.items || (Array.isArray(appsData) ? appsData : []);
+  const applications: Application[] = passedApplications.length > 0 ? passedApplications : rawFetchedItems;
+
+  useEffect(() => {
+    if (applicationId) {
+      setSelectedAppId(applicationId);
+    } else if (applications.length > 0 && !selectedAppId) {
+      setSelectedAppId(applications[0].id);
+    }
+  }, [applicationId, applications, selectedAppId]);
+
+  const activeApp = applications.find((a) => a.id === selectedAppId);
+  const activeAppNumber = activeApp?.applicationNumber || applicationNumber || (selectedAppId ? selectedAppId.slice(0, 8) : "");
+  const isDropdownLoading = isLoadingApps && passedApplications.length === 0;
+
   const createActionMutation = useMutation({
-    mutationFn: () =>
-      adminApi.createClientAction(applicationId, {
+    mutationFn: () => {
+      if (!selectedAppId) {
+        throw new Error("Please select a target client and application dossier.");
+      }
+      return adminApi.createClientAction(selectedAppId, {
         actionType,
         title,
         description: description + (instructions ? `\n\nInstructions: ${instructions}` : ""),
         priority,
         deadline: deadline || undefined,
-      }),
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-application", applicationId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-application", selectedAppId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-applications-actions-queue"] });
       queryClient.invalidateQueries({ queryKey: ["admin-actions-list"] });
       queryClient.invalidateQueries({ queryKey: ["admin-work-queue"] });
       if (onSuccess) onSuccess();
@@ -79,11 +109,15 @@ export function AdminClientActionModal({
     },
   });
 
+  const modalTitle = activeAppNumber
+    ? `Dispatch Urgent Client Directive • Dossier #${activeAppNumber}`
+    : "Dispatch Urgent Client Directive";
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Dispatch Urgent Client Directive • Dossier #${applicationNumber || applicationId.slice(0, 8)}`}
+      title={modalTitle}
       description="Create a mandatory action item on the client's portal with real-time notifications."
       size="lg"
     >
@@ -94,6 +128,36 @@ export function AdminClientActionModal({
             <span>{(createActionMutation.error as Error).message || "Failed to create client action"}</span>
           </div>
         )}
+
+        {/* TARGET CLIENT & DOSSIER SELECTION */}
+        <FormField label="Target Client & Application Dossier" required>
+          <Select
+            value={selectedAppId}
+            onChange={(e) => setSelectedAppId(e.target.value)}
+            options={
+              applications.length > 0
+                ? applications.map((app) => {
+                    const clientName = app.client?.fullName || app.client?.businessName || "Verified Client";
+                    const serviceName = app.service?.name || "Statutory Filing";
+                    return {
+                      value: app.id,
+                      label: `${clientName} — Dossier #${app.applicationNumber} (${serviceName})`,
+                    };
+                  })
+                : [
+                    {
+                      value: selectedAppId || "",
+                      label: isDropdownLoading
+                        ? "Loading active client dossiers..."
+                        : activeAppNumber
+                        ? `Dossier #${activeAppNumber}`
+                        : "No active client dossiers found",
+                    },
+                  ]
+            }
+            disabled={isDropdownLoading}
+          />
+        </FormField>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormField label="Directive Type" required>
@@ -169,7 +233,7 @@ export function AdminClientActionModal({
             size="sm"
             leftIcon={<Send className="size-3.5" />}
             isLoading={createActionMutation.isPending}
-            disabled={!title.trim() || !description.trim()}
+            disabled={!selectedAppId || !title.trim() || !description.trim()}
             onClick={() => createActionMutation.mutate()}
           >
             Dispatch Directive to Client

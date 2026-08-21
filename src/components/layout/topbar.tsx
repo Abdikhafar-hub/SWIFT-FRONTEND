@@ -102,9 +102,17 @@ export function Topbar({
             onClick={() => setProfileOpen(!profileOpen)}
             className="flex items-center gap-2 rounded-xs border border-border/80 bg-card p-1 sm:p-1.5 sm:pr-3 hover:border-gold/60 transition-colors"
           >
-            <div className="flex size-7 items-center justify-center rounded-xs bg-gold/20 text-xs font-bold text-gold shrink-0">
-              {displayName.slice(0, 1).toUpperCase()}
-            </div>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={displayName}
+                className="size-7 rounded-xs object-cover shrink-0 border border-gold/40"
+              />
+            ) : (
+              <div className="flex size-7 items-center justify-center rounded-xs bg-gold/20 text-xs font-bold text-gold shrink-0">
+                {displayName.slice(0, 1).toUpperCase()}
+              </div>
+            )}
             <span className="hidden sm:inline text-xs font-bold text-foreground max-w-[120px] truncate">
               {displayName.split(" ")[0]}
             </span>
@@ -122,12 +130,12 @@ export function Topbar({
 
               <div className="py-1">
                 <Link
-                  href={role === "ADMIN" ? "/admin" : "/client/profile"}
+                  href={role === "ADMIN" ? "/admin/settings" : "/client/profile"}
                   onClick={() => setProfileOpen(false)}
                   className="flex items-center gap-2 rounded-xs px-3 py-2 text-xs font-medium text-foreground hover:bg-muted"
                 >
                   <User className="size-3.5 text-muted-foreground" />
-                  <span>Profile & Security</span>
+                  <span>Account Settings</span>
                 </Link>
               </div>
 

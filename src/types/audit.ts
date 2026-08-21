@@ -9,15 +9,33 @@ export interface AuditLog {
   id: string;
   organizationId?: string;
   actorId?: string | null;
+  actorName?: string | null;
   actorEmail?: string | null;
   actorRole?: UserRole | null;
   action: string;
-  resource: string;
+  actionCategory?: string | null;
+  description?: string | null;
+  resource?: string | null;
   resourceId?: string | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  entityReference?: string | null;
+  previousValue?: Record<string, unknown> | unknown | null;
+  newValue?: Record<string, unknown> | unknown | null;
+  status?: "SUCCESS" | "FAILURE" | "WARNING" | "INFO" | string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
   metadata?: Record<string, unknown> | null;
   createdAt: string;
+}
+
+export interface AuditSummaryMetrics {
+  totalEvents: number;
+  eventsToday: number;
+  successCount: number;
+  failureCount: number;
+  activeUsersToday: number;
+  loginEventsToday: number;
 }
 
 export type QCResult = "PASSED" | "FAILED";
