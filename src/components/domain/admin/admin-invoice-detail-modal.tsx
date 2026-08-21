@@ -33,7 +33,7 @@ import { AdminManualPaymentModal } from "./admin-manual-payment-modal";
 import { AdminFinancialAdjustmentModal } from "./admin-financial-adjustment-modal";
 import { AdminReverseTransactionModal } from "./admin-reverse-transaction-modal";
 import { AdminReceiptDetailModal } from "./admin-receipt-detail-modal";
-import { AdminRequestRefundModal } from "./admin-refund-modals";
+import { AdminInitiateRefundModal } from "./admin-initiate-refund-modal";
 import { adminApi } from "@/lib/api/admin";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import type { Payment, PaymentTransaction, InvoiceLineItem } from "@/types";
@@ -554,12 +554,10 @@ export function AdminInvoiceDetailModal({
 
       {/* REQUEST REFUND MODAL */}
       {selectedTxForRefund && invoice && (
-        <AdminRequestRefundModal
+        <AdminInitiateRefundModal
           isOpen={Boolean(selectedTxForRefund)}
           onClose={() => setSelectedTxForRefund(null)}
-          transaction={selectedTxForRefund}
-          paymentId={invoice.id}
-          onRequested={() => {
+          onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ["admin-invoice", invoiceId] });
             if (onUpdated) onUpdated();
           }}

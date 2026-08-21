@@ -55,6 +55,11 @@ import type {
   IngestStatementPayload,
   ManualResolvePayload,
   RecordManualPaymentPayload,
+  EligibleRefundSource,
+  InitiateRefundPayload,
+  ProcessRefundPayload,
+  CompleteRefundPayload,
+  CancelRefundPayload,
   ApplicationPriority,
 } from "@/types";
 
@@ -1429,14 +1434,47 @@ export const adminApi = {
   },
 
   /**
-   * List refunds
+   * Fetch eligible financial sources (clients, paid invoices, refundable balances)
    */
-  async getRefunds(params?: QueryPaginationParams & { status?: string }): Promise<PaginatedResult<Refund> | Refund[]> {
-    const res = await apiClient.get<ApiResponse<any>>("/admin/refunds", { params });
+  async getEligibleRefundSources(params?: { search?: string; clientId?: string }): Promise<EligibleRefundSource[]> {
+    const res = await apiClient.get<ApiResponse<EligibleRefundSource[]>>("/admin/refunds/eligible-sources", { params });
     if (!res.data.success) {
-      throw new Error(res.data.error.message || "Failed to fetch refunds");
+      throw new Error(res.data.error.message || "Failed to fetch eligible financial sources");
     }
-    return res.data.data?.items || res.data.data || [];
+    return res.data.data;
+  },
+
+  /**
+   * List refunds with full pagination, filters, and KPI metrics
+   */
+  async getRefunds(
+    params?: QueryPaginationParams & {
+      status?: string;
+      reasonCategory?: string;
+      refundMethod?: string;
+      search?: string;
+      fromDate?: string;
+      toDate?: string;
+      minAmount?: string;
+      maxAmount?: string;
+    }
+  ): Promise<{ items: Refund[]; pagination?: any; metrics?: any }> {
+    const res = await apiClient.get<any>("/admin/refunds", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error?.message || "Failed to fetch refunds");
+    }
+    const rawData = res.data;
+    const items: Refund[] = Array.isArray(rawData.data)
+      ? rawData.data
+      : (rawData.data?.items || rawData.items || []);
+    const pagination = rawData.pagination || rawData.data?.pagination || {
+      total: items.length,
+      page: params?.page || 1,
+      limit: params?.limit || 20,
+      totalPages: Math.ceil(items.length / (params?.limit || 20)),
+    };
+    const metrics = rawData.metrics || rawData.data?.metrics;
+    return { items, pagination, metrics };
   },
 
   /**
@@ -1451,25 +1489,27 @@ export const adminApi = {
   },
 
   /**
-   * Request a refund
+   * Initiate / create manual refund
    */
-  async requestRefund(payload: {
-    paymentId: string;
-    transactionId: string;
-    amount: number;
-    reason: string;
-  }): Promise<Refund> {
+  async initiateRefund(payload: InitiateRefundPayload): Promise<Refund> {
     const res = await apiClient.post<ApiResponse<Refund>>("/admin/refunds", payload);
     if (!res.data.success) {
-      throw new Error(res.data.error.message || "Failed to request refund");
+      throw new Error(res.data.error.message || "Failed to initiate refund");
     }
     return res.data.data;
   },
 
   /**
+   * Request a refund (alias to initiateRefund)
+   */
+  async requestRefund(payload: InitiateRefundPayload): Promise<Refund> {
+    return this.initiateRefund(payload);
+  },
+
+  /**
    * Approve a refund
    */
-  async approveRefund(id: string, payload?: { notes?: string }): Promise<Refund> {
+  async approveRefund(id: string, payload?: ApproveRefundPayload): Promise<Refund> {
     const res = await apiClient.post<ApiResponse<Refund>>(`/admin/refunds/${id}/approve`, payload || {});
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Failed to approve refund");
@@ -1478,12 +1518,45 @@ export const adminApi = {
   },
 
   /**
+   * Begin processing refund disbursement
+   */
+  async processRefund(id: string, payload?: ProcessRefundPayload): Promise<Refund> {
+    const res = await apiClient.post<ApiResponse<Refund>>(`/admin/refunds/${id}/process`, payload || {});
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to start refund processing");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Complete refund disbursement
+   */
+  async completeRefund(id: string, payload?: CompleteRefundPayload): Promise<Refund> {
+    const res = await apiClient.post<ApiResponse<Refund>>(`/admin/refunds/${id}/complete`, payload || {});
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to complete refund");
+    }
+    return res.data.data;
+  },
+
+  /**
    * Reject a refund
    */
-  async rejectRefund(id: string, payload: { reason: string }): Promise<Refund> {
+  async rejectRefund(id: string, payload: RejectRefundPayload): Promise<Refund> {
     const res = await apiClient.post<ApiResponse<Refund>>(`/admin/refunds/${id}/reject`, payload);
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Failed to reject refund");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Cancel a refund
+   */
+  async cancelRefund(id: string, payload?: CancelRefundPayload): Promise<Refund> {
+    const res = await apiClient.post<ApiResponse<Refund>>(`/admin/refunds/${id}/cancel`, payload || {});
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to cancel refund");
     }
     return res.data.data;
   },

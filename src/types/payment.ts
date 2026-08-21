@@ -29,6 +29,8 @@ export type PaymentTransactionStatus = PaymentStatus;
 export type TransactionType = "PAYMENT" | "REVERSAL" | "REFUND";
 
 export type RefundStatus =
+  | "DRAFT"
+  | "PENDING_APPROVAL"
   | "REQUESTED"
   | "APPROVED"
   | "PROCESSING"
@@ -138,18 +140,90 @@ export interface Refund {
   amount: number | string;
   currency: string;
   reason: string;
+  reasonCategory?: string | null;
+  refundMethod?: PaymentMethod | string;
   status: RefundStatus;
+  
+  recipientPhone?: string | null;
+  bankName?: string | null;
+  accountHolder?: string | null;
+  accountNumber?: string | null;
+  referenceDetails?: string | null;
+
+  internalNotes?: string | null;
+  supportingDocumentUrl?: string | null;
+  clientExplanation?: string | null;
+
   requestedById: string;
   approvedById?: string | null;
-  rejectionReason?: string | null;
-  paymentMethod?: PaymentMethod | string;
+  approvedAt?: string | null;
+  processingStartedAt?: string | null;
   processedAt?: string | null;
+  completedById?: string | null;
+  completedAt?: string | null;
+  rejectedById?: string | null;
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+  cancelledById?: string | null;
+  cancelledAt?: string | null;
+  failedAt?: string | null;
+  failureReason?: string | null;
+  externalReference?: string | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
+  updatedAt?: string;
+
   requestedBy?: User;
   approvedBy?: User | null;
+  completedBy?: User | null;
+  rejectedBy?: User | null;
   client?: ClientProfile | null;
   payment?: Payment | null;
   transaction?: PaymentTransaction | null;
+  auditLogs?: any[];
+  financialSummary?: {
+    invoiceTotal: number | string;
+    amountPaid: number | string;
+    previousRefundsTotal: number | string;
+    currentRefundAmount: number | string;
+    remainingRefundableBalance: number | string;
+  };
+}
+
+export interface EligibleRefundSource {
+  paymentId: string;
+  invoiceNumber: string;
+  totalAmount: number | string;
+  amountPaid: number | string;
+  amountDue: number | string;
+  previouslyRefunded: number | string;
+  remainingRefundable: number | string;
+  client: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    clientNumber?: string;
+  };
+  application?: {
+    id: string;
+    applicationNumber: string;
+    service?: { title: string };
+  };
+  transactions: Array<{
+    id: string;
+    transactionNumber: string;
+    paymentMethod: PaymentMethod;
+    amount: number | string;
+    paidAt?: string;
+    externalReference?: string;
+    phoneNumber?: string;
+  }>;
+  refunds: Array<{
+    id: string;
+    amount: number | string;
+    status: RefundStatus;
+  }>;
 }
 
 export interface ReconciliationRecord {
@@ -258,17 +332,11 @@ export interface CreateInvoicePayload {
   status?: PaymentStatus;
 }
 
-export interface UpdateDraftInvoicePayload {
-  lineItems?: CreateInvoiceLineItemInput[];
-  discount?: number;
-  tax?: number;
-  dueAt?: string;
-  notes?: string;
-}
+export type UpdateDraftInvoicePayload = Partial<CreateInvoicePayload>;
 
 export interface IssueInvoicePayload {
-  dueAt?: string;
   notes?: string;
+  dueAt?: string;
 }
 
 export interface CancelInvoicePayload {
@@ -276,89 +344,47 @@ export interface CancelInvoicePayload {
 }
 
 export interface FinancialAdjustmentPayload {
-  type: AdjustmentType;
+  paymentId?: string;
+  adjustmentType?: AdjustmentType;
+  type?: AdjustmentType;
   amount: number;
   reason: string;
 }
 
-export interface FinancialSummaryMetrics {
-  totalInvoices: number;
-  totalInvoiced: string;
-  totalCollected: string;
-  totalOutstanding: string;
-  totalOverdue: string;
-  overdueInvoicesCount: number;
-  totalRefunded: string;
-  refundCount: number;
-  netRevenue: string;
-  breakdown: {
-    governmentFees: string;
-    serviceFees: string;
-    tax: string;
-    discounts: string;
-  };
-}
-
 export interface FinancialSummaryData {
-  metrics: FinancialSummaryMetrics;
-  statusDistribution: Record<string, number>;
-  totalCollected?: string | number;
-  totalInvoiced?: string | number;
-  totalOutstanding?: string | number;
-  totalRevenue?: string | number;
-  totalPending?: string | number;
-  totalOverdue?: string | number;
+  totalRevenue?: number | string;
+  totalCollected?: number | string;
+  totalOutstanding?: number | string;
+  totalOverdue?: number | string;
+  totalPending?: number | string;
   byMethod?: Record<string, number>;
-  recentTransactions: Array<{
-    id: string;
-    transactionNumber: string;
-    paymentMethod: PaymentMethod;
-    amount: string | number;
-    externalReference?: string | null;
-    paidAt?: string | null;
-    client?: { fullName: string; clientNumber?: string | null };
-    payment?: { invoiceNumber: string };
-  }>;
+  metrics: {
+    totalInvoiced: number | string;
+    totalInvoices: number;
+    totalCollected: number | string;
+    totalOutstanding: number | string;
+    totalOverdue: number | string;
+    overdueInvoicesCount: number;
+    totalRefunded: number | string;
+    netRevenue: number | string;
+    breakdown?: {
+      governmentFees?: number | string;
+      serviceFees?: number | string;
+      tax?: number | string;
+      discounts?: number | string;
+    };
+  };
 }
 
 export interface FinancialCollectionsData {
   collectionsByMethod?: Array<{
     method: PaymentMethod;
-    totalAmount: string;
     transactionCount: number;
+    totalAmount: number | string;
   }>;
-  aging?: {
-    under30Days?: { count: number; amount: number | string };
-    days30To60?: { count: number; amount: number | string };
-    days60To90?: { count: number; amount: number | string };
-    over90Days?: { count: number; amount: number | string };
-    totalOutstanding?: { count: number; amount: number | string };
-    [key: string]: any;
-  };
-  collectionRate?: number | string;
-  totalCollected?: number | string;
-  totalOutstanding?: number | string;
+  aging?: any;
+  collectionRate?: any;
 }
-
-export interface OutstandingInvoice extends Payment {
-  daysOverdue: number;
-  agingBucket: string;
-  outstandingBalance?: number | string;
-  balanceRemaining?: number | string;
-  amount?: number | string;
-  dueDate?: string | null;
-}
-
-export type AgingBucket =
-  | "1-7"
-  | "8-14"
-  | "15-30"
-  | "30+"
-  | "CURRENT"
-  | "30_TO_60"
-  | "60_TO_90"
-  | "OVER_90"
-  | string;
 
 export interface OutstandingInvoicesQuery {
   page?: number;
@@ -368,36 +394,81 @@ export interface OutstandingInvoicesQuery {
 }
 
 export interface ReverseTransactionPayload {
+  transactionId?: string;
   reason: string;
+  notes?: string;
 }
 
-export interface RequestRefundPayload {
+export interface IngestStatementPayload {
+  bankName?: string;
+  fileUrl?: string;
+  rawText?: string;
+  entries?: any[];
+  reference?: string;
+  amount?: number;
+  provider?: string;
+  notes?: string;
+}
+
+export interface ManualResolvePayload {
+  reconciliationId?: string;
+  resolution?: string;
+  status?: string;
+  transactionId?: string;
+  matchedTransactionId?: string;
+  resolutionStatus?: string;
+  resolvedTransactionId?: string;
+  notes?: string;
+}
+
+
+export interface InitiateRefundPayload {
   paymentId: string;
   transactionId: string;
   amount: number;
   reason: string;
+  reasonCategory?: string;
+  refundMethod?: PaymentMethod;
+  recipientPhone?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNumber?: string;
+  referenceDetails?: string;
+  internalNotes?: string;
+  supportingDocumentUrl?: string;
+  clientExplanation?: string;
 }
+
+export type RequestRefundPayload = InitiateRefundPayload;
 
 export interface ApproveRefundPayload {
   notes?: string;
+}
+
+export interface ProcessRefundPayload {
+  notes?: string;
+  externalReference?: string;
+}
+
+export interface CompleteRefundPayload {
+  notes?: string;
+  externalReference?: string;
 }
 
 export interface RejectRefundPayload {
   reason: string;
 }
 
-export interface IngestStatementPayload {
-  reference: string;
-  amount: number;
-  provider?: string;
-  notes?: string;
-  metadata?: Record<string, unknown>;
+export interface CancelRefundPayload {
+  reason?: string;
 }
 
-export interface ManualResolvePayload {
-  transactionId?: string;
-  matchedTransactionId?: string;
-  notes?: string;
-  status?: ReconciliationStatus;
+export type AgingBucket = string;
+
+export interface OutstandingInvoice extends Payment {
+  daysOverdue?: number;
+  agingBucket?: AgingBucket;
+  outstandingBalance?: number;
+  balanceRemaining?: number;
 }
 

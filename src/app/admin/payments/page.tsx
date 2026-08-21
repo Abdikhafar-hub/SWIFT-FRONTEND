@@ -49,8 +49,8 @@ import {
   AdminFinancialAdjustmentModal,
   AdminReverseTransactionModal,
   AdminReceiptDetailModal,
-  AdminRequestRefundModal,
-  AdminRefundReviewModal,
+  AdminInitiateRefundModal,
+  AdminApproveRefundModal,
 } from "@/components/domain";
 import { EmptyState, Skeleton, ErrorState } from "@/components/ui/feedback-primitives";
 import { adminApi } from "@/lib/api/admin";
@@ -850,7 +850,7 @@ export default function AdminPaymentsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {collectionsData?.collectionsByMethod && collectionsData.collectionsByMethod.length > 0 ? (
-                  collectionsData.collectionsByMethod.map((col) => (
+                  collectionsData.collectionsByMethod.map((col: any) => (
                     <div
                       key={col.method}
                       className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-1.5"
@@ -1012,7 +1012,7 @@ export default function AdminPaymentsPage() {
                                 </span>
                               </td>
                               <td className="py-3 px-4 font-mono text-xs font-bold text-rose-600">
-                                {inv.daysOverdue > 0 ? `${inv.daysOverdue} days` : "Current"}
+                                {(inv.daysOverdue || 0) > 0 ? `${inv.daysOverdue} days` : "Current"}
                               </td>
                               <td className="py-3 px-4 font-mono text-xs font-bold text-amber-700 text-right">
                                 {formatCurrency(inv.amountDue, inv.currency)}
@@ -1140,15 +1140,14 @@ export default function AdminPaymentsPage() {
         />
       )}
 
-      {/* REQUEST REFUND MODAL */}
-      <AdminRequestRefundModal
+      {/* INITIATE REFUND MODAL */}
+      <AdminInitiateRefundModal
         isOpen={isRequestRefundOpen || Boolean(selectedTxForRefund)}
         onClose={() => {
           setIsRequestRefundOpen(false);
           setSelectedTxForRefund(null);
         }}
-        transaction={selectedTxForRefund || undefined}
-        onRequested={() => {
+        onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ["admin-refunds-list"] });
           queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
         }}
@@ -1156,11 +1155,13 @@ export default function AdminPaymentsPage() {
 
       {/* REVIEW REFUND MODAL */}
       {selectedRefundForReview && (
-        <AdminRefundReviewModal
+        <AdminApproveRefundModal
           isOpen={Boolean(selectedRefundForReview)}
           onClose={() => setSelectedRefundForReview(null)}
-          refund={selectedRefundForReview}
-          onReviewed={() => {
+          refundId={selectedRefundForReview.id}
+          refundNumber={selectedRefundForReview.refundNumber}
+          amount={selectedRefundForReview.amount}
+          onSuccess={() => {
             queryClient.invalidateQueries({ queryKey: ["admin-refunds-list"] });
             queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
           }}
