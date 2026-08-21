@@ -137,23 +137,23 @@ export function AdminClientActionModal({
             options={
               applications.length > 0
                 ? applications.map((app) => {
-                    const clientName = app.client?.fullName || app.client?.businessName || "Verified Client";
-                    const serviceName = app.service?.name || "Statutory Filing";
-                    return {
-                      value: app.id,
-                      label: `${clientName} — Dossier #${app.applicationNumber} (${serviceName})`,
-                    };
-                  })
+                  const clientName = app.client?.fullName || app.client?.businessName || "Verified Client";
+                  const serviceName = app.service?.name || "Statutory Filing";
+                  return {
+                    value: app.id,
+                    label: `${clientName} — Dossier #${app.applicationNumber} (${serviceName})`,
+                  };
+                })
                 : [
-                    {
-                      value: selectedAppId || "",
-                      label: isDropdownLoading
-                        ? "Loading active client dossiers..."
-                        : activeAppNumber
+                  {
+                    value: selectedAppId || "",
+                    label: isDropdownLoading
+                      ? "Loading active client dossiers..."
+                      : activeAppNumber
                         ? `Dossier #${activeAppNumber}`
                         : "No active client dossiers found",
-                    },
-                  ]
+                  },
+                ]
             }
             disabled={isDropdownLoading}
           />

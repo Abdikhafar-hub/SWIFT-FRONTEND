@@ -659,8 +659,56 @@ export const adminApi = {
   },
 
   // =========================================================================
-  // 7. DELIVERY DISPATCH
+  // 7. DELIVERY & FULFILLMENT OPERATIONS
   // =========================================================================
+
+  /**
+   * Fetch all deliveries with pagination, search, and summary metrics
+   */
+  async getDeliveries(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    carrier?: string;
+  }): Promise<{
+    items: ApplicationDelivery[];
+    pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+    summaryMetrics: {
+      awaitingDispatchCount: number;
+      inTransitCount: number;
+      fulfilledCount: number;
+      totalDispatched: number;
+    };
+  }> {
+    const res = await apiClient.get<ApiResponse<{
+      items: ApplicationDelivery[];
+      pagination: any;
+      summaryMetrics: any;
+    }>>("/admin/delivery", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch deliveries");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Lodge a new delivery record
+   */
+  async lodgeDelivery(payload: any): Promise<ApplicationDelivery> {
+    const res = await apiClient.post<ApiResponse<ApplicationDelivery>>("/admin/delivery", payload);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to lodge delivery");
+    }
+    return res.data.data;
+  },
 
   /**
    * Dispatch document delivery to client
@@ -689,16 +737,38 @@ export const adminApi = {
   },
 
   /**
+   * Transition delivery state to DISPATCHED
+   */
+  async dispatchDeliveryAction(
+    deliveryId: string,
+    payload: {
+      dispatchDate?: string;
+      carrier?: string;
+      trackingNumber?: string;
+      handoverReference?: string;
+      notes?: string;
+    }
+  ): Promise<ApplicationDelivery> {
+    const res = await apiClient.patch<ApiResponse<ApplicationDelivery>>(
+      `/admin/delivery/${deliveryId}/dispatch`,
+      payload
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to dispatch delivery");
+    }
+    return res.data.data;
+  },
+
+  /**
    * Confirm document delivery fulfillment
    */
   async confirmDelivery(
     deliveryId: string,
     payload: {
+      deliveredAt?: string;
       receivedBy?: string;
+      recipientPhone?: string;
       notes?: string;
-      status?: "DELIVERED" | "FAILED" | "RETURNED" | string;
-      idNumberVerified?: string;
-      confirmationStatus?: "CONFIRMED";
       proofDocumentUrl?: string;
     }
   ): Promise<ApplicationDelivery> {
@@ -711,6 +781,39 @@ export const adminApi = {
     }
     return res.data.data;
   },
+
+  /**
+   * Report failed delivery attempt
+   */
+  async reportFailedDelivery(
+    deliveryId: string,
+    payload: {
+      failureReason: string;
+      notes?: string;
+      nextAction?: string;
+    }
+  ): Promise<ApplicationDelivery> {
+    const res = await apiClient.patch<ApiResponse<ApplicationDelivery>>(
+      `/admin/delivery/${deliveryId}/fail`,
+      payload
+    );
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to report delivery failure");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch single delivery details
+   */
+  async getDeliveryById(deliveryId: string): Promise<ApplicationDelivery> {
+    const res = await apiClient.get<ApiResponse<ApplicationDelivery>>(`/admin/delivery/${deliveryId}`);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch delivery record");
+    }
+    return res.data.data;
+  },
+
 
   // =========================================================================
   // 8. CLIENT REGISTRY & 360 PROFILES

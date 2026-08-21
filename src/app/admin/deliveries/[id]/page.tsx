@@ -71,9 +71,7 @@ export default function AdminDeliveryDetailPage() {
   const confirmMutation = useMutation({
     mutationFn: () =>
       adminApi.confirmDelivery(id, {
-        status: confirmStatus,
         receivedBy: receivedBy || undefined,
-        idNumberVerified: idNumberVerified || undefined,
         notes: notes || undefined,
       }),
     onSuccess: () => {
