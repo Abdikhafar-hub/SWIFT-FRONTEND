@@ -82,21 +82,18 @@ export function Sidebar({ role }: { role: "CLIENT" | "ADMIN" }) {
                   className={cn(
                     "group relative flex items-center gap-2.5 rounded-xs px-2 py-1 text-[11px] font-semibold leading-tight transition-all duration-150",
                     active
-                      ? "bg-gold/15 text-gold-dark dark:text-gold font-bold shadow-xs"
+                      ? "bg-amber-500/10 text-foreground font-bold shadow-xs"
                       : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                     collapsed && "justify-center px-1.5"
                   )}
                 >
                   {active && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-r-xs bg-gold" />
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-r-xs bg-amber-500" />
                   )}
 
                   <NavIcon
                     name={item.iconName}
-                    className={cn(
-                      "size-3.5 shrink-0 transition-colors",
-                      active ? "text-gold" : "text-muted-foreground group-hover:text-foreground"
-                    )}
+                    className="size-3.5 shrink-0 text-amber-500"
                   />
 
                   {!collapsed && (
@@ -104,7 +101,7 @@ export function Sidebar({ role }: { role: "CLIENT" | "ADMIN" }) {
                   )}
 
                   {!collapsed && item.badge !== undefined && (
-                    <span className="ml-auto rounded-full bg-gold/20 px-1 py-0.1 text-[9px] font-bold text-gold-dark dark:text-gold">
+                    <span className="ml-auto rounded-full bg-amber-500/20 px-1 py-0.1 text-[9px] font-bold text-amber-600 dark:text-amber-400">
                       {item.badge}
                     </span>
                   )}

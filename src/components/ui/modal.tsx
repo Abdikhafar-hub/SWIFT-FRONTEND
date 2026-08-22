@@ -35,7 +35,7 @@ export function ModalContent({
       <ModalOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-border bg-card p-4 sm:p-6 shadow-xl duration-200 rounded-xs max-h-[90vh] overflow-y-auto",
+          "fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border border-border bg-card p-4 sm:p-6 shadow-xl duration-200 rounded-xl max-h-[90vh] overflow-y-auto",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
           className
         )}
@@ -131,17 +131,17 @@ export function Modal({
   if (!isModalOpen) return null;
 
   const sizeClasses = {
-    sm: "sm:max-w-md",
-    md: "sm:max-w-lg",
-    lg: "sm:max-w-2xl",
-    xl: "sm:max-w-4xl",
+    sm: "max-w-sm sm:max-w-md",
+    md: "max-w-md sm:max-w-lg",
+    lg: "max-w-lg sm:max-w-2xl",
+    xl: "max-w-xl sm:max-w-4xl",
   }[size];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-150 overflow-y-auto">
       <div
         className={cn(
-          "relative w-full max-w-[calc(100vw-1.5rem)] rounded-xs border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 max-h-[92vh] sm:max-h-[90vh] flex flex-col my-auto mx-auto",
+          "relative w-full rounded-xl border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 max-h-[90vh] flex flex-col my-auto mx-auto",
           sizeClasses,
           className
         )}

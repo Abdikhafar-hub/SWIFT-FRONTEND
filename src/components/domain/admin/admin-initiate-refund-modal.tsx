@@ -202,8 +202,8 @@ export const AdminInitiateRefundModal: React.FC<AdminInitiateRefundModalProps> =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-xl border border-amber-500/20 bg-slate-900 shadow-2xl text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-3 sm:p-6 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg sm:max-w-3xl my-auto mx-auto max-h-[90vh] flex flex-col rounded-xl border border-amber-500/20 bg-slate-900 shadow-2xl text-slate-100 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
           <div className="flex items-center space-x-3">

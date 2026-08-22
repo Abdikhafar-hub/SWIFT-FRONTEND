@@ -137,7 +137,7 @@ export default function AdminClientDetailPage() {
       }
     >
       {/* 1. EXECUTIVE SUMMARY STATS */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
         <StatCard
           title="Total Filings"
           value={applications.length}

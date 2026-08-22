@@ -52,26 +52,26 @@ function Sparkline({
     const min = Math.min(...values, 0);
     const range = max - min || 1;
     const width = 180;
-    const height = 20;
+    const height = 12;
     const step = width / (values.length - 1 || 1);
 
     return values
       .map((val, idx) => {
         const x = idx * step;
-        const y = height - ((val - min) / range) * (height - 4) - 2;
+        const y = height - ((val - min) / range) * (height - 3) - 1.5;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
       })
       .join(" L ");
   }, [data]);
 
   return (
-    <svg className="w-full h-5 overflow-visible" viewBox="0 0 180 20">
+    <svg className="w-full h-3 overflow-visible" viewBox="0 0 180 12">
       <path
         d={`M ${points}`}
         fill="none"
         stroke={color}
-        strokeWidth="2"
-        strokeDasharray={dashed ? "4 3" : undefined}
+        strokeWidth="1.75"
+        strokeDasharray={dashed ? "3 2" : undefined}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -397,25 +397,26 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ==================================================================== */}
-      {/* 2. EXECUTIVE KPI ROW (High Density / Clean Client Tokens) */}
       {/* ==================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      {/* 2. EXECUTIVE KPI ROW (Half-Height Compact Density / 2 Cols Mobile) */}
+      {/* ==================================================================== */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {/* Card 1: ACTIVE INTAKE DOSSIERS */}
-        <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-1.5 hover:border-purple-300/60 transition-all">
+        <div className="bg-white rounded-xl py-2 px-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-0.5 hover:border-purple-300/60 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+            <span className="text-[9px] font-extrabold tracking-wider text-slate-400 uppercase">
               ACTIVE INTAKE DOSSIERS
             </span>
-            <div className="size-8 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-              <FileCheck2 className="size-4" />
+            <div className="size-5 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+              <FileCheck2 className="size-3" />
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {isOverviewLoading ? <Skeleton className="h-7 w-12" /> : overview?.summary.activeApplications ?? 0}
+          <div className="flex items-baseline justify-between gap-1.5">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
+              {isOverviewLoading ? <Skeleton className="h-5 w-10" /> : overview?.summary.activeApplications ?? 0}
             </span>
-            <span className="text-[11px] text-slate-500 font-medium truncate">
+            <span className="text-[10px] text-slate-500 font-medium truncate">
               {overview?.summary.totalApplications ?? 0} total filings
             </span>
           </div>
@@ -426,25 +427,25 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Card 2: SLA BREACHES & AT RISK */}
-        <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-1.5 hover:border-amber-300/60 transition-all">
+        <div className="bg-white rounded-xl py-2 px-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-0.5 hover:border-amber-300/60 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+            <span className="text-[9px] font-extrabold tracking-wider text-slate-400 uppercase">
               SLA BREACHES &amp; AT RISK
             </span>
-            <div className="size-8 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-              <Clock className="size-4" />
+            <div className="size-5 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <Clock className="size-3" />
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="flex items-baseline justify-between gap-1.5">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
               {isOverviewLoading ? (
-                <Skeleton className="h-7 w-16" />
+                <Skeleton className="h-5 w-14" />
               ) : (
                 `${overview?.queues.overdue ?? 0} / ${overview?.queues.atRisk ?? 0}`
               )}
             </span>
-            <span className="text-[11px] text-slate-500 font-medium truncate">
+            <span className="text-[10px] text-slate-500 font-medium truncate">
               Avg: {overview?.sla.averageCompletionHours ?? 24}h ({overview?.sla.onTrackCount ?? 0} on track)
             </span>
           </div>
@@ -455,25 +456,25 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Card 3: GROSS COLLECTIONS (KES) */}
-        <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-1.5 hover:border-emerald-300/60 transition-all">
+        <div className="bg-white rounded-xl py-2 px-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-0.5 hover:border-emerald-300/60 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+            <span className="text-[9px] font-extrabold tracking-wider text-slate-400 uppercase">
               GROSS COLLECTIONS (KES)
             </span>
-            <div className="size-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-              <DollarSign className="size-4" />
+            <div className="size-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+              <DollarSign className="size-3" />
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate">
+          <div className="flex items-baseline justify-between gap-1.5">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight leading-none truncate">
               {isOverviewLoading ? (
-                <Skeleton className="h-7 w-20" />
+                <Skeleton className="h-5 w-16" />
               ) : (
                 formatCurrency(Number(overview?.financials.totalCollected || 0))
               )}
             </span>
-            <span className="text-[11px] text-slate-500 font-medium truncate">
+            <span className="text-[10px] text-slate-500 font-medium truncate">
               Due: {formatCurrency(Number(overview?.financials.totalOutstanding || 0))}
             </span>
           </div>
@@ -484,25 +485,25 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Card 4: STATUTORY AGENCY VELOCITY */}
-        <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-1.5 hover:border-blue-300/60 transition-all">
+        <div className="bg-white rounded-xl py-2 px-3 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-0.5 hover:border-blue-300/60 transition-all flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">
+            <span className="text-[9px] font-extrabold tracking-wider text-slate-400 uppercase">
               STATUTORY AGENCY VELOCITY
             </span>
-            <div className="size-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-              <Landmark className="size-4" />
+            <div className="size-5 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <Landmark className="size-3" />
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="flex items-baseline justify-between gap-1.5">
+            <span className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
               {isOverviewLoading ? (
-                <Skeleton className="h-7 w-12" />
+                <Skeleton className="h-5 w-10" />
               ) : (
                 overview?.governmentAgencyStats?.reduce((acc, a) => acc + a.count, 0) ?? 0
               )}
             </span>
-            <span className="text-[11px] text-slate-500 font-medium truncate">
+            <span className="text-[10px] text-slate-500 font-medium truncate">
               {overview?.governmentAgencyStats?.length ?? 0} portals
             </span>
           </div>

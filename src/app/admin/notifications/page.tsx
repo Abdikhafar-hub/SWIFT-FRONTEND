@@ -394,13 +394,13 @@ export default function AdminNotificationsPage() {
           </div>
 
           {isPrefsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-12 bg-slate-100 animate-pulse rounded-lg" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
               {/* Channel 1 */}
               <label className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200/80 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-all">
                 <input

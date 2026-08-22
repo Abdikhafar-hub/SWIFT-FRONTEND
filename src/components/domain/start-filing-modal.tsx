@@ -185,8 +185,8 @@ export function StartFilingModal({ isOpen, onClose, service }: StartFilingModalP
   const totalFee = Number(service.totalFee || (govFee + svcFee));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-[calc(100vw-2rem)] max-w-xl max-h-[90vh] flex flex-col rounded-sm border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg sm:max-w-xl max-h-[90vh] flex flex-col my-auto mx-auto rounded-xl border border-border bg-card shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/70 px-4 sm:px-6 py-3.5 sm:py-4 bg-muted/40 shrink-0">
           <div className="flex items-center gap-2.5">

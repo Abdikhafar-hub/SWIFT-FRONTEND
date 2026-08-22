@@ -186,8 +186,8 @@ export function MpesaPaymentModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/75 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-[calc(100vw-2rem)] max-w-md max-h-[90vh] flex flex-col rounded-sm border border-border bg-card shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/75 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-sm sm:max-w-md my-auto mx-auto max-h-[90vh] flex flex-col rounded-xl border border-border bg-card shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/70 px-4 sm:px-5 py-3.5 sm:py-4 bg-muted/30 shrink-0">
           <div className="flex items-center gap-2.5">

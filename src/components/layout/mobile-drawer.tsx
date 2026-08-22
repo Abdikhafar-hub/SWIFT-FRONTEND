@@ -95,17 +95,17 @@ export function MobileDrawer({
                     className={cn(
                       "flex items-center gap-3 rounded-xs px-3 py-2.5 text-xs font-semibold transition-colors relative",
                       active
-                        ? "bg-gold/15 text-gold-dark dark:text-gold font-bold shadow-xs"
+                        ? "bg-amber-500/10 text-foreground font-bold shadow-xs"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
                     {active && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-xs bg-gold" />
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-xs bg-amber-500" />
                     )}
-                    <NavIcon name={item.iconName} className={cn("size-4 shrink-0", active ? "text-gold" : "")} />
+                    <NavIcon name={item.iconName} className="size-4 shrink-0 text-amber-500" />
                     <span className="truncate">{item.title}</span>
                     {item.badge !== undefined && (
-                      <span className="ml-auto rounded-full bg-gold/20 px-1.5 py-0.25 text-[10px] font-bold text-gold-dark dark:text-gold shrink-0">
+                      <span className="ml-auto rounded-full bg-amber-500/20 px-1.5 py-0.25 text-[10px] font-bold text-amber-600 dark:text-amber-400 shrink-0">
                         {item.badge}
                       </span>
                     )}

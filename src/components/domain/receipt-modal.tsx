@@ -22,8 +22,8 @@ export function ReceiptModal({ isOpen, onClose, receipt }: ReceiptModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-sm border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200 text-foreground">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/80 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-lg sm:max-w-xl max-h-[90vh] my-auto mx-auto overflow-y-auto rounded-xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200 text-foreground">
         {/* Top Control Bar */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/80 bg-muted/90 px-6 py-3.5 backdrop-blur-xs print:hidden">
           <div className="flex items-center gap-2 text-xs font-bold text-foreground">

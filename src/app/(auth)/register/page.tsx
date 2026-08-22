@@ -201,9 +201,9 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen lg:h-screen w-full flex flex-col lg:flex-row bg-[#faf8f5] text-slate-900 overflow-y-auto lg:overflow-hidden">
       {/* =========================================================================
-          LEFT 50%: Product Showcase / Marketing Visual
+          LEFT 50%: Product Showcase / Marketing Visual (Desktop Only: hidden lg:flex)
          ========================================================================= */}
-      <div className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-between relative bg-[#faf8f5] overflow-hidden lg:h-full">
+      <div className="hidden lg:flex lg:w-1/2 p-6 sm:p-8 lg:p-10 xl:p-12 flex-col justify-between relative bg-[#faf8f5] overflow-hidden lg:h-full">
         {/* Background Decorative Circular Glow */}
         <div className="absolute top-1/3 right-10 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none -z-0" />
         
@@ -441,8 +441,24 @@ export default function RegisterPage() {
       {/* =========================================================================
           RIGHT 50%: Registration Form Card Container
          ========================================================================= */}
-      <div className="w-full lg:w-1/2 p-6 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center items-center bg-[#f8f7f4] relative lg:h-full lg:overflow-y-auto xl:overflow-hidden">
-        <div className="w-full max-w-[500px] xl:max-w-[540px] bg-white rounded-[24px] xl:rounded-[28px] p-6 sm:p-8 xl:p-9 shadow-xl shadow-slate-200/50 border border-slate-100 relative z-10">
+      <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center items-center bg-[#f8f7f4] relative min-h-screen lg:h-full lg:overflow-y-auto xl:overflow-hidden">
+        {/* Mobile Top Branding Header (Visible only on < lg viewports) */}
+        <div className="lg:hidden mb-5 flex items-center justify-center shrink-0">
+          <Link href="/" className="inline-flex items-center gap-3 group">
+            <div className="size-10 flex items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 font-serif font-bold text-lg shadow-2xs group-hover:bg-amber-500/20 transition-all">
+              SD
+            </div>
+            <div className="flex flex-col">
+              <span className="font-sans text-lg font-bold tracking-tight text-slate-900 leading-none">
+                SWIFT DOC
+              </span>
+              <span className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-1">
+                CLIENT PORTAL
+              </span>
+            </div>
+          </Link>
+        </div>
+        <div className="w-full max-w-[500px] xl:max-w-[540px] bg-white rounded-2xl sm:rounded-[28px] p-5 sm:p-8 xl:p-9 shadow-xl shadow-slate-200/50 border border-slate-100 relative z-10">
           {/* Stepper Progress Bar */}
           <div className="mb-5 xl:mb-7 relative z-10">
             <div className="relative flex items-center justify-between">

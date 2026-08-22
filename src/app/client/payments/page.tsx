@@ -99,7 +99,7 @@ export default function ClientPaymentsPage() {
       {/* ------------------------------------------------------------------ */}
       {/* 2. METRIC CARDS */}
       {/* ------------------------------------------------------------------ */}
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
             Total Invoiced Amount
