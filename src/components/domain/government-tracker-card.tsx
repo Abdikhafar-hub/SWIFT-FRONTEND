@@ -52,20 +52,28 @@ function getMilestoneIndex(status: GovernmentStatus): number {
       return 0;
     case "PREPARING":
     case "READY_TO_SUBMIT":
+    case "READY_FOR_SUBMISSION":
       return 1;
     case "SUBMITTED":
+    case "SUBMISSION_IN_PROGRESS":
     case "ACKNOWLEDGED":
       return 2;
     case "UNDER_PROCESSING":
-    case "RESUBMITTED":
-    case "ACTION_REQUIRED":
+    case "QUERY_RAISED":
     case "ADDITIONAL_INFORMATION_REQUIRED":
+    case "CORRECTION_REQUIRED":
+    case "PAYMENT_REQUIRED":
+    case "APPOINTMENT_REQUIRED":
       return 3;
     case "APPROVED":
-    case "COMPLETED":
+    case "CERTIFICATE_READY":
+    case "READY_FOR_COLLECTION":
+    case "COLLECTED":
+    case "CLOSED":
       return 4;
     case "REJECTED":
     case "CANCELLED":
+    case "WITHDRAWN":
       return 3;
     default:
       return 1;
@@ -87,7 +95,12 @@ export function GovernmentTrackerCard({ governmentApp, className }: GovernmentTr
     }
   };
 
-  const isCompleted = governmentApp.status === "APPROVED" || governmentApp.status === "COMPLETED";
+  const isCompleted =
+    governmentApp.status === "APPROVED" ||
+    governmentApp.status === "CERTIFICATE_READY" ||
+    governmentApp.status === "READY_FOR_COLLECTION" ||
+    governmentApp.status === "COLLECTED" ||
+    governmentApp.status === "CLOSED";
   const isRejected = governmentApp.status === "REJECTED";
 
   return (
@@ -220,8 +233,8 @@ export function GovernmentTrackerCard({ governmentApp, className }: GovernmentTr
           <div className="flex flex-col text-xs">
             <span className="font-bold text-foreground">Expected Completion ETA</span>
             <span className="text-muted-foreground mt-0.5">
-              {governmentApp.expectedCompletionAt
-                ? new Date(governmentApp.expectedCompletionAt).toLocaleDateString("en-KE", {
+              {governmentApp.expectedResponseDate
+                ? new Date(governmentApp.expectedResponseDate).toLocaleDateString("en-KE", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

@@ -565,7 +565,7 @@ export default function RegisterPage() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Abdikhafar"
+                      placeholder="John"
                       autoComplete="given-name"
                       className={`w-full pl-9 pr-3 py-2.5 rounded-xl border ${
                         step1Form.formState.errors.firstName ? "border-red-400 bg-red-50/20" : "border-slate-200 bg-slate-50/40"
@@ -588,7 +588,7 @@ export default function RegisterPage() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Mohamed"
+                      placeholder="Doe"
                       autoComplete="family-name"
                       className={`w-full pl-9 pr-3 py-2.5 rounded-xl border ${
                         step1Form.formState.errors.lastName ? "border-red-400 bg-red-50/20" : "border-slate-200 bg-slate-50/40"

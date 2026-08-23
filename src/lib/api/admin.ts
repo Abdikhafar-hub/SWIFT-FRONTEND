@@ -561,8 +561,8 @@ export const adminApi = {
       `/admin/government-applications/${govAppId}/status`,
       {
         ...payload,
-        notes: payload.notes || payload.remarks || payload.queryDetails,
-        nextFollowUpDate: payload.nextFollowUpDate || payload.followUpDate,
+        notes: payload.notes || (payload as any).remarks || (payload as any).queryDetails,
+        followUpDate: payload.followUpDate || (payload as any).nextFollowUpDate,
       }
     );
     if (!res.data.success) {

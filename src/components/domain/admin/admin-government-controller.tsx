@@ -52,7 +52,7 @@ const GOV_STATUSES: Array<{ value: GovernmentStatus; label: string }> = [
   { value: "UNDER_PROCESSING", label: "Under Agency Processing" },
   { value: "ADDITIONAL_INFORMATION_REQUIRED", label: "Additional Info Required (Query Raised)" },
   { value: "APPROVED", label: "Approved by Agency" },
-  { value: "COMPLETED", label: "Completed & Certificate Issued" },
+  { value: "CLOSED", label: "Completed & Certificate Issued" },
   { value: "REJECTED", label: "Rejected by Registry" },
 ];
 
@@ -146,7 +146,8 @@ export function AdminGovernmentController({
   const getStatusTone = (status: GovernmentStatus) => {
     switch (status) {
       case "APPROVED":
-      case "COMPLETED":
+      case "CERTIFICATE_READY":
+      case "CLOSED":
         return "success";
       case "SUBMITTED":
       case "UNDER_PROCESSING":
@@ -320,7 +321,7 @@ export function AdminGovernmentController({
                     Update Status
                   </Button>
 
-                  {gov.status !== "APPROVED" && gov.status !== "COMPLETED" && (
+                  {gov.status !== "APPROVED" && gov.status !== "CLOSED" && (
                     <Button
                       variant="gold"
                       size="xs"

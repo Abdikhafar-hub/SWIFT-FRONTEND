@@ -164,7 +164,7 @@ export const REQUIREMENT_STATUS_CONFIG: Record<RequirementStatus, StatusMeta> = 
 export const DOCUMENT_STATUS_CONFIG: Record<DocumentStatus, StatusMeta> = {
   UPLOADED: {
     label: "Uploaded",
-    description: "File uploaded and stored securely in Cloudinary.",
+    description: "File uploaded and stored securely.",
     tone: "neutral",
     iconName: "File",
   },
@@ -209,7 +209,7 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, StatusMeta> = {
   },
   PROCESSING: {
     label: "Processing",
-    description: "Payment transaction in transit (M-Pesa STK prompt sent).",
+    description: "Payment transaction in transit.",
     tone: "info",
     iconName: "Loader2",
   },
@@ -312,11 +312,41 @@ export const GOVERNMENT_STATUS_CONFIG: Record<GovernmentStatus, StatusMeta> = {
     tone: "gold",
     iconName: "CheckCircle",
   },
+  READY_FOR_SUBMISSION: {
+    label: "Ready for Submission",
+    description: "Dossier complete and ready for portal filing.",
+    tone: "gold",
+    iconName: "CheckCircle",
+  },
+  SUBMISSION_IN_PROGRESS: {
+    label: "Submission In Progress",
+    description: "Filing actively being lodged with agency.",
+    tone: "info",
+    iconName: "Send",
+  },
   SUBMITTED: {
     label: "Submitted",
     description: "Filed with government platform (eCitizen/BRS/iTax).",
     tone: "info",
     iconName: "Send",
+  },
+  ACKNOWLEDGED: {
+    label: "Acknowledged by Registry",
+    description: "Government officer acknowledged receipt.",
+    tone: "info",
+    iconName: "FileCheck",
+  },
+  PAYMENT_REQUIRED: {
+    label: "Payment Required",
+    description: "Statutory government fee payment required.",
+    tone: "warning",
+    iconName: "CreditCard",
+  },
+  PAYMENT_PENDING: {
+    label: "Payment Pending Verification",
+    description: "Statutory payment lodged and pending verification.",
+    tone: "warning",
+    iconName: "Clock",
   },
   UNDER_PROCESSING: {
     label: "Under Processing",
@@ -324,8 +354,8 @@ export const GOVERNMENT_STATUS_CONFIG: Record<GovernmentStatus, StatusMeta> = {
     tone: "info",
     iconName: "Building",
   },
-  ACTION_REQUIRED: {
-    label: "Agency Action Required",
+  QUERY_RAISED: {
+    label: "Registry Query Raised",
     description: "Registry officer flagged a requirement or query.",
     tone: "danger",
     iconName: "AlertTriangle",
@@ -336,17 +366,35 @@ export const GOVERNMENT_STATUS_CONFIG: Record<GovernmentStatus, StatusMeta> = {
     tone: "danger",
     iconName: "HelpCircle",
   },
-  ACKNOWLEDGED: {
-    label: "Acknowledged by Registry",
-    description: "Government officer acknowledged receipt.",
-    tone: "info",
-    iconName: "FileCheck",
+  CORRECTION_REQUIRED: {
+    label: "Correction Required",
+    description: "Correction or resubmission requested by authority.",
+    tone: "danger",
+    iconName: "AlertCircle",
   },
-  RESUBMITTED: {
-    label: "Resubmitted",
-    description: "Corrected files submitted back to government portal.",
-    tone: "gold",
-    iconName: "RefreshCw",
+  APPOINTMENT_REQUIRED: {
+    label: "Appointment Required",
+    description: "Registry appointment scheduled.",
+    tone: "warning",
+    iconName: "Calendar",
+  },
+  INTERVIEW_REQUIRED: {
+    label: "Interview Required",
+    description: "Visa or agency interview scheduled.",
+    tone: "warning",
+    iconName: "UserCheck",
+  },
+  BIOMETRICS_REQUIRED: {
+    label: "Biometrics Capture Required",
+    description: "Biometrics collection appointment scheduled.",
+    tone: "warning",
+    iconName: "Fingerprint",
+  },
+  ON_HOLD: {
+    label: "On Hold",
+    description: "Processing temporarily suspended.",
+    tone: "warning",
+    iconName: "PauseCircle",
   },
   APPROVED: {
     label: "Government Approved",
@@ -360,29 +408,41 @@ export const GOVERNMENT_STATUS_CONFIG: Record<GovernmentStatus, StatusMeta> = {
     tone: "danger",
     iconName: "XCircle",
   },
-  COMPLETED: {
-    label: "Government Completed",
-    description: "Statutory processing concluded.",
+  CERTIFICATE_READY: {
+    label: "Certificate Ready",
+    description: "Official certificate issued by registry.",
+    tone: "success",
+    iconName: "FileCheck",
+  },
+  READY_FOR_COLLECTION: {
+    label: "Ready for Collection",
+    description: "Output ready for physical collection from counter.",
+    tone: "gold",
+    iconName: "Package",
+  },
+  COLLECTED: {
+    label: "Collected from Registry",
+    description: "Official document collected from government desk.",
     tone: "success",
     iconName: "CheckCheck",
+  },
+  CLOSED: {
+    label: "Closed",
+    description: "Statutory processing concluded.",
+    tone: "neutral",
+    iconName: "CheckCircle",
+  },
+  WITHDRAWN: {
+    label: "Withdrawn",
+    description: "Submission withdrawn by applicant.",
+    tone: "neutral",
+    iconName: "Ban",
   },
   CANCELLED: {
     label: "Cancelled",
     description: "Government submission cancelled.",
     tone: "neutral",
     iconName: "Ban",
-  },
-  IN_REVIEW: {
-    label: "Under Processing",
-    description: "State agency officers reviewing the application.",
-    tone: "info",
-    iconName: "Building",
-  },
-  QUERY_RAISED: {
-    label: "Registry Query Raised",
-    description: "Registry officer flagged a requirement or query.",
-    tone: "danger",
-    iconName: "AlertTriangle",
   },
   UNKNOWN: {
     label: "Status Pending",
