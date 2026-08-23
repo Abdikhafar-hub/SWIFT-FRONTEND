@@ -56,30 +56,20 @@ export default function AdminActionsPage() {
   const [selectedActionForCancel, setSelectedActionForCancel] = useState<ClientAction | null>(null);
   const [cancelReason, setCancelReason] = useState("");
 
-  // Query applications with actionRequired or fetch list to aggregate actions
-  const { data: appsData, isLoading, error, refetch } = useQuery({
+  // Query client actions directly from backend API
+  const { data: actionsData, isLoading, error, refetch } = useQuery({
+    queryKey: ["admin-client-actions-queue"],
+    queryFn: () => adminApi.getClientActions({ limit: 100 }),
+  });
+
+  // Query applications for dispatch modal selection
+  const { data: appsData } = useQuery({
     queryKey: ["admin-applications-actions-queue"],
-    queryFn: () =>
-      adminApi.getApplications({
-        page: 1,
-        limit: 100,
-      }),
+    queryFn: () => adminApi.getApplications({ page: 1, limit: 100 }),
   });
 
   const applications: Application[] = appsData?.items || [];
-
-  // Extract all client actions from applications
-  const allActions: Array<ClientAction & { application?: Application }> = [];
-  applications.forEach((app) => {
-    if (app.clientActions && app.clientActions.length > 0) {
-      app.clientActions.forEach((act) => {
-        allActions.push({
-          ...act,
-          application: app,
-        });
-      });
-    }
-  });
+  const allActions: ClientAction[] = actionsData?.items || [];
 
   // Filter actions
   const filteredActions = allActions.filter((act) => {
@@ -95,7 +85,8 @@ export default function AdminActionsPage() {
     }
     if (priorityFilter && act.priority !== priorityFilter) return false;
     if (statusFilter && statusFilter !== "ALL" && act.status !== statusFilter) return false;
-    if (typeFilter && act.actionType !== typeFilter) return false;
+    const actType = act.type || act.actionType;
+    if (typeFilter && actType !== typeFilter) return false;
     return true;
   });
 
@@ -103,7 +94,7 @@ export default function AdminActionsPage() {
   const openCount = allActions.filter((a) => a.status === "OPEN").length;
   const urgentCount = allActions.filter((a) => a.status === "OPEN" && (a.priority === "URGENT" || a.priority === "HIGH")).length;
   const docCount = allActions.filter(
-    (a) => a.status === "OPEN" && (a.actionType === "UPLOAD_DOCUMENT" || a.actionType === "REPLACE_DOCUMENT")
+    (a) => a.status === "OPEN" && ((a.type || a.actionType) === "UPLOAD_DOCUMENT" || (a.type || a.actionType) === "REPLACE_DOCUMENT")
   ).length;
   const completedCount = allActions.filter((a) => a.status === "COMPLETED").length;
 
@@ -123,6 +114,7 @@ export default function AdminActionsPage() {
     onSuccess: () => {
       setSelectedActionForCancel(null);
       setCancelReason("");
+      queryClient.invalidateQueries({ queryKey: ["admin-client-actions-queue"] });
       queryClient.invalidateQueries({ queryKey: ["admin-applications-actions-queue"] });
       queryClient.invalidateQueries({ queryKey: ["admin-work-queue"] });
     },
@@ -447,6 +439,7 @@ export default function AdminActionsPage() {
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-client-actions-queue"] });
             queryClient.invalidateQueries({ queryKey: ["admin-applications-actions-queue"] });
           }}
         />

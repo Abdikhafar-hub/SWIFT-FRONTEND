@@ -774,6 +774,29 @@ export const adminApi = {
     return res.data.data;
   },
 
+  /**
+   * Fetch all client actions for Admin Action Center queue
+   */
+  async getClientActions(params?: {
+    status?: string;
+    priority?: string;
+    type?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ items: ClientAction[]; pagination?: { total: number; page: number; limit: number; totalPages: number } }> {
+    const res = await apiClient.get<ApiResponse<any>>("/admin/actions", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch client actions");
+    }
+    const rawData = res.data as any;
+    const items = Array.isArray(rawData.data) ? rawData.data : rawData.data?.items || [];
+    return {
+      items,
+      pagination: rawData.pagination,
+    };
+  },
+
 
   // =========================================================================
   // 6. SLA MANAGEMENT & PAUSE/RESUME
