@@ -13,7 +13,7 @@ export const APP_CONFIG = {
   defaultCurrency: "KES",
   publicSiteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://swiftdoc.co.ke",
   appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://app.swiftdoc.co.ke",
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || "https://app.swiftdoc.co.ke/api/v1",
   tokenStorageKey: "swift_doc_access_token",
   refreshTokenStorageKey: "swift_doc_refresh_token",
   userStorageKey: "swift_doc_user",
