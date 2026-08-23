@@ -183,7 +183,7 @@ export default function AdminReceiptDetailPage() {
           </div>
         </div>
 
-        {/* Right Col: Host Invoice & Navigation */}
+        {/* Right Col: Host Invoice & Application Dossier Navigation */}
         <div className="space-y-4">
           <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
             <div className="flex items-center justify-between">
@@ -204,7 +204,7 @@ export default function AdminReceiptDetailPage() {
                   href={`/admin/invoices/${receipt.paymentId}`}
                   className="font-mono font-bold text-amber-700 hover:underline"
                 >
-                  #{receipt.paymentId.slice(0, 8)}
+                  #{receipt.paymentId ? receipt.paymentId.slice(0, 8) : "—"}
                 </Link>
               </div>
               <div className="flex justify-between items-center">
@@ -213,6 +213,24 @@ export default function AdminReceiptDetailPage() {
               </div>
             </div>
           </div>
+
+          {receipt.applicationId && (
+            <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">Application Dossier</h4>
+                <Link
+                  href={`/admin/applications/${receipt.applicationId}`}
+                  className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1"
+                >
+                  <span>Open Dossier</span>
+                  <ExternalLink className="size-3" />
+                </Link>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Direct operational link to the associated statutory application filing record.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

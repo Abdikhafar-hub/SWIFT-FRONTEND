@@ -29,6 +29,7 @@ import type {
   Payment,
   PaymentTransaction,
   Receipt,
+  ReceiptSummaryMetrics,
   Refund,
   ReconciliationRecord,
   GovernmentApplication,
@@ -1447,14 +1448,24 @@ export const adminApi = {
   },
 
   /**
-   * List all statutory receipts
+   * List all statutory receipts with server pagination and aggregate summary
    */
-  async getReceipts(params?: QueryPaginationParams): Promise<PaginatedResult<Receipt> | Receipt[]> {
+  async getReceipts(params?: QueryPaginationParams & { paymentMethod?: string; search?: string; fromDate?: string; toDate?: string }): Promise<{
+    items: Receipt[];
+    pagination?: { total: number; page: number; limit: number; totalPages: number };
+    summary?: ReceiptSummaryMetrics;
+  }> {
     const res = await apiClient.get<ApiResponse<any>>("/admin/receipts", { params });
     if (!res.data.success) {
-      throw new Error(res.data.error.message || "Failed to fetch receipts");
+      throw new Error(res.data.error?.message || "Failed to fetch receipts");
     }
-    return res.data.data?.items || res.data.data || [];
+    const rawData = res.data as any;
+    const items = Array.isArray(rawData.data) ? rawData.data : rawData.data?.items || [];
+    return {
+      items,
+      pagination: rawData.pagination,
+      summary: rawData.summary,
+    };
   },
 
   /**

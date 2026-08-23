@@ -108,6 +108,13 @@ export interface PaymentTransaction {
   application?: any | null;
 }
 
+export interface ReceiptSummaryMetrics {
+  totalReceipts: number;
+  mpesaReceipts: number;
+  bankReceipts: number;
+  grossValue: string;
+}
+
 export interface Receipt {
   id: string;
   organizationId?: string;
@@ -128,6 +135,7 @@ export interface Receipt {
   client?: ClientProfile | null;
   payment?: Payment | null;
   transaction?: PaymentTransaction | null;
+  application?: any | null;
 }
 
 export interface Refund {
