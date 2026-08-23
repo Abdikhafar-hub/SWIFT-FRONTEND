@@ -14,6 +14,7 @@ import { Text } from "@/components/ui/text";
 import { authApi } from "@/lib/api/auth";
 import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/validation/auth";
 import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -34,16 +35,20 @@ function ResetPasswordForm() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
       setServerError("Invalid or missing password reset token. Please request a new link.");
+      notify.warning("Invalid or missing password reset token.");
       return;
     }
 
     setServerError(null);
+    notify.loading("Resetting password...", { id: "reset-pw" });
     try {
       await authApi.resetPassword({ token, newPassword: data.password });
       setIsSuccess(true);
+      notify.success("Password reset successfully!", { id: "reset-pw" });
     } catch (err) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "reset-pw", title: "Reset Failed" });
     }
   };
 

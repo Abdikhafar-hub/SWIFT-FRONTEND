@@ -202,12 +202,25 @@ export const applicationsApi = {
   },
 
   /**
-   * Fetch all open client actions requiring attention
+   * Fetch all client actions requiring attention (supports optional status filter)
    */
-  async getClientActions(): Promise<ClientAction[]> {
-    const res = await apiClient.get<ApiResponse<ClientAction[]>>("/client/actions/open");
+  async getClientActions(status?: string): Promise<ClientAction[]> {
+    const res = await apiClient.get<ApiResponse<ClientAction[]>>("/client/actions", {
+      params: status ? { status } : undefined,
+    });
     if (!res.data.success) {
-      throw new Error(res.data.error.message || "Failed to fetch open client actions");
+      throw new Error(res.data.error.message || "Failed to fetch client actions");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch single action item by ID for client portal
+   */
+  async getClientActionById(actionId: string): Promise<ClientAction> {
+    const res = await apiClient.get<ApiResponse<ClientAction>>(`/client/actions/${actionId}`);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch action details");
     }
     return res.data.data;
   },
@@ -241,6 +254,7 @@ export const applicationsApi = {
     }
     return res.data.data;
   },
+
 
   /**
    * Transition application status (Admin/System state machine)

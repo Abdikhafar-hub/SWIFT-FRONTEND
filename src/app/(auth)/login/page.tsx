@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/lib/auth/auth-context";
 import { loginSchema, type LoginFormData } from "@/lib/validation/auth";
 import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 
 function LoginForm() {
   const router = useRouter();
@@ -56,9 +57,11 @@ function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
+    notify.loading("Authenticating credentials...", { id: "auth-login" });
     try {
       const authResult = await login(data);
       const userRole = authResult.role || authResult.user?.role;
+      notify.success("Welcome back! Signed in successfully.", { id: "auth-login" });
 
       if (redirectParam) {
         const decoded = decodeURIComponent(redirectParam);
@@ -79,6 +82,7 @@ function LoginForm() {
     } catch (err: unknown) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "auth-login", title: "Login Failed" });
     }
   };
 

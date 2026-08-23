@@ -14,6 +14,8 @@ import {
 import { Modal } from "@/components/ui/modal";
 import { paymentsApi } from "@/lib/api/payments";
 import { formatCurrency } from "@/lib/utils/format";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 import type { Payment } from "@/types";
 
 interface ClientPaymentProofModalProps {
@@ -72,21 +74,25 @@ export function ClientPaymentProofModal({
 
     if (!file) {
       setFileError("Please upload a payment proof receipt or bank deposit slip.");
+      notify.warning("Please upload a payment proof receipt or bank deposit slip.");
       return;
     }
 
     if (!referenceNumber || referenceNumber.trim().length === 0) {
       setSubmitError("Transaction Reference Number or M-Pesa Code is required.");
+      notify.warning("Transaction Reference Number or M-Pesa Code is required.");
       return;
     }
 
     const numericAmount = parseFloat(claimedAmount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
       setSubmitError("Please enter a valid claimed payment amount.");
+      notify.warning("Please enter a valid claimed payment amount.");
       return;
     }
 
     setIsSubmitting(true);
+    notify.loading("Submitting payment proof for verification...", { id: "payment-proof" });
 
     try {
       // Read file to Base64
@@ -106,21 +112,27 @@ export function ClientPaymentProofModal({
           });
 
           setIsSubmitting(false);
+          notify.success("Payment proof submitted successfully! Pending finance team verification.", { id: "payment-proof" });
           onSuccess();
           onClose();
         } catch (err: any) {
           setIsSubmitting(false);
-          setSubmitError(err.message || "Failed to submit payment proof.");
+          const parsed = parseApiError(err);
+          setSubmitError(parsed.message);
+          notify.error(err, { id: "payment-proof", title: "Submission Failed" });
         }
       };
       reader.onerror = () => {
         setIsSubmitting(false);
         setSubmitError("Error reading uploaded file.");
+        notify.error("Error reading uploaded file.", { id: "payment-proof" });
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
       setIsSubmitting(false);
-      setSubmitError(err.message || "An unexpected error occurred.");
+      const parsed = parseApiError(err);
+      setSubmitError(parsed.message);
+      notify.error(err, { id: "payment-proof", title: "Submission Failed" });
     }
   };
 

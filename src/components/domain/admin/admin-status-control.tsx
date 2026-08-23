@@ -23,6 +23,8 @@ import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { StatusBadge, SlaBadge, PriorityBadge } from "@/components/domain/status-badges";
 import { adminApi } from "@/lib/api/admin";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 import type { Application, ApplicationStatus, ApplicationPriority } from "@/types";
 
 interface AdminStatusControlProps {
@@ -79,55 +81,86 @@ export function AdminStatusControl({ application, onUpdated }: AdminStatusContro
 
   // Status transition mutation
   const transitionMutation = useMutation({
-    mutationFn: (payload: { toStatus: ApplicationStatus; reason?: string; notes?: string }) =>
-      adminApi.transitionStatus(application.id, payload),
-    onSuccess: () => {
+    mutationFn: (payload: { toStatus: ApplicationStatus; reason?: string; notes?: string }) => {
+      notify.loading(`Transitioning state to ${payload.toStatus}...`, { id: "status-trans" });
+      return adminApi.transitionStatus(application.id, payload);
+    },
+    onSuccess: (_, variables) => {
       setIsTransitionModalOpen(false);
       setTransitionReason("");
       setTransitionNotes("");
+      notify.success(`Application transition to ${variables.toStatus} complete!`, { id: "status-trans" });
       invalidate();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "status-trans", title: "Status Transition Failed" });
     },
   });
 
   // Priority mutation
   const priorityMutation = useMutation({
-    mutationFn: (payload: { priority: ApplicationPriority; reason?: string }) =>
-      adminApi.updatePriority(application.id, payload),
-    onSuccess: () => {
+    mutationFn: (payload: { priority: ApplicationPriority; reason?: string }) => {
+      notify.loading("Updating priority tier...", { id: "priority-upd" });
+      return adminApi.updatePriority(application.id, payload);
+    },
+    onSuccess: (_, variables) => {
       setIsPriorityModalOpen(false);
       setPriorityReason("");
+      notify.success(`Priority tier updated to ${variables.priority}!`, { id: "priority-upd" });
       invalidate();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "priority-upd", title: "Priority Update Failed" });
     },
   });
 
   // SLA Pause mutation
   const pauseSlaMutation = useMutation({
-    mutationFn: (payload: { reason: "WAITING_ON_CLIENT" | "WAITING_ON_GOVERNMENT" | "SYSTEM_DELAY" | "FORCE_MAJEURE" | "OTHER"; notes?: string }) =>
-      adminApi.pauseSla(application.id, payload),
+    mutationFn: (payload: { reason: "WAITING_ON_CLIENT" | "WAITING_ON_GOVERNMENT" | "SYSTEM_DELAY" | "FORCE_MAJEURE" | "OTHER"; notes?: string }) => {
+      notify.loading("Pausing SLA clock...", { id: "sla-pause" });
+      return adminApi.pauseSla(application.id, payload);
+    },
     onSuccess: () => {
       setIsPauseSlaModalOpen(false);
       setPauseNotes("");
+      notify.success("SLA turnaround clock paused.", { id: "sla-pause" });
       invalidate();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "sla-pause", title: "SLA Pause Failed" });
     },
   });
 
   // SLA Resume mutation
   const resumeSlaMutation = useMutation({
-    mutationFn: () => adminApi.resumeSla(application.id),
+    mutationFn: () => {
+      notify.loading("Resuming SLA clock...", { id: "sla-resume" });
+      return adminApi.resumeSla(application.id);
+    },
     onSuccess: () => {
+      notify.success("SLA turnaround clock resumed.", { id: "sla-resume" });
       invalidate();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "sla-resume", title: "SLA Resume Failed" });
     },
   });
 
   // Close mutation
   const closeMutation = useMutation({
-    mutationFn: (payload: { reason: string; completionNotes?: string }) =>
-      adminApi.closeApplication(application.id, payload),
+    mutationFn: (payload: { reason: string; completionNotes?: string }) => {
+      notify.loading("Closing dossier...", { id: "close-app" });
+      return adminApi.closeApplication(application.id, payload);
+    },
     onSuccess: () => {
       setIsCloseModalOpen(false);
       setCloseReason("");
       setCloseNotes("");
+      notify.success("Statutory application dossier closed and archived.", { id: "close-app" });
       invalidate();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "close-app", title: "Dossier Closure Failed" });
     },
   });
 

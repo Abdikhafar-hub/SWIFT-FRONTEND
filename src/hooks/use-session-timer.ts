@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { authApi } from "@/lib/api/auth";
+import { tokenStorage } from "@/lib/api/client";
 
 const TOTAL_IDLE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
 const WARNING_THRESHOLD_MS = 4 * 60 * 1000 + 30 * 1000; // 4 minutes 30 seconds
@@ -19,8 +20,30 @@ export function useSessionTimer({ isAuthenticated, onLogout }: UseSessionTimerOp
   const lastActivityRef = useRef<number>(Date.now());
   const lastPingRef = useRef<number>(Date.now());
   const isWarningActiveRef = useRef<boolean>(false);
+  const timerGenerationRef = useRef<number>(tokenStorage.getGeneration());
 
-  // Sync ref with state
+  // Reset timestamps and sync generation whenever authentication state or generation changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      const now = Date.now();
+      lastActivityRef.current = now;
+      lastPingRef.current = now;
+      timerGenerationRef.current = tokenStorage.getGeneration();
+      setShowWarningModal(false);
+      if (process.env.NODE_ENV !== "production") {
+        console.debug(
+          `[AUTH_DEBUG] SESSION_TIMER_STARTED: Reset idle timestamp to now. Generation=${timerGenerationRef.current}`
+        );
+      }
+    } else {
+      setShowWarningModal(false);
+      if (process.env.NODE_ENV !== "production") {
+        console.debug(`[AUTH_DEBUG] SESSION_TIMER_CANCELLED: User is not authenticated`);
+      }
+    }
+  }, [isAuthenticated]);
+
+  // Sync ref with warning state
   useEffect(() => {
     isWarningActiveRef.current = showWarningModal;
   }, [showWarningModal]);
@@ -77,11 +100,25 @@ export function useSessionTimer({ isAuthenticated, onLogout }: UseSessionTimerOp
     if (!isAuthenticated) return;
 
     const timer = setInterval(() => {
+      // Guard against stale timer callback if auth generation updated
+      if (timerGenerationRef.current !== tokenStorage.getGeneration()) {
+        if (process.env.NODE_ENV !== "production") {
+          console.debug(
+            `[AUTH_DEBUG] STALE_SESSION_EVENT_IGNORED: Timer generation ${timerGenerationRef.current} != active ${tokenStorage.getGeneration()}`
+          );
+        }
+        clearInterval(timer);
+        return;
+      }
+
       const now = Date.now();
       const elapsed = now - lastActivityRef.current;
 
       if (elapsed >= TOTAL_IDLE_LIMIT_MS) {
         // Exceeded 5 minutes of total inactivity -> Force Logout
+        if (process.env.NODE_ENV !== "production") {
+          console.debug(`[AUTH_DEBUG] SESSION_EXPIRED: 5-minute inactivity limit exceeded`);
+        }
         clearInterval(timer);
         setShowWarningModal(false);
         onLogout("expired");

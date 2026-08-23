@@ -39,27 +39,15 @@ export default function AdminActionDetailPage() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
-  // Query applications to locate this action and its host application
-  const { data: appsData, isLoading, error, refetch } = useQuery({
-    queryKey: ["admin-applications-actions-queue"],
-    queryFn: () => adminApi.getApplications({ page: 1, limit: 100 }),
+  // Query single directive directly from API
+  const { data: matchedAction, isLoading, error, refetch } = useQuery({
+    queryKey: ["admin-action-detail", id],
+    queryFn: () => adminApi.getActionById(id),
+    enabled: Boolean(id),
   });
 
-  const applications: Application[] = appsData?.items || [];
+  const matchedApp = matchedAction?.application as any;
 
-  let matchedAction: ClientAction | null = null;
-  let matchedApp: Application | null = null;
-
-  for (const app of applications) {
-    if (app.clientActions) {
-      const found = app.clientActions.find((a) => a.id === id);
-      if (found) {
-        matchedAction = found;
-        matchedApp = app;
-        break;
-      }
-    }
-  }
 
   const cancelMutation = useMutation({
     mutationFn: () =>

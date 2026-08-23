@@ -93,7 +93,7 @@ export function parseApiError(error: unknown): ParsedApiError {
       return {
         code: backendError.code,
         title: mapped.title,
-        message: backendError.message || mapped.message,
+        message: sanitizeErrorMessage(backendError.message) || mapped.message,
         statusCode: status,
         fieldErrors,
         isAuthError: status === 401,
@@ -104,7 +104,7 @@ export function parseApiError(error: unknown): ParsedApiError {
       return {
         code: backendError.code,
         title: "API Error",
-        message: backendError.message || "An error occurred during request processing.",
+        message: sanitizeErrorMessage(backendError.message) || "An error occurred during request processing.",
         statusCode: status,
         fieldErrors: extractFieldErrors(backendError.details),
       };
@@ -206,7 +206,7 @@ export function parseApiError(error: unknown): ParsedApiError {
     return {
       code: "CLIENT_ERROR",
       title: "Application Error",
-      message: error.message || "An unexpected error occurred. Please try again.",
+      message: sanitizeErrorMessage(error.message) || "An unexpected error occurred. Please try again.",
     };
   }
 
@@ -233,3 +233,31 @@ function extractFieldErrors(details: unknown): Record<string, string> | undefine
 
   return undefined;
 }
+
+export function sanitizeErrorMessage(rawMsg?: string): string | undefined {
+  if (!rawMsg || typeof rawMsg !== "string") return undefined;
+  const lower = rawMsg.toLowerCase();
+
+  // Guard against internal database or runtime stack leaks
+  if (
+    lower.includes("prisma") ||
+    lower.includes("p2002") ||
+    lower.includes("p2025") ||
+    lower.includes("constraint") ||
+    lower.includes("unique") ||
+    lower.includes("foreign key") ||
+    lower.includes("table ") ||
+    lower.includes("econnrefused") ||
+    lower.includes("sql") ||
+    lower.includes("typeerror") ||
+    lower.includes("[object object]") ||
+    lower.includes("stack trace") ||
+    lower.includes("select ") ||
+    lower.includes("where ")
+  ) {
+    return "An operational issue occurred while processing your request. Please try again or contact support.";
+  }
+
+  return rawMsg;
+}
+

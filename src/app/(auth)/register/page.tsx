@@ -37,6 +37,7 @@ import {
   type ClientProfileStepFormData,
 } from "@/lib/validation/auth";
 import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -110,6 +111,7 @@ export default function RegisterPage() {
   // Handle Step 1 Submission: Account Identity
   const onStep1Submit = async (data: AccountIdentityFormData) => {
     setServerError(null);
+    notify.loading("Creating account...", { id: "auth-register" });
     try {
       const fullName = `${data.firstName.trim()} ${data.lastName.trim()}`;
       const res = await registerAuth({
@@ -125,20 +127,24 @@ export default function RegisterPage() {
         setAssignedClientNumber(res.client.clientNumber);
       }
       setResendCooldown(60);
+      notify.success("Account created! Verification code sent to your email.", { id: "auth-register" });
       setCurrentStep(2);
     } catch (err: unknown) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "auth-register", title: "Registration Failed" });
     }
   };
 
   // Handle Step 2 Submission: Verification OTP
   const onStep2Submit = async (data: OtpVerificationFormData) => {
     setServerError(null);
+    notify.loading("Verifying code...", { id: "auth-verify" });
     try {
       await authApi.verifyOtp(data.code);
       await refreshSession();
       setOtpNotice("Email verified successfully!");
+      notify.success("Email verified successfully!", { id: "auth-verify" });
       setTimeout(() => {
         setOtpNotice(null);
         setCurrentStep(3);
@@ -146,6 +152,7 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "auth-verify", title: "Verification Failed" });
     }
   };
 
@@ -154,13 +161,17 @@ export default function RegisterPage() {
     if (resendCooldown > 0 || isResending) return;
     setIsResending(true);
     setServerError(null);
+    notify.loading("Sending new verification code...", { id: "auth-resend" });
     try {
       const res = await authApi.resendOtp();
-      setOtpNotice(res.message || "A new 6-digit code has been sent.");
+      const msg = res.message || "A new 6-digit code has been sent.";
+      setOtpNotice(msg);
+      notify.success(msg, { id: "auth-resend" });
       setResendCooldown(60);
     } catch (err: unknown) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "auth-resend", title: "Resend Failed" });
     } finally {
       setIsResending(false);
     }
@@ -169,6 +180,7 @@ export default function RegisterPage() {
   // Handle Step 3 Submission: Client Profile Configuration
   const onStep3Submit = async (data: ClientProfileStepFormData) => {
     setServerError(null);
+    notify.loading("Saving client profile...", { id: "auth-profile" });
     try {
       await profileApi.updateProfile({
         clientType: data.clientType,
@@ -183,10 +195,12 @@ export default function RegisterPage() {
       });
 
       await refreshSession();
+      notify.success("Client profile configured successfully!", { id: "auth-profile" });
       setCurrentStep(4);
     } catch (err: unknown) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "auth-profile", title: "Profile Setup Failed" });
     }
   };
 

@@ -20,6 +20,7 @@ import { authApi } from "@/lib/api/auth";
 import { profileApi } from "@/lib/api/profile";
 import { changePasswordSchema, type ChangePasswordFormData } from "@/lib/validation/auth";
 import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 
 export default function ClientProfilePage() {
   const { user, client, refreshSession } = useAuth();
@@ -56,6 +57,7 @@ export default function ClientProfilePage() {
     mutationFn: async () => {
       setProfileSuccess(false);
       setProfileError(null);
+      notify.loading("Saving profile credentials...", { id: "profile-update" });
       return await profileApi.updateProfile({
         fullName: fullName.trim() || undefined,
         businessName: businessName.trim() || null,
@@ -69,12 +71,14 @@ export default function ClientProfilePage() {
     },
     onSuccess: () => {
       setProfileSuccess(true);
+      notify.success("Profile credentials updated successfully!", { id: "profile-update" });
       refreshSession?.();
       setTimeout(() => setProfileSuccess(false), 4000);
     },
     onError: (err: any) => {
       const parsed = parseApiError(err);
       setProfileError(parsed.message || "Failed to update profile information.");
+      notify.error(err, { id: "profile-update", title: "Profile Update Failed" });
     },
   });
 
@@ -94,17 +98,20 @@ export default function ClientProfilePage() {
   const onPasswordSubmit = async (data: ChangePasswordFormData) => {
     setPwdSuccess(false);
     setPwdError(null);
+    notify.loading("Updating password...", { id: "pwd-update" });
     try {
       await authApi.changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
       setPwdSuccess(true);
+      notify.success("Password updated successfully!", { id: "pwd-update" });
       reset();
       setTimeout(() => setPwdSuccess(false), 4000);
     } catch (err) {
       const parsed = parseApiError(err);
       setPwdError(parsed.message);
+      notify.error(err, { id: "pwd-update", title: "Password Change Failed" });
     }
   };
 

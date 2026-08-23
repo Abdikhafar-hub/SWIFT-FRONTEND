@@ -10,6 +10,8 @@ import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { adminApi } from "@/lib/api/admin";
 import { formatCurrency } from "@/lib/utils/format";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 import type { Payment, PaymentMethod } from "@/types";
 
 interface AdminManualPaymentModalProps {
@@ -54,15 +56,18 @@ export function AdminManualPaymentModal({
   const [notes, setNotes] = useState("");
 
   const recordMutation = useMutation({
-    mutationFn: () =>
-      adminApi.recordManualPayment({
+    mutationFn: () => {
+      notify.loading("Recording manual payment settlement...", { id: "man-pay" });
+      return adminApi.recordManualPayment({
         paymentId: targetPaymentId,
         paymentMethod,
         amount: Number(amount),
         externalReference: externalReference || undefined,
         notes: notes || undefined,
-      }),
+      });
+    },
     onSuccess: () => {
+      notify.success("Manual payment settlement recorded successfully!", { id: "man-pay" });
       queryClient.invalidateQueries({ queryKey: ["admin-invoices"] });
       if (targetPaymentId) {
         queryClient.invalidateQueries({ queryKey: ["admin-invoice", targetPaymentId] });
@@ -76,6 +81,9 @@ export function AdminManualPaymentModal({
       onClose();
       if (onRecorded) onRecorded();
       if (onSuccess) onSuccess();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "man-pay", title: "Manual Payment Failed" });
     },
   });
 

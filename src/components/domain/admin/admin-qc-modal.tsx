@@ -9,6 +9,8 @@ import { FormField, Textarea } from "@/components/ui/form-primitives";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { adminApi } from "@/lib/api/admin";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 import type { QCResult, QualityCheckChecklist } from "@/types";
 
 interface AdminQcModalProps {
@@ -48,19 +50,25 @@ export function AdminQcModal({
   const allChecked = Object.values(checklist).every(Boolean);
 
   const qcMutation = useMutation({
-    mutationFn: () =>
-      adminApi.performQualityCheck(applicationId, {
+    mutationFn: () => {
+      notify.loading("Recording Quality Control decision...", { id: "qc-audit" });
+      return adminApi.performQualityCheck(applicationId, {
         result,
         checklist,
         notes: notes || undefined,
         failedReason: result === "FAILED" ? failedReason : undefined,
-      }),
+      });
+    },
     onSuccess: () => {
+      notify.success(result === "PASSED" ? "QC audit PASSED successfully!" : "QC audit recorded as FAILED.", { id: "qc-audit" });
       queryClient.invalidateQueries({ queryKey: ["admin-application", applicationId] });
       queryClient.invalidateQueries({ queryKey: ["admin-applications"] });
       onClose();
       if (onPassed) onPassed();
       if (onSuccess) onSuccess();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "qc-audit", title: "QC Recording Failed" });
     },
   });
 

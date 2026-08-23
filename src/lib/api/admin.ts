@@ -698,8 +698,39 @@ export const adminApi = {
   },
 
   // =========================================================================
-  // 5. CLIENT ACTIONS (DISPATCH)
+  // 5. CLIENT ACTIONS (DISPATCH & MANAGEMENT)
   // =========================================================================
+
+  /**
+   * Fetch all client actions across applications for Admin Action Center
+   */
+  async getActions(params?: {
+    status?: string;
+    priority?: string;
+    type?: string;
+    applicationId?: string;
+    clientId?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResult<ClientAction>> {
+    const res = await apiClient.get<ApiResponse<PaginatedResult<ClientAction>>>("/admin/actions", { params });
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch admin actions queue");
+    }
+    return res.data.data;
+  },
+
+  /**
+   * Fetch single action item details by ID
+   */
+  async getActionById(actionId: string): Promise<ClientAction> {
+    const res = await apiClient.get<ApiResponse<ClientAction>>(`/admin/actions/${actionId}`);
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch client action detail");
+    }
+    return res.data.data;
+  },
 
   /**
    * Create an urgent action item for a client on an application
@@ -707,12 +738,15 @@ export const adminApi = {
   async createClientAction(
     applicationId: string,
     payload: {
-      actionType: string;
+      actionType?: string;
+      type?: string;
       title: string;
       description: string;
       instructions?: string;
       priority?: "LOW" | "NORMAL" | "HIGH" | "URGENT";
       deadline?: string;
+      dueAt?: string;
+      requirementId?: string;
     }
   ): Promise<ClientAction> {
     const res = await apiClient.post<ApiResponse<ClientAction>>(
@@ -738,6 +772,7 @@ export const adminApi = {
     }
     return res.data.data;
   },
+
 
   // =========================================================================
   // 6. SLA MANAGEMENT & PAUSE/RESUME

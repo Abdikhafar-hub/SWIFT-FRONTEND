@@ -24,7 +24,7 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://swiftdoc.co.ke";
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://app.swiftdoc.co.ke";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -87,6 +87,16 @@ export default function ClientApplicationDetailPage() {
     enabled: Boolean(id),
   });
 
+  // 6. Fetch application directives / client actions
+  const { data: applicationActions = [] } = useQuery({
+    queryKey: ["application-actions", id],
+    queryFn: () => applicationsApi.getApplicationActions(id),
+    enabled: Boolean(id),
+  });
+
+  const openAppActions = applicationActions.filter((a) => a.status === "OPEN");
+
+
   if (isAppLoading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-5 lg:p-6 space-y-4 max-w-[1550px] mx-auto font-sans">
@@ -262,6 +272,34 @@ export default function ClientApplicationDetailPage() {
             />
           </div>
         </div>
+
+        {/* Action Required Directive Banner */}
+        {openAppActions.length > 0 && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 space-y-2 text-xs text-amber-900 shadow-xs animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-extrabold text-amber-900">
+                <AlertCircle className="size-4 text-amber-600" />
+                <span>DIRECTIVE REQUIRED ({openAppActions.length} Pending Item{openAppActions.length !== 1 ? "s" : ""})</span>
+              </div>
+              <Link href="/client/actions">
+                <button className="px-3 py-1 bg-amber-600 text-white font-bold rounded-lg hover:bg-amber-700 transition-colors">
+                  Resolve in Action Center &rarr;
+                </button>
+              </Link>
+            </div>
+            <div className="space-y-1 pl-6">
+              {openAppActions.map((act) => (
+                <div key={act.id} className="flex items-center gap-2 text-slate-800 font-semibold">
+                  <span>&bull;</span>
+                  <span>{act.title}</span>
+                  <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-200/60 text-amber-800">
+                    {act.type}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Dynamic Readiness Engine Alerts (Blockers / Warnings) */}
         {readiness && (

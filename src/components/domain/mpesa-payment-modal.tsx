@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatKES } from "@/lib/utils/format";
 import { normalizeKenyanPhone, isValidKenyanPhone } from "@/lib/utils/phone";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 
 interface MpesaPaymentModalProps {
   isOpen: boolean;
@@ -83,6 +85,7 @@ export function MpesaPaymentModal({
   const triggerSuccess = () => {
     stopPolling();
     setStep("SUCCESS");
+    notify.success(`Payment of ${formatKES(dueAmountNumber)} received and verified!`, { id: "mpesa-stk" });
     queryClient.invalidateQueries({ queryKey: ["client-invoices"] });
     queryClient.invalidateQueries({ queryKey: ["client-invoice", invoice.id] });
     queryClient.invalidateQueries({ queryKey: ["client-payments"] });
@@ -94,6 +97,7 @@ export function MpesaPaymentModal({
   const startPolling = (invoiceId: string, currentCheckoutId?: string) => {
     setSecondsRemaining(60);
     setStep("POLLING");
+    notify.info("STK Push prompt sent! Check your phone and enter your M-Pesa PIN.", { id: "mpesa-stk" });
 
     // 1. Countdown timer
     countdownIntervalRef.current = setInterval(() => {
@@ -101,7 +105,9 @@ export function MpesaPaymentModal({
         if (prev <= 1) {
           stopPolling();
           setStep("FAILED");
-          setErrorMessage("Payment prompt timed out. If you received the M-Pesa prompt, click 'Check Status' below.");
+          const msg = "Payment prompt timed out. If you received the M-Pesa prompt, click 'Check Status' below.";
+          setErrorMessage(msg);
+          notify.warning(msg, { id: "mpesa-stk", title: "STK Push Timeout" });
           return 0;
         }
         return prev - 1;
@@ -133,16 +139,21 @@ export function MpesaPaymentModal({
 
     const normalized = normalizeKenyanPhone(phoneNumber);
     if (!isValidKenyanPhone(normalized)) {
-      setErrorMessage("Please enter a valid Safaricom phone number (e.g. 0712345678 or 254712345678).");
+      const msg = "Please enter a valid Safaricom phone number (e.g. 0712345678 or 254712345678).";
+      setErrorMessage(msg);
+      notify.warning(msg);
       return;
     }
 
     if (dueAmountNumber <= 0) {
-      setErrorMessage("Invoice is already fully settled.");
+      const msg = "Invoice is already fully settled.";
+      setErrorMessage(msg);
+      notify.warning(msg);
       return;
     }
 
     setLoading(true);
+    notify.loading(`Initiating M-Pesa STK Push for ${formatKES(dueAmountNumber)}...`, { id: "mpesa-stk" });
     try {
       const res = await paymentsApi.payInvoiceMpesa(invoice.id, {
         phoneNumber: normalized,
@@ -158,7 +169,9 @@ export function MpesaPaymentModal({
       startPolling(invoice.id, res.checkoutRequestId);
     } catch (err: any) {
       setLoading(false);
-      setErrorMessage(err.message || "Failed to trigger M-Pesa STK Push. Please try again.");
+      const parsed = parseApiError(err);
+      setErrorMessage(parsed.message);
+      notify.error(err, { id: "mpesa-stk", title: "M-Pesa STK Push Failed" });
     }
   };
 
@@ -169,15 +182,21 @@ export function MpesaPaymentModal({
     }
 
     setLoadingQuery(true);
+    notify.loading("Querying M-Pesa Daraja status...", { id: "mpesa-query" });
     try {
       const qRes = await paymentsApi.queryStkStatus(checkoutRequestId);
       if (qRes.status === "COMPLETED" || qRes.status === "PAID") {
+        notify.success("Payment confirmed by Safaricom M-Pesa!", { id: "mpesa-query" });
         triggerSuccess();
       } else {
-        setErrorMessage(`Transaction status: ${qRes.status} (${qRes.resultDesc || "Pending PIN entry"})`);
+        const msg = `Transaction status: ${qRes.status} (${qRes.resultDesc || "Pending PIN entry"})`;
+        setErrorMessage(msg);
+        notify.info(msg, { id: "mpesa-query", title: "M-Pesa Status Update" });
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "Could not query Daraja STK status.");
+      const parsed = parseApiError(err);
+      setErrorMessage(parsed.message);
+      notify.error(err, { id: "mpesa-query", title: "Query Failed" });
     } finally {
       setLoadingQuery(false);
     }

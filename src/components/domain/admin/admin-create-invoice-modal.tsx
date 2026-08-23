@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { adminApi } from "@/lib/api/admin";
 import { formatCurrency } from "@/lib/utils/format";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 import type {
   Application,
   CreateInvoiceLineItemInput,
@@ -142,6 +144,7 @@ export function AdminCreateInvoiceModal({
   const createMutation = useMutation({
     mutationFn: () => {
       if (!applicationId) throw new Error("Target Statutory Application is required");
+      notify.loading("Generating Commercial Invoice...", { id: "create-inv" });
       return adminApi.createInvoice({
         applicationId,
         clientId: clientId || undefined,
@@ -155,7 +158,8 @@ export function AdminCreateInvoiceModal({
         })),
       });
     },
-    onSuccess: () => {
+    onSuccess: (inv) => {
+      notify.success(`Commercial Invoice #${inv?.invoiceNumber || "created"} generated successfully!`, { id: "create-inv" });
       queryClient.invalidateQueries({ queryKey: ["admin-invoices-list"] });
       queryClient.invalidateQueries({ queryKey: ["admin-financial-summary"] });
       if (applicationId) {
@@ -164,6 +168,9 @@ export function AdminCreateInvoiceModal({
       onClose();
       if (onCreated) onCreated();
       if (onSuccess) onSuccess();
+    },
+    onError: (err: any) => {
+      notify.error(err, { id: "create-inv", title: "Invoice Creation Failed" });
     },
   });
 

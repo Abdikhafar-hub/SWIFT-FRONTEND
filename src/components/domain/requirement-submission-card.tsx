@@ -19,6 +19,8 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { applicationsApi } from "@/lib/api/applications";
 import { documentsApi } from "@/lib/api/documents";
+import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 import { RequirementStatusBadge } from "./status-badges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +84,7 @@ export function RequirementSubmissionCard({
   const submitMutation = useMutation({
     mutationFn: async () => {
       setErrorMessage(null);
+      notify.loading(`Submitting ${requirement.name}...`, { id: `req-${requirement.id}` });
 
       if (requirement.type === "DOCUMENT") {
         if (!selectedFile && !requirement.documents?.length) {
@@ -133,6 +136,7 @@ export function RequirementSubmissionCard({
     onSuccess: () => {
       setUploadProgress(null);
       setSelectedFile(null);
+      notify.success(`Requirement "${requirement.name}" submitted successfully!`, { id: `req-${requirement.id}` });
       queryClient.invalidateQueries({ queryKey: ["client-application", applicationId] });
       queryClient.invalidateQueries({ queryKey: ["client-applications"] });
       queryClient.invalidateQueries({ queryKey: ["client-dashboard-overview"] });
@@ -140,7 +144,9 @@ export function RequirementSubmissionCard({
     },
     onError: (err: any) => {
       setUploadProgress(null);
-      setErrorMessage(err.message || "Failed to submit requirement. Please check input values.");
+      const parsed = parseApiError(err);
+      setErrorMessage(parsed.message);
+      notify.error(err, { id: `req-${requirement.id}`, title: "Requirement Submission Failed" });
     },
   });
 

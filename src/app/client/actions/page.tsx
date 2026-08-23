@@ -317,7 +317,7 @@ export default function ClientActionCenterPage() {
       <Modal
         isOpen={Boolean(completingAction)}
         onClose={() => setCompletingAction(null)}
-        title="Complete Action"
+        title={`Fulfill Action • ${completingAction ? getActionLabel(completingAction.type) : ""}`}
         size="md"
         footer={
           <div className="flex items-center justify-end gap-2">
@@ -338,30 +338,74 @@ export default function ClientActionCenterPage() {
               className="px-3.5 py-1.5 bg-gradient-to-r from-[#C5A059] to-[#D4AF37] text-white text-xs font-bold rounded-lg shadow-xs hover:from-[#b49049] hover:to-[#c39e26] transition-colors flex items-center gap-1.5 disabled:opacity-50"
             >
               <CheckCircle2 className="size-3.5" />
-              <span>{completeMutation.isPending ? "Completing..." : "Confirm Completion"}</span>
+              <span>{completeMutation.isPending ? "Submitting..." : "Submit Resolution"}</span>
             </button>
           </div>
         }
       >
         {completingAction && (
           <div className="space-y-4 font-sans text-slate-800">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-1">
+            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3.5 space-y-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-800">
+                {getActionLabel(completingAction.type)}
+              </span>
               <h4 className="text-xs font-bold text-slate-900">
                 {completingAction.title}
               </h4>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 {completingAction.description}
               </p>
             </div>
 
+            {/* DYNAMIC FORM ACCORDING TO ACTION TYPE */}
+            {(completingAction.type === "UPLOAD_DOCUMENT" || completingAction.type === "REPLACE_DOCUMENT") && (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center space-y-2">
+                <UploadCloud className="size-8 text-amber-600 mx-auto" />
+                <p className="text-xs font-bold text-slate-800">
+                  Document Resolution Guidance
+                </p>
+                <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                  You can upload the requested document directly on the Application Dossier requirements tab or detail your submission reference below.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleActionNavigate(completingAction)}
+                  className="text-xs font-bold text-amber-700 hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Go to Application Dossier Vault</span>
+                  <ArrowRight className="size-3" />
+                </button>
+              </div>
+            )}
+
+            {(completingAction.type === "APPROVE_DECLARATION" || completingAction.type === "SIGN_DECLARATION") && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex items-start gap-2.5">
+                <input
+                  type="checkbox"
+                  id="declaration-check"
+                  defaultChecked
+                  className="mt-0.5 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                />
+                <label htmlFor="declaration-check" className="text-xs text-slate-700 font-medium leading-relaxed">
+                  I solemnly declare and confirm that the submitted information and document representations are true, accurate, and complete.
+                </label>
+              </div>
+            )}
+
             <div className="space-y-1">
               <label className="block text-xs font-bold text-slate-700">
-                Completion Notes (Optional)
+                {completingAction.type === "PROVIDE_INFORMATION" || completingAction.type === "CONFIRM_INFORMATION"
+                  ? "Requested Details / Response Information *"
+                  : "Resolution Notes / Reference Details (Optional)"}
               </label>
               <textarea
                 value={completionNotes}
                 onChange={(e) => setCompletionNotes(e.target.value)}
-                placeholder="Any notes about how you fulfilled this action..."
+                placeholder={
+                  completingAction.type === "PROVIDE_INFORMATION" || completingAction.type === "CONFIRM_INFORMATION"
+                    ? "Enter the exact information or response requested by the compliance officer..."
+                    : "Add any additional context regarding your response..."
+                }
                 rows={3}
                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-none font-medium"
               />
@@ -376,6 +420,7 @@ export default function ClientActionCenterPage() {
           </div>
         )}
       </Modal>
+
     </div>
   );
 }

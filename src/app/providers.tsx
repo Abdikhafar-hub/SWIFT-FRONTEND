@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth/auth-context";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
@@ -27,7 +28,25 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        {children}
+        <Toaster
+          position="top-right"
+          expand={false}
+          richColors
+          closeButton
+          duration={4500}
+          toastOptions={{
+            style: {
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontFamily: "var(--font-sans)",
+            },
+            className: "swift-doc-toast",
+          }}
+        />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
+

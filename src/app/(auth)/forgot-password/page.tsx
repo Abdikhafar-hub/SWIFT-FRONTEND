@@ -13,6 +13,7 @@ import { Text } from "@/components/ui/text";
 import { authApi } from "@/lib/api/auth";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/validation/auth";
 import { parseApiError } from "@/lib/utils/error";
+import { notify } from "@/lib/notify";
 
 export default function ForgotPasswordPage() {
   const [isSent, setIsSent] = useState(false);
@@ -29,12 +30,15 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setServerError(null);
+    notify.loading("Sending password reset instructions...", { id: "forgot-pw" });
     try {
       await authApi.forgotPassword(data);
       setIsSent(true);
+      notify.success("Password reset instructions sent to your email.", { id: "forgot-pw" });
     } catch (err) {
       const parsed = parseApiError(err);
       setServerError(parsed.message);
+      notify.error(err, { id: "forgot-pw", title: "Reset Request Failed" });
     }
   };
 

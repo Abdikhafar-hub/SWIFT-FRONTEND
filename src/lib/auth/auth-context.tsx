@@ -37,13 +37,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const logout = useCallback(async (reason?: string) => {
+    if (process.env.NODE_ENV !== "production") {
+      console.debug(`[AUTH_DEBUG] LOGOUT_START: Reason=${reason || "user_initiated"}`);
+    }
     setIsLoading(true);
+    const activeGen = tokenStorage.getGeneration();
+    const activeSession = tokenStorage.getSessionId();
     try {
       await authApi.logout();
     } finally {
+      tokenStorage.clearTokens(
+        reason === "expired" ? "SESSION_EXPIRED" : "LOGOUT",
+        activeSession || undefined,
+        activeGen
+      );
       setUser(null);
       setClient(null);
       setIsLoading(false);
+      if (process.env.NODE_ENV !== "production") {
+        console.debug(`[AUTH_DEBUG] LOGOUT_SUCCESS: Auth state reset`);
+      }
       if (typeof window !== "undefined") {
         if (reason === "expired") {
           router.push("/login?reason=expired");
@@ -56,6 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initSession = useCallback(async () => {
     try {
+      if (process.env.NODE_ENV !== "production") {
+        console.debug("[AUTH_DEBUG] REFRESH_START: Initializing session from HttpOnly cookie");
+      }
       // 1. Silent token refresh via HttpOnly cookie
       await authApi.refresh();
 
@@ -63,9 +79,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await authApi.getMe();
       setUser(data.user);
       setClient(data.client);
+      if (process.env.NODE_ENV !== "production") {
+        console.debug(`[AUTH_DEBUG] SESSION_CREATED: InitSession success for user ${data.user.email}`);
+      }
     } catch {
       // Session expired, unauthenticated, or no cookie present
-      tokenStorage.clearTokens("SESSION_EXPIRED");
+      const currentGen = tokenStorage.getGeneration();
+      tokenStorage.clearTokens("SESSION_EXPIRED", undefined, currentGen);
       setUser(null);
       setClient(null);
     } finally {
@@ -88,11 +108,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [initSession]);
 
   const login = async (payload: LoginPayload) => {
+    if (process.env.NODE_ENV !== "production") {
+      console.debug(`[AUTH_DEBUG] AUTH_LOGIN_START: Email=${payload.email}`);
+    }
     setIsLoading(true);
     try {
       const data = await authApi.login(payload);
       setUser(data.user);
       setClient(data.client);
+      if (process.env.NODE_ENV !== "production") {
+        console.debug(`[AUTH_DEBUG] AUTH_LOGIN_SUCCESS: Role=${data.user.role}`);
+      }
       return { user: data.user, client: data.client, role: data.user.role };
     } finally {
       setIsLoading(false);
