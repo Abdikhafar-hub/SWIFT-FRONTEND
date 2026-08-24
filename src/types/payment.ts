@@ -254,6 +254,7 @@ export interface ReconciliationRecord {
   status: ReconciliationStatus;
   reconciledAt?: string | null;
   reconciledById?: string | null;
+  reconciledBy?: { id: string; email?: string; firstName?: string; lastName?: string; fullName?: string } | null;
   notes?: string | null;
   createdAt: string;
   transaction?: PaymentTransaction | null;
@@ -429,6 +430,19 @@ export interface ManualResolvePayload {
   notes?: string;
 }
 
+
+export interface ReconciliationMetrics {
+  totalRecords: number;
+  matchedCount: number;
+  unmatchedCount: number;
+  suspiciousCount: number;
+  duplicateCount: number;
+  reversedCount: number;
+  totalIngestedVolume: number;
+  matchedVolume: number;
+  unmatchedVolume: number;
+  reconciledRate: number;
+}
 
 export interface InitiateRefundPayload {
   paymentId: string;

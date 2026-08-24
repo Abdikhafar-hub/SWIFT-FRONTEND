@@ -1635,6 +1635,17 @@ export const adminApi = {
   // =========================================================================
 
   /**
+   * Get real-time reconciliation metrics
+   */
+  async getReconciliationMetrics(): Promise<import("@/types").ReconciliationMetrics> {
+    const res = await apiClient.get<ApiResponse<import("@/types").ReconciliationMetrics>>("/admin/reconciliation/metrics");
+    if (!res.data.success) {
+      throw new Error(res.data.error.message || "Failed to fetch reconciliation metrics");
+    }
+    return res.data.data;
+  },
+
+  /**
    * List reconciliation records
    */
   async getReconciliationRecords(

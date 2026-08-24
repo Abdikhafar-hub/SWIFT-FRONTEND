@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { adminAccountApi } from "@/lib/api/admin-account";
 import type { NotificationPreferences } from "@/types";
@@ -61,6 +61,7 @@ export default function AdminSettingsPage() {
   const [otpCode, setOtpCode] = useState<string>("");
 
   // Photo Upload State
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -210,12 +211,22 @@ export default function AdminSettingsPage() {
     }
   };
 
-  // 5. Handle Image Select
+  // 5. Handle Image Select & Auto-Upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    let mimeType = file.type ? file.type.toLowerCase() : "";
+    if (mimeType === "image/jpg" || mimeType === "image/pjpeg") mimeType = "image/jpeg";
+
+    if (!mimeType) {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext === "jpg" || ext === "jpeg") mimeType = "image/jpeg";
+      else if (ext === "png") mimeType = "image/png";
+      else if (ext === "webp") mimeType = "image/webp";
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
       showError("Only JPEG, PNG, and WebP images are allowed.");
       return;
     }
@@ -225,34 +236,36 @@ export default function AdminSettingsPage() {
       return;
     }
 
+    const targetInput = e.target;
     setSelectedFile(file);
+
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      setPhotoPreview(base64Data);
+
+      setIsLoading(true);
+      setErrorMessage(null);
+      try {
+        const res = await adminAccountApi.uploadProfileImage({
+          fileName: file.name,
+          mimeType,
+          base64Data,
+        });
+        if (res.avatarUrl) {
+          setPhotoPreview(res.avatarUrl);
+        }
+        await refreshSession();
+        setSelectedFile(null);
+        showSuccess("Profile picture updated and saved successfully.");
+      } catch (err: any) {
+        showError(err.message || "Failed to upload profile picture.");
+      } finally {
+        setIsLoading(false);
+        if (targetInput) targetInput.value = "";
+      }
     };
     reader.readAsDataURL(file);
-  };
-
-  // 6. Upload Photo
-  const handleUploadPhoto = async () => {
-    if (!selectedFile || !photoPreview) return;
-
-    setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      await adminAccountApi.uploadProfileImage({
-        fileName: selectedFile.name,
-        mimeType: selectedFile.type,
-        base64Data: photoPreview,
-      });
-      await refreshSession();
-      setSelectedFile(null);
-      showSuccess("Profile picture updated and saved successfully.");
-    } catch (err: any) {
-      showError(err.message || "Failed to upload profile picture.");
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   // 7. Remove Photo
@@ -347,12 +360,20 @@ export default function AdminSettingsPage() {
                 </div>
               )}
               <button
-                onClick={() => setActiveTab("photo")}
-                className="absolute -bottom-1 -right-1 bg-slate-900 text-amber-400 border border-slate-700 rounded-lg p-1 shadow-sm hover:bg-amber-500 hover:text-slate-900 transition-all"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 bg-slate-900 text-amber-400 border border-slate-700 rounded-lg p-1 shadow-sm hover:bg-amber-500 hover:text-slate-900 transition-all cursor-pointer"
                 title="Update Profile Photo"
               >
                 <Camera className="size-3.5" />
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
 
             <div className="space-y-1">
@@ -793,17 +814,6 @@ export default function AdminSettingsPage() {
                       className="hidden"
                     />
                   </label>
-
-                  {selectedFile && (
-                    <button
-                      onClick={handleUploadPhoto}
-                      disabled={isLoading}
-                      className="bg-gradient-to-r from-[#C5A059] to-[#D4AF37] hover:from-[#b49049] hover:to-[#c39e26] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
-                    >
-                      {isLoading ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
-                      Upload &amp; Save
-                    </button>
-                  )}
 
                   {(photoPreview || user?.avatarUrl) && (
                     <button

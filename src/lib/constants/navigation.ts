@@ -128,6 +128,12 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
     title: "Case Operations",
     items: [
       {
+        title: "Services Catalog",
+        href: "/admin/services",
+        iconName: "Layers",
+        description: "Statutory requirements, fees and SLA hours",
+      },
+      {
         title: "Work Queue",
         href: "/admin/applications",
         iconName: "FileStack",
@@ -250,12 +256,6 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
   {
     title: "Configuration & Governance",
     items: [
-      {
-        title: "Services Catalog",
-        href: "/admin/services",
-        iconName: "Layers",
-        description: "Statutory requirements, fees and SLA hours",
-      },
       {
         title: "System Alerts",
         href: "/admin/alerts",

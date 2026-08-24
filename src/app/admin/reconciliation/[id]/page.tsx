@@ -7,7 +7,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Scale,
-  DollarSign,
   CheckCircle2,
   AlertTriangle,
   FileText,
@@ -17,9 +16,11 @@ import {
   Sliders,
   ExternalLink,
   ShieldCheck,
+  Building2,
+  Smartphone,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/layout-primitives";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
@@ -37,7 +38,7 @@ export default function AdminReconciliationDetailPage() {
   const queryClient = useQueryClient();
 
   const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
-  const [resolutionStatus, setResolutionStatus] = useState<"MANUAL_MATCH" | "IGNORE" | "REFUND_REQUIRED">("MANUAL_MATCH");
+  const [resolutionStatus, setResolutionStatus] = useState<ReconciliationStatus>("MATCHED");
   const [targetTxId, setTargetTxId] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -53,24 +54,25 @@ export default function AdminReconciliationDetailPage() {
 
   const resolveMutation = useMutation({
     mutationFn: () =>
-      adminApi.resolveReconciliationRecord(id, {
-        resolutionStatus,
-        resolvedTransactionId: targetTxId || undefined,
-        notes: notes || undefined,
+      adminApi.manualResolveReconciliation(id, {
+        status: resolutionStatus,
+        transactionId: targetTxId.trim() || undefined,
+        notes: notes.trim() || undefined,
       }),
     onSuccess: () => {
       setIsResolveModalOpen(false);
       refetch();
-      queryClient.invalidateQueries({ queryKey: ["admin-reconciliation"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reconciliation-records"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reconciliation-metrics"] });
     },
   });
 
   if (isLoading) {
     return (
       <PageShell title="Loading Reconciliation Dossier...">
-        <div className="space-y-4">
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-64 w-full" />
+        <div className="space-y-4 max-w-[1400px] mx-auto">
+          <Skeleton className="h-28 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
         </div>
       </PageShell>
     );
@@ -79,22 +81,24 @@ export default function AdminReconciliationDetailPage() {
   if (error || !record) {
     return (
       <PageShell title="Reconciliation Record Dossier">
-        <ErrorState
-          title="Reconciliation Record Not Found"
-          message="Could not retrieve the specified bank statement reconciliation entry."
-          onRetry={() => refetch()}
-        />
+        <div className="max-w-[1400px] mx-auto">
+          <ErrorState
+            title="Reconciliation Record Not Found"
+            message="Could not retrieve the specified bank or M-Pesa statement entry."
+            onRetry={() => refetch()}
+          />
+        </div>
       </PageShell>
     );
   }
 
-  const isMatched = record.status === "MATCHED" || record.status === "RESOLVED";
+  const isMatched = record.status === "MATCHED";
 
   return (
     <PageShell
-      eyebrow={`BANK RECONCILIATION • #${record.id.slice(0, 8)}`}
-      title={record.bankName ? `${record.bankName} Statement Line` : "Bank Reconciliation Line"}
-      description={`Statement Ref: ${record.statementReference || "—"} • Amount: ${formatCurrency(record.statementAmount || record.amount || 0)} • Status: ${record.status}`}
+      eyebrow={`FINANCIAL RECONCILIATION DOSSIER • #${record.id.slice(0, 8)}`}
+      title={`${record.provider || "Statement"} Line Item — ${record.reference || "Uncoded Entry"}`}
+      description={`Amount: ${formatCurrency(Number(record.amount || 0), record.currency || "KES")} • Status: ${record.status}`}
       actions={
         <div className="flex items-center gap-2">
           <Link href="/admin/reconciliation">
@@ -107,7 +111,12 @@ export default function AdminReconciliationDetailPage() {
               variant="gold"
               size="sm"
               leftIcon={<Sliders className="size-3.5" />}
-              onClick={() => setIsResolveModalOpen(true)}
+              onClick={() => {
+                setResolutionStatus(record.status || "MATCHED");
+                setNotes(record.notes || "");
+                setTargetTxId(record.transactionId || "");
+                setIsResolveModalOpen(true);
+              }}
             >
               Resolve Discrepancy
             </Button>
@@ -115,24 +124,31 @@ export default function AdminReconciliationDetailPage() {
         </div>
       }
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left 2 Cols: Statement Record & Match Audit */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 max-w-[1400px] mx-auto">
+        {/* Left 2 Cols: Statement Verification & Metadata */}
         <div className="space-y-6 lg:col-span-2">
           <Card padding="md" className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Statement Verification Record
-                </span>
-                <h3 className="text-base font-bold text-foreground">
-                  {record.bankName || "Statutory Escrow Account"}
-                </h3>
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                {record.provider === "MPESA" ? (
+                  <Smartphone className="size-5 text-emerald-600" />
+                ) : (
+                  <Building2 className="size-5 text-amber-700" />
+                )}
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                    Statement Settlement Line
+                  </span>
+                  <h3 className="text-base font-extrabold text-slate-900">
+                    {record.provider || "Safaricom M-Pesa"} Settlement
+                  </h3>
+                </div>
               </div>
               <Badge
                 tone={
-                  record.status === "MATCHED" || record.status === "RESOLVED"
+                  record.status === "MATCHED"
                     ? "success"
-                    : record.status === "UNMATCHED" || record.status === "DISCREPANCY"
+                    : record.status === "SUSPICIOUS" || record.status === "REVERSED"
                     ? "destructive"
                     : "warning"
                 }
@@ -143,83 +159,94 @@ export default function AdminReconciliationDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Statement Amount</span>
-                <strong className="text-foreground font-mono text-sm">
-                  {formatCurrency(record.statementAmount || record.amount || 0)}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+                <span className="text-slate-500 block text-[10px] font-extrabold uppercase">Statement Amount</span>
+                <strong className="text-slate-900 font-mono text-sm font-extrabold">
+                  {formatCurrency(Number(record.amount || 0), record.currency || "KES")}
                 </strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Ledger Amount</span>
-                <strong className="text-emerald-600 font-mono text-sm">
-                  {formatCurrency(record.ledgerAmount || record.transaction?.amount || record.statementAmount || 0)}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+                <span className="text-slate-500 block text-[10px] font-extrabold uppercase">Internal Ledger Amount</span>
+                <strong className="text-emerald-600 font-mono text-sm font-extrabold">
+                  {record.transaction
+                    ? formatCurrency(Number(record.transaction.amount || 0))
+                    : "Unlinked"}
                 </strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Difference</span>
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+                <span className="text-slate-500 block text-[10px] font-extrabold uppercase">Variance / Diff</span>
                 <strong
-                  className={`font-mono text-sm ${
-                    record.difference && record.difference !== 0 ? "text-destructive" : "text-foreground"
+                  className={`font-mono text-sm font-extrabold ${
+                    record.transaction && Number(record.transaction.amount) !== Number(record.amount)
+                      ? "text-rose-600"
+                      : "text-slate-900"
                   }`}
                 >
-                  {formatCurrency(record.difference || 0)}
+                  {record.transaction
+                    ? formatCurrency(Math.abs(Number(record.amount) - Number(record.transaction.amount)))
+                    : "KES 0.00"}
                 </strong>
               </div>
 
-              <div className="rounded-xs border border-border bg-muted/20 p-2.5">
-                <span className="text-muted-foreground block text-[11px]">Statement Date</span>
-                <span className="text-foreground font-mono">
-                  {formatDate(record.statementDate || record.createdAt)}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+                <span className="text-slate-500 block text-[10px] font-extrabold uppercase">Ingested Date</span>
+                <span className="text-slate-900 font-mono font-bold">
+                  {formatDate(record.createdAt)}
                 </span>
               </div>
             </div>
 
-            <div className="rounded-xs border border-border bg-muted/20 p-3.5 space-y-2 text-xs">
-              <h4 className="font-bold text-foreground uppercase tracking-wider text-[11px]">
-                Bank Statement Metadata
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-3 text-xs">
+              <h4 className="font-extrabold text-slate-900 uppercase tracking-wider text-[11px]">
+                Statement Verification &amp; Auditor Trail
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Statement Reference</span>
-                  <span className="font-mono text-foreground font-bold">{record.statementReference || "—"}</span>
+                  <span className="text-slate-500 block text-[10px] font-extrabold">Statement Reference Code</span>
+                  <span className="font-mono text-slate-900 font-bold text-sm">{record.reference || "—"}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Account Number</span>
-                  <span className="font-mono text-foreground">{record.accountNumber || "—"}</span>
+                  <span className="text-slate-500 block text-[10px] font-extrabold">Payment Channel</span>
+                  <span className="font-semibold text-slate-800">{record.provider || "MPESA"}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Transaction Description</span>
-                  <p className="text-foreground">{record.statementDescription || record.description || "N/A"}</p>
+                  <span className="text-slate-500 block text-[10px] font-extrabold">Reconciled Timestamp</span>
+                  <span className="text-slate-800 font-medium">
+                    {record.reconciledAt ? formatDate(record.reconciledAt) : "Pending Resolution"}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-[11px]">Reconciled Timestamp</span>
-                  <span className="text-foreground">
-                    {record.reconciledAt ? formatDate(record.reconciledAt) : "Pending"}
+                  <span className="text-slate-500 block text-[10px] font-extrabold">Auditor Officer</span>
+                  <span className="text-slate-800 font-semibold">
+                    {record.reconciledBy?.email || record.reconciledBy?.fullName || "Automated Recon Engine"}
                   </span>
                 </div>
               </div>
             </div>
 
             {record.notes && (
-              <div className="rounded-xs border border-border bg-muted/20 p-3 text-xs space-y-1">
-                <span className="text-[11px] font-bold text-muted-foreground">Officer Audit Notes:</span>
-                <p className="text-foreground">{record.notes}</p>
+              <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-3.5 text-xs space-y-1">
+                <span className="text-[11px] font-bold text-amber-800 flex items-center gap-1.5">
+                  <ShieldCheck className="size-3.5 text-amber-600" />
+                  <span>Audit Remarks &amp; Resolution History:</span>
+                </span>
+                <p className="text-slate-800 font-medium">{record.notes}</p>
               </div>
             )}
           </Card>
         </div>
 
-        {/* Right Col: Matched Internal Transaction & Controls */}
+        {/* Right Col: Matched Internal Ledger & Actions */}
         <div className="space-y-6">
-          {record.transactionId && (
+          {record.transaction ? (
             <Card padding="md" className="space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-foreground">Matched Internal Ledger</h4>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h4 className="text-sm font-extrabold text-slate-900">Matched Internal Ledger</h4>
                 <Link
-                  href={`/admin/transactions/${record.transactionId}`}
-                  className="text-xs font-semibold text-gold-dark dark:text-gold hover:underline flex items-center gap-1"
+                  href={`/admin/transactions/${record.transaction.id}`}
+                  className="text-xs font-semibold text-amber-700 hover:underline flex items-center gap-1"
                 >
                   <span>Transaction Dossier</span>
                   <ExternalLink className="size-3" />
@@ -227,43 +254,65 @@ export default function AdminReconciliationDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Transaction ID</span>
-                  <Link
-                    href={`/admin/transactions/${record.transactionId}`}
-                    className="font-mono font-bold text-navy dark:text-gold hover:underline"
-                  >
-                    #{record.transactionId.slice(0, 8)}
-                  </Link>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Transaction #</span>
+                  <span className="font-mono font-bold text-slate-900">
+                    {record.transaction.transactionNumber || record.transaction.id.slice(0, 8)}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-border/50 pb-2">
-                  <span className="text-muted-foreground">Method</span>
-                  <span className="font-semibold text-foreground">{record.transaction?.paymentMethod || "Direct"}</span>
+
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Method</span>
+                  <span className="font-semibold text-slate-800">{record.transaction.paymentMethod || "MPESA"}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Ledger Sync</span>
+
+                {record.transaction.payment && (
+                  <>
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="text-slate-500 font-medium">Invoice #</span>
+                      <span className="font-mono font-bold text-slate-900">
+                        {record.transaction.payment.invoiceNumber}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between border-b border-slate-100 pb-2">
+                      <span className="text-slate-500 font-medium">Client Profile</span>
+                      <span className="font-semibold text-slate-800">
+                        {record.transaction.payment.client?.fullName ||
+                          record.transaction.payment.client?.businessName ||
+                          "Commercial Client"}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex justify-between pt-1">
+                  <span className="text-slate-500 font-medium">Ledger Sync State</span>
                   <Badge tone="success" size="sm">Synchronized</Badge>
                 </div>
               </div>
             </Card>
-          )}
-
-          {!isMatched && (
-            <Card padding="md" className="space-y-3 text-xs border-gold/40 bg-gold/5">
-              <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                <Scale className="size-4 text-gold" />
-                <span>Manual Reconciliation Action</span>
+          ) : (
+            <Card padding="md" className="space-y-3 text-xs border-amber-200 bg-amber-50/20">
+              <h4 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                <Scale className="size-4 text-amber-600" />
+                <span>Unlinked Settlement Line</span>
               </h4>
-              <p className="text-muted-foreground">
-                Match this unlinked bank line item to an internal transaction or document resolution.
+              <p className="text-slate-600">
+                This bank or M-Pesa statement entry has not been automatically matched to an internal invoice.
               </p>
               <Button
                 variant="gold"
                 size="sm"
                 className="w-full"
-                onClick={() => setIsResolveModalOpen(true)}
+                onClick={() => {
+                  setResolutionStatus(record.status || "MATCHED");
+                  setNotes(record.notes || "");
+                  setTargetTxId("");
+                  setIsResolveModalOpen(true);
+                }}
               >
-                Resolve Discrepancy
+                Resolve &amp; Link Discrepancy
               </Button>
             </Card>
           )}
@@ -276,31 +325,31 @@ export default function AdminReconciliationDetailPage() {
           isOpen={isResolveModalOpen}
           onClose={() => setIsResolveModalOpen(false)}
           title="Resolve Statement Discrepancy"
-          description="Link to an existing transaction or mark resolution category."
+          description={`Audit clearance for statement entry #${record.reference}.`}
           size="md"
         >
           <div className="space-y-4 text-xs">
             <FormField label="Resolution Strategy" required>
               <Select
                 value={resolutionStatus}
-                onChange={(e) => setResolutionStatus(e.target.value as any)}
+                onChange={(e) => setResolutionStatus(e.target.value as ReconciliationStatus)}
                 options={[
-                  { value: "MANUAL_MATCH", label: "Manual Match to Internal Transaction" },
-                  { value: "IGNORE", label: "Ignore / Non-Statutory Bank Charge" },
-                  { value: "REFUND_REQUIRED", label: "Flag for Customer Refund" },
+                  { value: "MATCHED", label: "Mark as Matched & Clear Invoice" },
+                  { value: "UNMATCHED", label: "Keep as Unmatched Discrepancy" },
+                  { value: "DUPLICATE", label: "Flag as Duplicate Entry" },
+                  { value: "SUSPICIOUS", label: "Flag as Suspicious / Variance" },
+                  { value: "REVERSED", label: "Mark as Reversed Settlement" },
                 ]}
               />
             </FormField>
 
-            {resolutionStatus === "MANUAL_MATCH" && (
-              <FormField label="Target Transaction ID / Reference" required>
-                <Input
-                  value={targetTxId}
-                  onChange={(e) => setTargetTxId(e.target.value)}
-                  placeholder="Paste Transaction ID or M-Pesa Code"
-                />
-              </FormField>
-            )}
+            <FormField label="Target Internal Transaction ID / Ref (Optional)">
+              <Input
+                value={targetTxId}
+                onChange={(e) => setTargetTxId(e.target.value)}
+                placeholder="Paste Payment Transaction UUID or M-Pesa Ref..."
+              />
+            </FormField>
 
             <FormField label="Compliance Audit Remarks" required>
               <Textarea
@@ -311,7 +360,7 @@ export default function AdminReconciliationDetailPage() {
               />
             </FormField>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
               <Button
                 variant="outline"
                 size="sm"
@@ -324,7 +373,6 @@ export default function AdminReconciliationDetailPage() {
                 variant="gold"
                 size="sm"
                 isLoading={resolveMutation.isPending}
-                disabled={resolutionStatus === "MANUAL_MATCH" && !targetTxId.trim()}
                 onClick={() => resolveMutation.mutate()}
               >
                 Confirm Resolution
