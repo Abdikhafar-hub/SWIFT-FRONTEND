@@ -40,13 +40,20 @@ export const applicationsApi = {
    * List client applications with filtering, sorting, and pagination
    */
   async getApplications(params?: QueryPaginationParams): Promise<PaginatedResult<Application>> {
-    const res = await apiClient.get<ApiResponse<PaginatedResult<Application>>>("/client/applications", {
+    const res = await apiClient.get<ApiResponse<any>>("/client/applications", {
       params,
     });
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Failed to fetch applications");
     }
-    return res.data.data;
+    const rawData = res.data.data;
+    if (Array.isArray(rawData)) {
+      return {
+        items: rawData,
+        meta: res.data.meta,
+      } as any;
+    }
+    return rawData;
   },
 
   /**

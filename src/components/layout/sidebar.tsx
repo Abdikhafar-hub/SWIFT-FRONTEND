@@ -32,25 +32,23 @@ export function Sidebar({ role }: { role: "CLIENT" | "ADMIN" }) {
       )}
     >
       {/* Brand Header */}
-      <div className="flex h-12 items-center justify-between border-b border-border/70 px-3 shrink-0">
+      <div className="flex h-16 items-center justify-between border-b border-border/70 px-2 shrink-0 overflow-hidden">
         {!collapsed ? (
-          <Link href={role === "ADMIN" ? "/admin" : "/client"} className="flex items-center gap-2.5">
-            <div className="flex size-7 items-center justify-center rounded-xs bg-ink text-gold font-serif font-black text-sm border border-gold/40 shadow-xs">
-              SD
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display text-xs font-extrabold tracking-tight text-foreground leading-none">
-                SWIFT DOC
-              </span>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-gold mt-0.5">
-                {role === "ADMIN" ? "Ops Command" : "Client Portal"}
-              </span>
-            </div>
+          <Link href={role === "ADMIN" ? "/admin" : "/client"} className="flex-1 flex items-center overflow-visible pl-1">
+            <img
+              src="/swift-logo.png"
+              alt="Swift Doc"
+              className="h-12 w-full max-w-[190px] object-contain object-left scale-125 origin-left"
+            />
           </Link>
         ) : (
-          <div className="mx-auto flex size-7 items-center justify-center rounded-xs bg-ink text-gold font-serif font-black text-sm border border-gold/40">
-            SD
-          </div>
+          <Link href={role === "ADMIN" ? "/admin" : "/client"} className="mx-auto flex items-center justify-center">
+            <img
+              src="/swift-logo.png"
+              alt="Swift Doc"
+              className="h-9 w-auto max-w-[48px] object-contain"
+            />
+          </Link>
         )}
 
         <button

@@ -137,13 +137,20 @@ export const adminApi = {
       search?: string;
     }
   ): Promise<PaginatedResult<Application>> {
-    const res = await apiClient.get<ApiResponse<PaginatedResult<Application>>>("/admin/applications", {
+    const res = await apiClient.get<ApiResponse<any>>("/admin/applications", {
       params,
     });
     if (!res.data.success) {
       throw new Error(res.data.error.message || "Failed to fetch applications");
     }
-    return res.data.data;
+    const rawData = res.data.data;
+    if (Array.isArray(rawData)) {
+      return {
+        items: rawData,
+        meta: res.data.meta,
+      } as any;
+    }
+    return rawData;
   },
 
   /**

@@ -233,18 +233,12 @@ export default function RegisterPage() {
 
         {/* Top Header Logo */}
         <div className="relative z-10 mb-4 xl:mb-6">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="size-10 xl:size-11 flex items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 font-serif font-bold text-lg xl:text-xl shadow-2xs group-hover:bg-amber-500/20 transition-all">
-              SD
-            </div>
-            <div className="flex flex-col">
-              <span className="font-sans text-lg xl:text-xl font-bold tracking-tight text-slate-900 leading-none">
-                SWIFT DOC
-              </span>
-              <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-1">
-                CLIENT PORTAL
-              </span>
-            </div>
+          <Link href="/" className="inline-flex items-center group">
+            <img
+              src="/swift-logo.png"
+              alt="Swift Doc"
+              className="h-14 xl:h-16 w-auto max-w-[260px] object-contain"
+            />
           </Link>
         </div>
 
@@ -335,10 +329,11 @@ export default function RegisterPage() {
                     {/* App Navbar */}
                     <div className="bg-white border-b border-slate-200/80 px-2 py-1 flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <div className="size-3 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-center font-serif text-[6px] font-bold text-amber-600">
-                          SD
-                        </div>
-                        <span className="font-bold text-slate-800 text-[8px]">SWIFT DOC</span>
+                        <img
+                          src="/swift-logo.png"
+                          alt="Swift Doc"
+                          className="h-3.5 w-auto object-contain"
+                        />
                       </div>
                       <div className="flex items-center gap-2 text-[7px] text-slate-400 font-medium">
                         <span className="text-amber-600 font-bold border-b border-amber-600 pb-0.5">Dashboard</span>
@@ -458,18 +453,12 @@ export default function RegisterPage() {
       <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center items-center bg-[#f8f7f4] relative min-h-screen lg:h-full lg:overflow-y-auto xl:overflow-hidden">
         {/* Mobile Top Branding Header (Visible only on < lg viewports) */}
         <div className="lg:hidden mb-5 flex items-center justify-center shrink-0">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="size-10 flex items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 font-serif font-bold text-lg shadow-2xs group-hover:bg-amber-500/20 transition-all">
-              SD
-            </div>
-            <div className="flex flex-col">
-              <span className="font-sans text-lg font-bold tracking-tight text-slate-900 leading-none">
-                SWIFT DOC
-              </span>
-              <span className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-1">
-                CLIENT PORTAL
-              </span>
-            </div>
+          <Link href="/" className="inline-flex items-center group">
+            <img
+              src="/swift-logo.png"
+              alt="Swift Doc"
+              className="h-12 w-auto max-w-[220px] object-contain"
+            />
           </Link>
         </div>
         <div className="w-full max-w-[500px] xl:max-w-[540px] bg-white rounded-2xl sm:rounded-[28px] p-5 sm:p-8 xl:p-9 shadow-xl shadow-slate-200/50 border border-slate-100 relative z-10">

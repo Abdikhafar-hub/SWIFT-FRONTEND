@@ -54,17 +54,13 @@ export function MobileDrawer({
       {/* Drawer */}
       <div className="relative flex w-4/5 max-w-xs flex-1 flex-col bg-card border-r border-border p-4 shadow-2xl z-10 animate-in slide-in-from-left duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/70 pb-4">
-          <Link href={role === "ADMIN" ? "/admin" : "/client"} onClick={onClose} className="flex items-center gap-2.5">
-            <div className="flex size-8 items-center justify-center rounded-xs bg-ink text-gold font-serif font-black text-base border border-gold/40">
-              SD
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display text-sm font-bold text-foreground">SWIFT DOC</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gold">
-                {role === "ADMIN" ? "Ops Command" : "Client Portal"}
-              </span>
-            </div>
+        <div className="flex items-center justify-between border-b border-border/70 pb-3 overflow-hidden">
+          <Link href={role === "ADMIN" ? "/admin" : "/client"} onClick={onClose} className="flex items-center pl-1">
+            <img
+              src="/swift-logo.png"
+              alt="Swift Doc"
+              className="h-12 w-auto max-w-[200px] object-contain object-left scale-125 origin-left"
+            />
           </Link>
 
           <button
