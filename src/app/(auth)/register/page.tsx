@@ -24,6 +24,17 @@ import {
   Smartphone,
   Eye,
   EyeOff,
+  Briefcase,
+  Users,
+  Building2,
+  Globe,
+  HeartHandshake,
+  Award,
+  BookOpen,
+  UserCheck,
+  ClipboardCheck,
+  Zap,
+  Handshake,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { authApi } from "@/lib/api/auth";
@@ -40,6 +51,98 @@ import { parseApiError } from "@/lib/utils/error";
 import { notify } from "@/lib/notify";
 
 type Step = 1 | 2 | 3 | 4;
+
+// Configurable Trust Statistics Data
+const TRUST_STATS = [
+  {
+    icon: Briefcase,
+    value: "10,000+",
+    label: "Documents Processed",
+  },
+  {
+    icon: Users,
+    value: "5,000+",
+    label: "Happy Clients",
+  },
+  {
+    icon: ShieldCheck,
+    value: "98%",
+    label: "First-Time Approval Rate",
+  },
+  {
+    icon: Clock,
+    value: "10+ Years",
+    label: "Industry Experience",
+  },
+];
+
+// Configurable Core Services List
+const CORE_SERVICES = [
+  {
+    icon: Building2,
+    title: "Business Registration",
+    description: "Company, Business Name, Partnerships & More",
+  },
+  {
+    icon: FileText,
+    title: "KRA Services",
+    description: "PIN Registration, Tax Returns, Compliance",
+  },
+  {
+    icon: Globe,
+    title: "Visa & Immigration",
+    description: "Visa Applications, Work Permits & Passports",
+  },
+  {
+    icon: HeartHandshake,
+    title: "NGO Registration",
+    description: "NGO, CBO, Societies & Trusts Registration",
+  },
+  {
+    icon: Award,
+    title: "Licensing & Permits",
+    description: "County & National Licenses, NEMA, NHIF",
+  },
+  {
+    icon: BookOpen,
+    title: "Civil Registry",
+    description: "Birth, Marriage, Death Certificates & More",
+  },
+  {
+    icon: UserCheck,
+    title: "Document Legalisation",
+    description: "Notarisation, Apostille & Embassy Attestation",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Compliance & Filings",
+    description: "Statutory Returns, Renewals & Filings",
+  },
+];
+
+// Configurable Value Propositions
+const VALUE_PROPOSITIONS = [
+  {
+    icon: ShieldCheck,
+    title: "Expert Documentation",
+    subtitle: "100% Accuracy",
+  },
+  {
+    icon: Sparkles,
+    title: "Regulatory Compliance",
+    subtitle: "Always Up-to-Date",
+  },
+  {
+    icon: Zap,
+    title: "Faster Processing",
+    subtitle: "Save Time & Avoid Delays",
+  },
+  {
+    icon: Handshake,
+    title: "End-to-End Support",
+    subtitle: "From Start to Approval",
+  },
+];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -139,7 +242,7 @@ export default function RegisterPage() {
   // Handle Step 2 Submission: Verification OTP
   const onStep2Submit = async (data: OtpVerificationFormData) => {
     setServerError(null);
-    notify.loading("Verifying code...", { id: "auth-verify" });
+    notify.loading("Verifying code...", { id: "auth-[#verify]" });
     try {
       await authApi.verifyOtp(data.code);
       await refreshSession();
@@ -213,237 +316,173 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="min-h-screen lg:h-screen w-full flex flex-col lg:flex-row bg-[#faf8f5] text-slate-900 overflow-y-auto lg:overflow-hidden">
-      {/* =========================================================================
-          LEFT 50%: Product Showcase / Marketing Visual (Desktop Only: hidden lg:flex)
-         ========================================================================= */}
-      <div className="hidden lg:flex lg:w-1/2 p-6 sm:p-8 lg:p-10 xl:p-12 flex-col justify-between relative bg-[#faf8f5] overflow-hidden lg:h-full">
-        {/* Background Decorative Circular Glow */}
-        <div className="absolute top-1/3 right-10 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none -z-0" />
+    <div className="min-h-screen lg:h-screen w-full flex flex-col lg:flex-row bg-[#faf8f5] text-slate-900 overflow-y-auto lg:overflow-hidden select-none">
+      {/* LEFT 50%: Product Showcase / Marketing Hero Panel */}
+      <div className="hidden lg:flex lg:w-1/2 p-5 xl:p-8 2xl:p-10 flex-col justify-between relative bg-[#FAF8F5] overflow-hidden lg:h-full border-r border-amber-900/5">
+        {/* Background Radial Glow */}
+        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-amber-200/25 rounded-full blur-3xl pointer-events-none -z-0" />
         
-        {/* Background Dotted Matrix Pattern */}
-        <div className="absolute top-8 right-12 opacity-30 pointer-events-none hidden sm:block">
-          <svg width="140" height="140" fill="none" viewBox="0 0 140 140">
-            <pattern id="dots-reg" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+        {/* Background Dotted Matrix Pattern (Top Right) */}
+        <div className="absolute top-6 right-8 opacity-40 pointer-events-none z-0">
+          <svg width="120" height="120" fill="none" viewBox="0 0 120 120">
+            <pattern id="dots-reg" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
               <circle cx="2" cy="2" r="2" fill="#d97706" />
             </pattern>
-            <rect width="140" height="140" fill="url(#dots-reg)" />
+            <rect width="120" height="120" fill="url(#dots-reg)" />
           </svg>
         </div>
 
-        {/* Top Header Logo */}
-        <div className="relative z-10 mb-4 xl:mb-6">
-          <Link href="/" className="inline-flex items-center group">
+        {/* Decorative Background Contour Wave (Bottom Left) */}
+        <div className="absolute bottom-16 left-0 opacity-15 pointer-events-none z-0">
+          <svg width="400" height="200" fill="none" viewBox="0 0 400 200">
+            <path
+              d="M-50 150 C100 50, 200 220, 450 100"
+              stroke="#d97706"
+              strokeWidth="2"
+              fill="none"
+            />
+            <path
+              d="M-50 180 C120 80, 220 250, 450 130"
+              stroke="#d97706"
+              strokeWidth="1.5"
+              fill="none"
+            />
+          </svg>
+        </div>
+
+        {/* Hero Visual Imagery Layer (Background Overlay Right Center) */}
+        <div className="absolute top-0 right-0 h-full w-[55%] xl:w-[60%] pointer-events-none z-0 overflow-hidden">
+          <img
+            src="/images/hero-documents-kenya.png"
+            alt="Kenyan Official Documents & Nairobi Context"
+            className="w-full h-full object-cover object-right opacity-95 mix-blend-multiply"
+          />
+          {/* Smooth gradient fade overlay to ensure zero text overlap and 100% legibility */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF8F5] via-[#FAF8F5]/70 to-transparent w-3/4 h-full pointer-events-none" />
+        </div>
+
+        {/* Top Header & Logo */}
+        <div className="relative z-10">
+          <Link href="/" className="inline-block group">
             <img
               src="/swift-logo.png"
               alt="Swift Doc"
-              className="h-14 xl:h-16 w-auto max-w-[260px] object-contain"
+              className="h-12 xl:h-14 2xl:h-16 w-auto max-w-[280px] object-contain"
             />
           </Link>
+          <div className="mt-2.5">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/60 border border-amber-300/50 text-amber-800 text-[10px] font-extrabold tracking-[0.2em] uppercase shadow-2xs backdrop-blur-xs">
+              <Sparkles className="size-3 text-amber-600" />
+              YOUR REGULATORY PARTNER
+            </span>
+          </div>
         </div>
 
-        {/* Main Section: Headline + Features & Mockups Grid */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center my-auto">
+        {/* Main Center Content Section */}
+        <div className="relative z-10 my-auto py-2 xl:py-4 space-y-4 xl:space-y-6">
           {/* Main Headline */}
-          <div className="max-w-xl mb-5 xl:mb-7">
-            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl xl:text-[42px] font-semibold leading-[1.15] text-slate-900 tracking-tight">
-              Create your account.
+          <div className="max-w-xl">
+            <h1 className="font-serif text-2xl xl:text-3xl 2xl:text-4xl font-bold leading-[1.18] text-slate-900 tracking-tight">
+              We Prepare, Process
               <br />
-              <span className="text-amber-600 font-serif">Join Swift Doc today.</span>
+              & Perfect Your
+              <br />
+              <span className="text-amber-600 font-serif italic">Official Documents.</span>
             </h1>
-            <p className="mt-2 text-xs xl:text-sm text-slate-600 max-w-md leading-relaxed">
-              Get secure access to your statutory applications, documents vault, and M-Pesa receipts — all in one trusted portal.
+            <p className="mt-2.5 text-xs xl:text-sm text-slate-700 max-w-lg leading-relaxed font-medium">
+              Swift Doc Documentation Services Ltd is a premier documentation consultancy based in Westlands, Nairobi. We specialise in preparing, lodging and expediting regulatory registrations, statutory compliances, licensing and official certifications.
             </p>
           </div>
 
-          {/* Grid Layout for Features + Mockups */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Features List (Left side of Showcase) */}
-            <div className="lg:col-span-6 space-y-3 sm:space-y-3.5">
-              {/* Feature 1 */}
-              <div className="flex items-start gap-3 group">
-                <div className="size-9 xl:size-10 shrink-0 rounded-xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-center text-amber-600 shadow-2xs group-hover:bg-amber-500/10 transition-colors">
-                  <ShieldCheck className="size-4.5" />
+          {/* Value Propositions Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 xl:gap-3 max-w-2xl">
+            {VALUE_PROPOSITIONS.map((prop, idx) => {
+              const IconComp = prop.icon;
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 p-2 rounded-xl bg-white/70 border border-slate-200/60 shadow-2xs backdrop-blur-xs"
+                >
+                  <div className="size-7 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-center justify-center shrink-0">
+                    <IconComp className="size-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-[10px] xl:text-[11px] font-bold text-slate-900 truncate leading-tight">
+                      {prop.title}
+                    </h4>
+                    <p className="text-[9px] xl:text-[10px] text-slate-500 truncate mt-0.5">
+                      {prop.subtitle}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-xs xl:text-sm">Secure &amp; Compliant</h3>
-                  <p className="text-[10px] xl:text-[11px] text-slate-500 mt-0.5 leading-snug">
-                    Your data is protected with enterprise grade security and encryption.
-                  </p>
-                </div>
-              </div>
+              );
+            })}
+          </div>
 
-              {/* Feature 2 */}
-              <div className="flex items-start gap-3 group">
-                <div className="size-9 xl:size-10 shrink-0 rounded-xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-center text-amber-600 shadow-2xs group-hover:bg-amber-500/10 transition-colors">
-                  <FileText className="size-4.5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-xs xl:text-sm">All Your Documents</h3>
-                  <p className="text-[10px] xl:text-[11px] text-slate-500 mt-0.5 leading-snug">
-                    Manage, store and access your statutory documents in one place.
-                  </p>
-                </div>
-              </div>
-
-              {/* Feature 3 */}
-              <div className="flex items-start gap-3 group">
-                <div className="size-9 xl:size-10 shrink-0 rounded-xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-center text-amber-600 shadow-2xs group-hover:bg-amber-500/10 transition-colors">
-                  <Smartphone className="size-4.5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-xs xl:text-sm">M-Pesa Receipts</h3>
-                  <p className="text-[10px] xl:text-[11px] text-slate-500 mt-0.5 leading-snug">
-                    View and download all your M-Pesa payment receipts instantly.
-                  </p>
-                </div>
-              </div>
-
-              {/* Feature 4 */}
-              <div className="flex items-start gap-3 group">
-                <div className="size-9 xl:size-10 shrink-0 rounded-xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-center text-amber-600 shadow-2xs group-hover:bg-amber-500/10 transition-colors">
-                  <Clock className="size-4.5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-xs xl:text-sm">Real-time Access</h3>
-                  <p className="text-[10px] xl:text-[11px] text-slate-500 mt-0.5 leading-snug">
-                    Access your information and updates anytime, anywhere.
-                  </p>
-                </div>
-              </div>
+          {/* Section Label: Our Core Services */}
+          <div className="flex items-center gap-3 pt-1">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
+            <div className="flex items-center gap-1.5 text-amber-600 font-bold text-[10px] xl:text-xs tracking-widest uppercase">
+              <span className="size-1 rounded-full bg-amber-500"></span>
+              <span>Our Core Services</span>
+              <span className="size-1 rounded-full bg-amber-500"></span>
             </div>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-300 to-transparent"></div>
+          </div>
 
-            {/* Mockups Container (Right side of Showcase) */}
-            <div className="lg:col-span-6 relative mt-4 lg:mt-0 flex justify-center items-center">
-              {/* Laptop Graphic */}
-              <div className="relative w-full max-w-[360px] xl:max-w-[420px] drop-shadow-2xl">
-                {/* Outer Laptop Bezel */}
-                <div className="relative rounded-t-xl bg-slate-900 p-2 border border-slate-800 shadow-2xl">
-                  {/* Camera */}
-                  <div className="absolute top-1 left-1/2 -translate-x-1/2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+          {/* Core Services Cards Grid (2 rows x 4 cols) */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 xl:gap-3">
+            {CORE_SERVICES.map((service, idx) => {
+              const IconComp = service.icon;
+              return (
+                <div
+                  key={idx}
+                  className="p-2.5 xl:p-3 rounded-xl bg-white/90 border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-amber-400/50 transition-all flex flex-col justify-between group backdrop-blur-xs"
+                >
+                  <div className="size-7 xl:size-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 flex items-center justify-center shrink-0 mb-1.5 group-hover:scale-105 transition-transform">
+                    <IconComp className="size-3.5 xl:size-4" />
                   </div>
-                  
-                  {/* Screen Content */}
-                  <div className="overflow-hidden rounded-md bg-slate-50 border border-slate-200/60 aspect-[16/10] text-[8px] sm:text-[9px] select-none">
-                    {/* App Navbar */}
-                    <div className="bg-white border-b border-slate-200/80 px-2 py-1 flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <img
-                          src="/swift-logo.png"
-                          alt="Swift Doc"
-                          className="h-3.5 w-auto object-contain"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2 text-[7px] text-slate-400 font-medium">
-                        <span className="text-amber-600 font-bold border-b border-amber-600 pb-0.5">Dashboard</span>
-                        <span>Documents</span>
-                        <span>Receipts</span>
-                      </div>
-                    </div>
-
-                    {/* App Main Area */}
-                    <div className="p-2 space-y-1.5 bg-[#faf9f6]/80">
-                      <div className="font-bold text-slate-900 text-[9px]">Dashboard</div>
-                      
-                      {/* Stat Cards */}
-                      <div className="grid grid-cols-3 gap-1.5">
-                        <div className="bg-white p-1 rounded-lg border border-slate-200/70 shadow-2xs">
-                          <span className="text-[7px] text-slate-400 font-medium block">Applications</span>
-                          <span className="text-xs font-extrabold text-slate-900 block leading-tight mt-0.5">12</span>
-                          <span className="text-[6px] text-slate-500">Active</span>
-                        </div>
-                        <div className="bg-white p-1 rounded-lg border border-slate-200/70 shadow-2xs">
-                          <span className="text-[7px] text-slate-400 font-medium block">Documents</span>
-                          <span className="text-xs font-extrabold text-slate-900 block leading-tight mt-0.5">48</span>
-                          <span className="text-[6px] text-slate-500">Total</span>
-                        </div>
-                        <div className="bg-white p-1 rounded-lg border border-slate-200/70 shadow-2xs">
-                          <span className="text-[7px] text-slate-400 font-medium block">Receipts</span>
-                          <span className="text-xs font-extrabold text-slate-900 block leading-tight mt-0.5">24</span>
-                          <span className="text-[6px] text-slate-500">This Month</span>
-                        </div>
-                      </div>
-
-                      {/* Recent Applications Table */}
-                      <div className="bg-white rounded-lg border border-slate-200/70 p-1.5 shadow-2xs">
-                        <span className="text-[8px] font-bold text-slate-800 block mb-0.5">Recent Applications</span>
-                        <div className="space-y-0.5 text-[7px]">
-                          <div className="flex items-center justify-between py-0.5 border-b border-slate-100">
-                            <span className="font-medium text-slate-700">Company Annual Return</span>
-                            <span className="px-1 py-0.2 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[6px]">Submitted</span>
-                          </div>
-                          <div className="flex items-center justify-between py-0.5 border-b border-slate-100">
-                            <span className="font-medium text-slate-700">Change of Directors</span>
-                            <span className="px-1 py-0.2 rounded-full bg-amber-50 text-amber-700 font-semibold text-[6px]">In Review</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-[11px] xl:text-xs leading-tight group-hover:text-amber-700 transition-colors">
+                      {service.title}
+                    </h3>
+                    <p className="text-[9px] xl:text-[10px] text-slate-500 leading-snug mt-0.5 line-clamp-2">
+                      {service.description}
+                    </p>
                   </div>
                 </div>
-                {/* Laptop Keyboard Base */}
-                <div className="relative h-2 bg-gradient-to-b from-slate-700 to-slate-900 rounded-b-lg px-8 flex justify-center border-t border-slate-600">
-                  <div className="w-12 h-0.5 bg-slate-600 rounded-b-md"></div>
-                </div>
-              </div>
-
-              {/* Smartphone Graphic (Overlapping Laptop) */}
-              <div className="absolute -bottom-3 left-0 sm:-left-2 w-32 sm:w-36 bg-slate-900 p-1 rounded-[20px] border border-slate-700 shadow-2xl z-20 transform -rotate-2">
-                <div className="relative overflow-hidden rounded-[16px] bg-white border border-slate-200 aspect-[9/18] text-[7px] select-none">
-                  {/* Speaker Notch */}
-                  <div className="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-2 bg-slate-900 rounded-full z-30 flex items-center justify-center">
-                    <div className="w-1.5 h-0.5 rounded-full bg-slate-700"></div>
-                  </div>
-
-                  {/* Phone Screen Content */}
-                  <div className="pt-4 p-1.5 space-y-1 bg-[#fdfbf7]">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 text-[8px]">M-Pesa Receipts</span>
-                    </div>
-
-                    {/* Total Paid Card */}
-                    <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-1.5 rounded-md shadow-xs">
-                      <span className="text-[6px] font-medium text-amber-100 block">Total Paid</span>
-                      <span className="text-[9px] font-extrabold block">KES 12,450</span>
-                    </div>
-
-                    {/* Receipts List */}
-                    <div className="space-y-0.5 pt-0.5">
-                      <div className="bg-white p-0.5 px-1 rounded border border-slate-100 shadow-2xs">
-                        <div className="flex items-center justify-between font-bold text-slate-800 text-[6px]">
-                          <span>Payment to KRA</span>
-                          <span className="text-amber-600">KES 5,000</span>
-                        </div>
-                      </div>
-
-                      <div className="bg-white p-0.5 px-1 rounded border border-slate-100 shadow-2xs">
-                        <div className="flex items-center justify-between font-bold text-slate-800 text-[6px]">
-                          <span>Payment to NSSF</span>
-                          <span className="text-amber-600">KES 3,200</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Bottom Left Security Badge + Decorative Wave */}
-        <div className="relative z-10 mt-4 xl:mt-6 flex items-center justify-between">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/50 border border-slate-300/40 text-[11px] text-slate-600 font-medium backdrop-blur-xs">
-            <ShieldCheck className="size-3.5 text-amber-600" />
-            <span>Protected by 256-bit SSL &amp; Data Protection Act 2019</span>
+        {/* Bottom Dark Navy Statistics Strip */}
+        <div className="relative z-10 mt-2 xl:mt-4 rounded-2xl bg-[#0B1527] border border-slate-800 p-3 xl:p-4 shadow-xl text-white">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 divide-x-0 sm:divide-x divide-slate-800/80">
+            {TRUST_STATS.map((stat, idx) => {
+              const IconComp = stat.icon;
+              return (
+                <div
+                  key={idx}
+                  className={`flex items-center gap-2.5 ${
+                    idx !== 0 ? "sm:pl-3" : ""
+                  }`}
+                >
+                  <div className="size-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                    <IconComp className="size-4" />
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-amber-400 text-sm xl:text-base tracking-tight block leading-tight">
+                      {stat.value}
+                    </span>
+                    <span className="text-[9px] xl:text-[10px] text-slate-300 font-medium block mt-0.5 leading-none">
+                      {stat.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Flowing Golden Wave SVG near bottom */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none opacity-20">
-          <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-12 text-amber-500 fill-none stroke-current stroke-1">
-            <path d="M0,0 C150,90 350,-40 500,60 C650,160 900,10 1200,40 L1200,120 L0,120 Z" />
-          </svg>
         </div>
       </div>
 
@@ -452,7 +491,7 @@ export default function RegisterPage() {
          ========================================================================= */}
       <div className="w-full lg:w-1/2 p-4 sm:p-8 lg:p-10 xl:p-12 flex flex-col justify-center items-center bg-[#f8f7f4] relative min-h-screen lg:h-full lg:overflow-y-auto xl:overflow-hidden">
         {/* Mobile Top Branding Header (Visible only on < lg viewports) */}
-        <div className="lg:hidden mb-5 flex items-center justify-center shrink-0">
+        <div className="lg:hidden mb-5 flex flex-col items-center justify-center shrink-0">
           <Link href="/" className="inline-flex items-center group">
             <img
               src="/swift-logo.png"
@@ -460,6 +499,9 @@ export default function RegisterPage() {
               className="h-12 w-auto max-w-[220px] object-contain"
             />
           </Link>
+          <span className="mt-2 text-[10px] font-bold text-amber-600 tracking-[0.2em] uppercase">
+            YOUR REGULATORY PARTNER
+          </span>
         </div>
         <div className="w-full max-w-[500px] xl:max-w-[540px] bg-white rounded-2xl sm:rounded-[28px] p-5 sm:p-8 xl:p-9 shadow-xl shadow-slate-200/50 border border-slate-100 relative z-10">
           {/* Stepper Progress Bar */}
