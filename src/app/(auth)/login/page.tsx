@@ -409,7 +409,7 @@ export default function LoginPage() {
               <span className="text-amber-600 font-serif italic">Official Documents.</span>
             </h1>
             <p className="mt-2.5 text-xs xl:text-sm text-slate-700 max-w-lg leading-relaxed font-medium">
-              Swift Doc Documentation Services Ltd is a premier documentation consultancy based in Westlands, Nairobi. We specialise in preparing, lodging and expediting regulatory registrations, statutory compliances, licensing and official certifications.
+              Swift Documentation Services Ltd is a premier documentation consultancy based in Westlands, Nairobi. We specialise in preparing, lodging and expediting regulatory registrations, statutory compliances, licensing and official certifications.
             </p>
           </div>
 

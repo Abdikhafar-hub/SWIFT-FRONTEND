@@ -377,7 +377,7 @@ export function InvoiceDocument({
 
         {/* 6. DOCUMENT FOOTER */}
         <div className="pt-6 border-t border-slate-200 text-center text-[10px] text-slate-500 space-y-1 font-medium">
-          <p className="font-bold text-slate-700">Thank you for choosing Swift Doc Document &amp; Statutory Services.</p>
+          <p className="font-bold text-slate-700">Thank you for choosing Swift Documentation &amp; Statutory Services.</p>
           <p>
             This commercial invoice is an electronically authenticated document issued by Swift Doc Compliance Engine.
           </p>
